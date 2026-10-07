@@ -240,6 +240,7 @@
       color: var(--text-muted);
       cursor: pointer;
       border-radius: 6px 6px 0 0;
+      white-space: nowrap;
     }
 
     .tab-btn.active { background: var(--accent); color: white; }
@@ -252,6 +253,7 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       padding: 20px;
+      min-width: 0;
     }
 
     table { width: 100%; border-collapse: collapse; text-align: left; }
@@ -309,6 +311,33 @@
       .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
       .chart-column { width: 108px; min-width: 108px; }
       .chart-legend { gap: 8px 14px; }
+      .content-card { padding: 16px 12px; }
+      #interventions table,
+      #interventions tbody,
+      #interventions tr,
+      #interventions td { display: block; width: 100%; }
+      #interventions thead { display: none; }
+      #interventions tr {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      #interventions tr:last-child { border-bottom: 0; }
+      #interventions td {
+        display: grid;
+        grid-template-columns: minmax(88px, 0.4fr) minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px 4px;
+        border-bottom: 0;
+        overflow-wrap: anywhere;
+      }
+      #interventions td::before {
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      #interventions td > * { min-width: 0; }
+      #interventions .link-btn { overflow-wrap: anywhere; }
       .modal-form { padding: 18px 16px; }
       .modal-fields { grid-template-columns: 1fr; gap: 12px; }
       .field.full-width { grid-column: auto; }
@@ -925,7 +954,7 @@
 
       // Remplissage des tables
       document.getElementById('interventions-table').innerHTML = data.interventions.map(i =>
-        `<tr><td>${escapeHtml(i.date)}</td><td><strong>${escapeHtml(i.type || i.name)}</strong>${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td>${escapeHtml(i.km)}</td><td>${escapeHtml(i.price)}</td><td>${renderInterventionDocuments(data, i)}</td></tr>`
+        `<tr><td data-label="Date">${escapeHtml(i.date)}</td><td data-label="Intervention"><strong>${escapeHtml(i.type || i.name)}</strong>${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td data-label="Kilométrage">${escapeHtml(i.km)}</td><td data-label="Coût">${escapeHtml(i.price)}</td><td data-label="Document">${renderInterventionDocuments(data, i)}</td></tr>`
       ).join('');
 
       document.getElementById('fuel-table').innerHTML = data.fuel.map(f =>
