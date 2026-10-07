@@ -103,6 +103,9 @@
     .deadline-item:last-child { border-bottom: 0; padding-bottom: 0; }
     .deadline-name { font-size: 0.85rem; font-weight: 600; }
     .deadline-value { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
+    .deadline-details { display: grid; gap: 2px; min-width: 0; }
+    .deadline-comment { color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+    .deadline-add { width: 100%; margin-top: 12px; }
 
     /* Component: Graphique Coulissant */
     .chart-card {
@@ -383,6 +386,7 @@
       <div class="kpi-card">
         <div class="label">Prochaines Échéances</div>
         <div class="deadline-list" id="deadlinesList"></div>
+        <button class="btn-action deadline-add" onclick="openActionModal('plannedInterventionModal')">📅 + Prochaine intervention</button>
       </div>
     </div>
 
@@ -515,6 +519,18 @@
     </form>
   </dialog>
 
+  <dialog class="action-modal" id="plannedInterventionModal" aria-labelledby="plannedInterventionModalTitle">
+    <form class="modal-form" id="plannedInterventionForm" onsubmit="savePlannedIntervention(event)">
+      <div class="modal-header"><div><h2 id="plannedInterventionModalTitle">Planifier une intervention</h2><p>Ajoutez une prochaine échéance pour ce véhicule.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('plannedInterventionModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="plannedInterventionType">Type d'intervention</label><select id="plannedInterventionType" name="type" required></select></div>
+        <div class="field"><label for="plannedInterventionDate">Date prévue</label><input id="plannedInterventionDate" name="date" type="date" required></div>
+        <div class="field full-width"><label for="plannedInterventionComment">Commentaire (facultatif)</label><textarea id="plannedInterventionComment" name="comment" maxlength="300" placeholder="Ex. prendre rendez-vous au garage"></textarea></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('plannedInterventionModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'échéance</button></div>
+    </form>
+  </dialog>
+
   <dialog class="action-modal" id="interventionTypesModal" aria-labelledby="interventionTypesTitle">
     <div class="modal-form">
       <div class="modal-header"><div><h2 id="interventionTypesTitle">Types d'intervention</h2><p>Ajoutez ou retirez les types non utilisés.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('interventionTypesModal')">&times;</button></div>
@@ -568,6 +584,7 @@
           { name: "Courroie", value: "À renseigner" },
           { name: "Vidange + 4 filtres", value: "Avant 87 000 km" }
         ],
+        plannedInterventions: [],
         monthlyStats: [
           { month: "Nov 25", fuel: 60, maint: 0, insur: 40, parts: 0, event: null },
           { month: "Déc 25", fuel: 85, maint: 0, insur: 40, parts: 0, event: null },
@@ -606,6 +623,7 @@
           { name: "Courroie", value: "URGENT" },
           { name: "Vidange + 4 filtres", value: "À renseigner" }
         ],
+        plannedInterventions: [],
         monthlyStats: [
           { month: "Nov 25", fuel: 90, maint: 0, insur: 50, parts: 0, event: null },
           { month: "Déc 25", fuel: 110, maint: 0, insur: 50, parts: 0, event: null },
@@ -652,7 +670,9 @@
     }
 
     function renderInterventionTypes() {
-      const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle => vehicle.interventions.map(item => item.type).filter(Boolean)));
+      const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle =>
+        [...vehicle.interventions, ...vehicle.plannedInterventions].map(item => item.type).filter(Boolean)
+      ));
       document.getElementById('interventionTypesList').innerHTML = interventionTypes.map((type, index) => {
         const isUsed = usedTypes.has(type);
         return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>Supprimer</button></li>`;
@@ -766,6 +786,10 @@
       form.querySelectorAll('input').forEach(input => input.setCustomValidity(''));
       form.elements.date.value = today;
       if (modalId === 'interventionModal') updateInterventionTypeSelect();
+      if (modalId === 'plannedInterventionModal') {
+        updatePlannedInterventionTypeSelect();
+        form.elements.date.min = today;
+      }
       if (modalId === 'documentModal') updateDocumentInterventionSelect();
       if (form.elements.km) {
         form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
@@ -835,6 +859,23 @@
       closeActionModal('interventionModal');
     }
 
+    function updatePlannedInterventionTypeSelect() {
+      const select = document.getElementById('plannedInterventionType');
+      select.innerHTML = interventionTypes.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
+    }
+
+    function savePlannedIntervention(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      vehiclesData[currentVehicleId].plannedInterventions.push({
+        type: values.type,
+        date: values.date,
+        comment: values.comment.trim()
+      });
+      switchVehicle(currentVehicleId);
+      closeActionModal('plannedInterventionModal');
+    }
+
     function savePurchase(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
@@ -872,7 +913,11 @@
         const monthLabel = `${monthNames[Number(month) - 1]} ${year.slice(-2)}`;
         const label = intervention.type || intervention.name;
         const events = eventsByMonth.get(monthLabel) || [];
-        events.push({ label, detail: intervention.type && intervention.name !== intervention.type ? intervention.name : '' });
+        events.push({
+          label,
+          date: intervention.date,
+          detail: intervention.type && intervention.name !== intervention.type ? intervention.name : ''
+        });
         eventsByMonth.set(monthLabel, events);
       });
       data.monthlyStats.forEach(month => {
@@ -911,7 +956,7 @@
         col.className = 'chart-column';
         const events = chartVisibility.interventions ? (eventsByMonth.get(d.month) || []) : [];
         const eventLabels = events.map(event =>
-          `<div class="event-label"><strong>${escapeHtml(event.label)}</strong>${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
+          `<div class="event-label"><strong>${escapeHtml(event.label)}</strong>${event.date ? `<br>${escapeHtml(event.date)}` : ''}${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
         ).join('');
         const eventList = eventLabels ? `<div class="chart-events">${eventLabels}</div>` : '';
         const segments = [
@@ -948,9 +993,16 @@
       document.getElementById('kpi-cost-month').innerText = data.additionalCost ? `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois` : "Moyenne : " + data.costMonth;
 
       renderChart(data);
-      document.getElementById('deadlinesList').innerHTML = data.deadlines.map(deadline =>
+      const fixedDeadlines = data.deadlines.map(deadline =>
         `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><span class="deadline-value">${escapeHtml(deadline.value)}</span></div>`
       ).join('');
+      const plannedInterventions = data.plannedInterventions
+        .slice()
+        .sort((first, second) => first.date.localeCompare(second.date))
+        .map(intervention =>
+          `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(intervention.type)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><span class="deadline-value">${escapeHtml(formatDate(intervention.date))}</span></div>`
+        ).join('');
+      document.getElementById('deadlinesList').innerHTML = fixedDeadlines + plannedInterventions;
 
       // Remplissage des tables
       document.getElementById('interventions-table').innerHTML = data.interventions.map(i =>
