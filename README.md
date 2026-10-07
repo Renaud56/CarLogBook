@@ -1,1 +1,5 @@
 # CarLogBook
+
+Le programme indicatif de suivi du Renault Scénic est décrit dans [maintenance-schedule.js](./maintenance-schedule.js). Les échéances de référence sont reprises de la liste fournie par le propriétaire pour un moteur 110 ch ; l’application concerne un véhicule déclaré en 115 ch. Vérifier l’applicabilité avec le carnet d’entretien ou le programme Renault lié au VIN.
+
+Les dates et kilométrages de dernière réalisation enregistrés depuis la fenêtre « Suivi » sont conservés localement dans le navigateur (localStorage). La prochaine échéance est calculée avec le premier terme atteint (date ou kilométrage) et apparaît dans « Prochaines Échéances ». Une échéance manuelle du même type remplace l’affichage calculé pour éviter un doublon ; la validation de cette échéance actualise aussi le suivi du programme. Les données ne sont pas synchronisées et peuvent être perdues si les données du navigateur sont effacées.

@@ -50,6 +50,7 @@
       background: #f8fafc;
       cursor: pointer;
     }
+    .vehicle-picker { display: flex; align-items: center; gap: 8px; }
 
     .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
 
@@ -105,6 +106,20 @@
     .deadline-value { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
     .deadline-details { display: grid; gap: 2px; min-width: 0; }
     .deadline-comment { color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+    .deadline-actions { display: flex; align-items: center; gap: 8px; }
+    .deadline-complete {
+      flex: 0 0 36px;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .deadline-complete:hover { border-color: var(--accent); background: #eff6ff; }
     .deadline-add { width: 100%; margin-top: 12px; }
 
     /* Component: Graphique Coulissant */
@@ -279,7 +294,7 @@
     }
 
     dialog.action-modal::backdrop { background: rgba(15, 23, 42, 0.55); }
-    .modal-form { padding: 20px; }
+    .modal-form { max-height: min(90vh, 760px); overflow-y: auto; padding: 20px; }
     .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
     .modal-header h2 { font-size: 1.2rem; margin-bottom: 4px; }
     .modal-header p { color: var(--text-muted); font-size: 0.85rem; }
@@ -304,11 +319,42 @@
     .type-list button { min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--danger); font: inherit; cursor: pointer; }
     .type-list button:disabled { color: var(--text-muted); cursor: not-allowed; }
     .form-message { min-height: 1.2em; margin-top: 8px; color: var(--danger); font-size: 0.85rem; }
+    dialog.maintenance-modal {
+      width: min(1050px, calc(100% - 24px));
+      max-height: min(90vh, 800px);
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      background: var(--card-bg);
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+    }
+    dialog.maintenance-modal::backdrop { background: rgba(15, 23, 42, 0.55); }
+    .maintenance-content { padding: 20px; overflow-y: auto; max-height: min(90vh, 800px); }
+    .maintenance-notice { margin-bottom: 14px; color: var(--text-muted); font-size: 0.85rem; }
+    .maintenance-table-wrap { overflow-x: auto; }
+    .maintenance-table { min-width: 0; }
+    .maintenance-table td { vertical-align: top; }
+    .maintenance-status { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .maintenance-status.ok { background: #dcfce7; color: #166534; }
+    .maintenance-status.due { background: #fee2e2; color: #991b1b; }
+    .maintenance-status.unknown { background: #f1f5f9; color: #475569; }
+    .maintenance-record { display: grid; gap: 3px; min-width: 110px; }
+    .maintenance-row-actions { display: grid; gap: 6px; min-width: 165px; }
+    .maintenance-action { min-height: 40px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 7px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .maintenance-action.secondary { border-color: var(--border); color: var(--text-main); }
+    .demo-badge { display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 0.7rem; font-weight: 700; vertical-align: middle; }
+    .maintenance-source { margin-top: 16px; font-size: 0.8rem; color: var(--text-muted); }
+    .maintenance-advice { display: grid; gap: 8px; margin: 16px 0 0 18px; color: var(--text-muted); font-size: 0.85rem; }
 
     @media (max-width: 600px) {
-      header { padding: 12px 14px; gap: 8px; }
+      header { padding: 12px 14px; gap: 8px; flex-wrap: wrap; }
       .brand { font-size: 1rem; }
-      .vehicle-picker select { max-width: 155px; padding: 8px; }
+      .vehicle-picker { gap: 5px; margin-left: auto; }
+      .vehicle-picker label { display: none; }
+      .vehicle-picker select { max-width: min(180px, 52vw); min-width: 0; padding: 8px; }
+      .maintenance-open { padding: 8px; font-size: 0.78rem; }
       .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .chart-card { padding: 16px; }
       .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
@@ -342,6 +388,31 @@
       #interventions td > * { min-width: 0; }
       #interventions .link-btn { overflow-wrap: anywhere; }
       .modal-form { padding: 18px 16px; }
+      .maintenance-content { padding: 16px 12px; }
+      .maintenance-table,
+      .maintenance-table tbody,
+      .maintenance-table tr,
+      .maintenance-table td { display: block; width: 100%; }
+      .maintenance-table thead { display: none; }
+      .maintenance-table tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
+      .maintenance-table tr:last-child { border-bottom: 0; }
+      .maintenance-table td {
+        display: grid;
+        grid-template-columns: minmax(110px, 0.42fr) minmax(0, 1fr);
+        gap: 10px;
+        padding: 7px 4px;
+        border-bottom: 0;
+        overflow-wrap: anywhere;
+      }
+      .maintenance-table td::before {
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .maintenance-table td:last-child { display: flex; justify-content: flex-end; }
+      .maintenance-table td:last-child::before { display: none; }
+      .maintenance-row-actions { width: 100%; min-width: 0; grid-template-columns: 1fr; }
       .modal-fields { grid-template-columns: 1fr; gap: 12px; }
       .field.full-width { grid-column: auto; }
       .modal-actions button { flex: 1; }
@@ -353,11 +424,12 @@
   <header>
     <div class="brand">🚗 AutoLog Drive</div>
     <div class="vehicle-picker">
-      <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted); margin-right: 5px;">Véhicule :</label>
+      <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted);">Véhicule :</label>
       <select id="vehicleSelect" onchange="switchVehicle(this.value)">
+        <option value="v2">Scénic III XMOD 1.5 dCi 115 ch (2015)</option>
         <option value="v1">Peugeot 208 (AA-123-BB)</option>
-        <option value="v2">Renault Scenic (CC-456-DD)</option>
       </select>
+      <button id="maintenanceOpenButton" class="btn-manage-types maintenance-open" type="button" onclick="openMaintenanceSchedule()" hidden>Suivi</button>
     </div>
   </header>
 
@@ -509,6 +581,7 @@
       <div class="modal-fields">
         <div class="field"><label for="interventionDate">Date</label><input id="interventionDate" name="date" type="date" required></div>
         <div class="field"><label for="interventionKm">Kilométrage (km)</label><input id="interventionKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
+        <div class="field full-width"><label for="interventionDeadline">Échéance concernée (facultatif)</label><select id="interventionDeadline" name="deadlineId" onchange="selectInterventionDeadline(this.value)"><option value="">Aucune échéance</option></select></div>
         <div class="field full-width field-with-action"><div class="field"><label for="interventionType">Type d'intervention</label><select id="interventionType" name="type" required></select></div><button class="btn-manage-types" type="button" onclick="openInterventionTypesModal()">Gérer</button></div>
         <div class="field full-width"><label for="interventionDescription">Description (facultatif)</label><input id="interventionDescription" name="description" type="text" maxlength="120" placeholder="Détail ou pièce remplacée"></div>
         <div class="field"><label for="interventionPrice">Montant (€)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
@@ -529,6 +602,14 @@
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('plannedInterventionModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'échéance</button></div>
     </form>
+  </dialog>
+
+  <dialog class="action-modal" id="completeDeadlineModal" aria-labelledby="completeDeadlineTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="completeDeadlineTitle">Confirmer l'échéance</h2><p id="completeDeadlineMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="answerDeadlineCompletion(false)">&times;</button></div>
+      <div class="field"><label for="completeDeadlineSelect">Échéance</label><select id="completeDeadlineSelect"></select></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="answerDeadlineCompletion(false)">Non, conserver</button><button class="btn-save" type="button" onclick="answerDeadlineCompletion(true)">Oui, retirer l'échéance</button></div>
+    </div>
   </dialog>
 
   <dialog class="action-modal" id="interventionTypesModal" aria-labelledby="interventionTypesTitle">
@@ -571,6 +652,39 @@
     </form>
   </dialog>
 
+  <dialog class="maintenance-modal" id="maintenanceModal" aria-labelledby="maintenanceTitle">
+    <div class="maintenance-content">
+      <div class="modal-header"><div><h2 id="maintenanceTitle">Suivi d'entretien</h2><p id="maintenanceVehicleLabel"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('maintenanceModal')">&times;</button></div>
+      <p class="maintenance-notice" id="maintenanceNotice"></p>
+      <div class="maintenance-table-wrap">
+        <table class="maintenance-table">
+          <thead><tr><th>Contrôle / entretien</th><th>Fréquence indicative</th><th>Dernière réalisation</th><th>Prochaine échéance</th><th>État</th><th></th></tr></thead>
+          <tbody id="maintenanceTable"></tbody>
+        </table>
+      </div>
+      <ul class="maintenance-advice" id="maintenanceAdvice"></ul>
+      <p class="maintenance-source" id="maintenanceSources"></p>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="maintenanceEntryModal" aria-labelledby="maintenanceEntryTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="maintenanceEntryTitle">Mettre à jour le suivi</h2><p id="maintenanceEntryItem"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('maintenanceEntryModal')">&times;</button></div>
+      <div class="field">
+        <label for="maintenancePlannedSelect">Échéance déjà planifiée</label>
+        <select id="maintenancePlannedSelect"></select>
+        <button class="maintenance-action" id="maintenancePlannedAction" type="button" onclick="recordPlannedMaintenance()">Enregistrer l’intervention planifiée</button>
+      </div>
+      <div class="field" style="margin-top: 16px;">
+        <label for="maintenanceExistingSelect">Intervention passée déjà enregistrée</label>
+        <select id="maintenanceExistingSelect"></select>
+        <button class="maintenance-action secondary" id="maintenanceExistingAction" type="button" onclick="linkExistingMaintenance()">Associer cette intervention</button>
+      </div>
+      <div class="modal-actions"><button class="btn-save" type="button" onclick="startNewMaintenanceIntervention()">Saisir une nouvelle intervention</button></div>
+    </div>
+  </dialog>
+
+  <script src="maintenance-schedule.js"></script>
   <script>
     const vehiclesData = {
       v1: {
@@ -580,9 +694,9 @@
         totalCost: "1 420 €",
         costMonth: "118 € / mois",
         deadlines: [
-          { name: "Contrôle technique", value: "À renseigner" },
-          { name: "Courroie", value: "À renseigner" },
-          { name: "Vidange + 4 filtres", value: "Avant 87 000 km" }
+          { id: "v1-deadline-inspection", name: "Contrôle technique", type: "Contrôle technique", value: "À renseigner" },
+          { id: "v1-deadline-belt", name: "Courroie", type: "Courroie", value: "À renseigner" },
+          { id: "v1-deadline-oil", name: "Vidange + 4 filtres", type: "Vidange", value: "Avant 87 000 km" }
         ],
         plannedInterventions: [],
         monthlyStats: [
@@ -618,11 +732,7 @@
         kmYear: "14 500 km / an",
         totalCost: "2 350 €",
         costMonth: "195 € / mois",
-        deadlines: [
-          { name: "Contrôle technique", value: "À renseigner" },
-          { name: "Courroie", value: "URGENT" },
-          { name: "Vidange + 4 filtres", value: "À renseigner" }
-        ],
+        deadlines: [],
         plannedInterventions: [],
         monthlyStats: [
           { month: "Nov 25", fuel: 90, maint: 0, insur: 50, parts: 0, event: null },
@@ -639,6 +749,16 @@
           { month: "Oct 26", fuel: 93, maint: 0, insur: 50, parts: 0, event: null }
         ],
         interventions: [
+          { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", demo: true },
+          { id: "v2-demo-cabin-filter", date: "07/10/2024", type: "Filtre d’habitacle", name: "Filtre d’habitacle (pollen)", km: "132 000 km", price: "35 €", doc: "", demo: true },
+          { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", demo: true },
+          { id: "v2-demo-fuel-filter", date: "14/06/2022", type: "Filtre à gazole", name: "Remplacement filtre à gazole", km: "105 000 km", price: "85 €", doc: "", demo: true },
+          { id: "v2-demo-timing-belt", date: "14/06/2021", type: "Distribution", name: "Distribution + pompe à eau", km: "90 000 km", price: "780 €", doc: "", demo: true },
+          { id: "v2-demo-accessory-belt", date: "14/06/2021", type: "Courroie d’accessoires", name: "Courroie d’accessoires + galets", km: "90 000 km", price: "220 €", doc: "", demo: true },
+          { id: "v2-demo-brake-fluid", date: "15/06/2023", type: "Liquide de frein", name: "Remplacement liquide de frein", km: "115 000 km", price: "75 €", doc: "", demo: true },
+          { id: "v2-demo-coolant", date: "15/06/2021", type: "Liquide de refroidissement", name: "Remplacement liquide de refroidissement", km: "90 000 km", price: "110 €", doc: "", demo: true },
+          { id: "v2-demo-rear-brakes", date: "10/01/2024", type: "Freinage", name: "Contrôle freins et plaquettes arrière", km: "125 000 km", price: "0 €", doc: "", demo: true },
+          { id: "v2-demo-tyres", date: "18/02/2024", type: "Pneumatiques", name: "Contrôle et permutation des pneumatiques", km: "127 000 km", price: "25 €", doc: "", demo: true },
           { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf" },
           { id: "v2-intervention-2", date: "10/01/2026", name: "Plaquettes de frein", km: "156 500 km", price: "160 €", doc: "Facture_Garage.pdf" }
         ],
@@ -652,15 +772,31 @@
       }
     };
 
-    let currentVehicleId = 'v1';
+    let currentVehicleId = 'v2';
     let recordSequence = 0;
-    const interventionTypes = ['Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique', 'Réparation', 'Autre'];
+    let completingDeadlineId = null;
+    let confirmationDeadlines = [];
+    let confirmationIntervention = null;
+    let pendingMaintenanceItemId = null;
+    let maintenanceChoiceItemId = null;
+    const maintenanceStorageKey = 'carlogbook-maintenance-records-v1';
+    const maintenanceRecords = JSON.parse(localStorage.getItem(maintenanceStorageKey) || '{}');
+    const interventionTypes = [
+      'Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique',
+      'Courroie', 'Filtre d’habitacle', 'Filtre à air', 'Filtre à gazole', 'Distribution',
+      'Courroie d’accessoires', 'Liquide de frein', 'Liquide de refroidissement', 'Réparation', 'Autre'
+    ];
     const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
     let chartInterventionsOnly = false;
 
     function createRecordId() {
       recordSequence += 1;
       return `${currentVehicleId}-intervention-${Date.now()}-${recordSequence}`;
+    }
+
+    function createDeadlineId() {
+      recordSequence += 1;
+      return `${currentVehicleId}-planned-${Date.now()}-${recordSequence}`;
     }
 
     function updateInterventionTypeSelect(selectedType = '') {
@@ -670,9 +806,11 @@
     }
 
     function renderInterventionTypes() {
-      const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle =>
-        [...vehicle.interventions, ...vehicle.plannedInterventions].map(item => item.type).filter(Boolean)
-      ));
+      const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle => [
+        ...vehicle.interventions.map(item => item.type),
+        ...vehicle.plannedInterventions.map(item => item.type),
+        ...vehicle.deadlines.map(item => item.type)
+      ].concat(maintenanceSchedule.items.map(item => item.type)).filter(Boolean)));
       document.getElementById('interventionTypesList').innerHTML = interventionTypes.map((type, index) => {
         const isUsed = usedTypes.has(type);
         return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>Supprimer</button></li>`;
@@ -710,7 +848,11 @@
 
     function removeInterventionType(index) {
       const type = interventionTypes[index];
-      const isUsed = Object.values(vehiclesData).some(vehicle => vehicle.interventions.some(item => item.type === type));
+      const isUsed = maintenanceSchedule.items.some(item => item.type === type) ||
+        Object.values(vehiclesData).some(vehicle =>
+          [...vehicle.interventions, ...vehicle.plannedInterventions, ...vehicle.deadlines]
+            .some(item => item.type === type)
+        );
       if (isUsed) return;
       interventionTypes.splice(index, 1);
       updateInterventionTypeSelect();
@@ -777,6 +919,214 @@
       return Object.fromEntries(new FormData(form).entries());
     }
 
+    function localDateValue(date = new Date()) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function addMonths(dateValue, months) {
+      const [year, month, day] = dateValue.split('-').map(Number);
+      const result = new Date(year, month - 1, 1);
+      result.setMonth(result.getMonth() + months);
+      const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+      result.setDate(Math.min(day, lastDay));
+      return localDateValue(result);
+    }
+
+    function formatKilometers(value) {
+      return `${Number(value).toLocaleString('fr-FR')} km`;
+    }
+
+    function maintenanceItemStatus(item, record, currentKm, today) {
+      if (!record) return { label: 'À renseigner', className: 'unknown', next: 'Historique à renseigner' };
+      const nextDate = item.intervalMonths ? addMonths(record.date, item.intervalMonths) : '';
+      const nextKm = item.intervalKm ? record.km + item.intervalKm : null;
+      const isDue = (nextDate && today >= nextDate) || (nextKm !== null && currentKm >= nextKm);
+      const dueDate = nextDate ? formatDate(nextDate) : '—';
+      const dueKm = nextKm !== null ? formatKilometers(nextKm) : '—';
+      return {
+        label: isDue ? 'À faire' : 'OK',
+        className: isDue ? 'due' : 'ok',
+        next: `${dueDate} · ${dueKm}`,
+        nextDate,
+        nextKm
+      };
+    }
+
+    function calculatedMaintenanceDeadlines(data) {
+      if (currentVehicleId !== maintenanceSchedule.vehicleId) return [];
+      const records = maintenanceRecords[currentVehicleId] || {};
+      const currentKm = Number(data.km.replace(/\D/g, ''));
+      const today = localDateValue();
+      const manualTypes = new Set(data.plannedInterventions.map(intervention => intervention.type));
+      return maintenanceSchedule.items.flatMap(item => {
+        const record = records[item.id];
+        if (!record || manualTypes.has(item.type)) return [];
+        const status = maintenanceItemStatus(item, record, currentKm, today);
+        return [{
+          id: `maintenance-${item.id}`,
+          maintenanceItemId: item.id,
+          type: item.type,
+          name: item.name,
+          date: status.nextDate,
+          value: status.nextKm === null ? '' : formatKilometers(status.nextKm)
+        }];
+      });
+    }
+
+    function upcomingInterventions(data) {
+      return [
+        ...data.deadlines,
+        ...data.plannedInterventions,
+        ...calculatedMaintenanceDeadlines(data)
+      ];
+    }
+
+    function renderMaintenanceSchedule() {
+      const schedule = maintenanceSchedule;
+      const data = vehiclesData[currentVehicleId];
+      const currentKm = Number(data.km.replace(/\D/g, ''));
+      const today = localDateValue();
+      const records = maintenanceRecords[currentVehicleId] || {};
+      document.getElementById('maintenanceVehicleLabel').textContent = schedule.vehicleLabel;
+      document.getElementById('maintenanceNotice').textContent = schedule.notice;
+      document.getElementById('maintenanceTable').innerHTML = schedule.items.map(item => {
+        const record = records[item.id];
+        const status = maintenanceItemStatus(item, record, currentKm, today);
+        const lastService = record
+          ? `<span>${escapeHtml(formatDate(record.date))}</span><span>${escapeHtml(formatKilometers(record.km))}</span>`
+          : '<span>À renseigner</span>';
+        const interval = formatMaintenanceInterval(item);
+        return `<tr>
+          <td data-label="Entretien"><strong>${escapeHtml(item.name)}</strong><br><small>${escapeHtml(item.details)}</small></td>
+          <td data-label="Fréquence">${escapeHtml(interval)}</td>
+          <td data-label="Dernière réalisation"><div class="maintenance-record">${lastService}</div></td>
+          <td data-label="Prochaine échéance">${escapeHtml(status.next)}</td>
+          <td data-label="État"><span class="maintenance-status ${status.className}">${escapeHtml(status.label)}</span></td>
+          <td><div class="maintenance-row-actions"><button class="maintenance-action" type="button" onclick="openMaintenanceEntryOptions('${escapeHtml(item.id)}')">Ajouter / associer une intervention</button></div></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('maintenanceAdvice').innerHTML = schedule.additionalAdvice
+        .map(advice => `<li>${escapeHtml(advice)}</li>`).join('');
+      document.getElementById('maintenanceSources').textContent = schedule.sourceLabel;
+    }
+
+    function formatMaintenanceInterval(item) {
+      const years = item.intervalMonths / 12;
+      return [
+        item.intervalKm ? `${Number(item.intervalKm).toLocaleString('fr-FR')} km` : '',
+        item.intervalMonths ? `${years} ${years > 1 ? 'ans' : 'an'}` : ''
+      ].filter(Boolean).join(' / ') + ' (au premier terme échu)';
+    }
+
+    function openMaintenanceSchedule() {
+      if (currentVehicleId !== maintenanceSchedule.vehicleId) return;
+      renderMaintenanceSchedule();
+      document.getElementById('maintenanceModal').showModal();
+    }
+
+    function startMaintenanceIntervention(itemId, deadlineId = '') {
+      const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+      if (!item) return;
+      closeActionModal('maintenanceModal');
+      openActionModal('interventionModal');
+      pendingMaintenanceItemId = item.id;
+      completingDeadlineId = deadlineId && !deadlineId.startsWith('maintenance-') ? deadlineId : null;
+      document.getElementById('interventionDate').max = localDateValue();
+      updateInterventionTypeSelect(item.type);
+      document.getElementById('interventionDescription').value = item.name;
+    }
+
+    function openMaintenanceEntryOptions(itemId) {
+      const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+      if (!item) return;
+      maintenanceChoiceItemId = itemId;
+      const deadlines = upcomingInterventions(vehiclesData[currentVehicleId]).filter(deadline =>
+        deadline.type === item.type || deadline.maintenanceItemId === item.id
+      );
+      const plannedSelect = document.getElementById('maintenancePlannedSelect');
+      plannedSelect.innerHTML = deadlines.map(deadline =>
+        `<option value="${escapeHtml(deadline.id)}">${escapeHtml(deadlineLabel(deadline))}</option>`
+      ).join('');
+      const plannedAction = document.getElementById('maintenancePlannedAction');
+      plannedAction.disabled = deadlines.length === 0;
+      if (deadlines.length === 0) {
+        plannedSelect.innerHTML = '<option value="">Aucune échéance planifiée pour cet entretien</option>';
+      }
+
+      const interventions = vehiclesData[currentVehicleId].interventions
+        .filter(intervention => matchesMaintenanceIntervention(item, intervention))
+        .slice()
+        .sort((first, second) => parseFrenchDate(second.date) - parseFrenchDate(first.date));
+      const existingSelect = document.getElementById('maintenanceExistingSelect');
+      existingSelect.innerHTML = interventions.map(intervention => {
+        const demoPrefix = intervention.demo ? 'DÉMO — ' : '';
+        const label = `${demoPrefix}${intervention.type || intervention.name} — ${intervention.date} — ${intervention.km}`;
+        return `<option value="${escapeHtml(intervention.id)}">${escapeHtml(label)}</option>`;
+      }).join('');
+      const existingAction = document.getElementById('maintenanceExistingAction');
+      existingAction.disabled = interventions.length === 0;
+      if (interventions.length === 0) {
+        existingSelect.innerHTML = '<option value="">Aucune intervention passée correspondante</option>';
+      }
+      document.getElementById('maintenanceEntryItem').textContent = item.name;
+      closeActionModal('maintenanceModal');
+      document.getElementById('maintenanceEntryModal').showModal();
+    }
+
+    function matchesMaintenanceIntervention(item, intervention) {
+      const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+      const text = normalize(`${intervention.type || ''} ${intervention.name || ''}`);
+      return [item.type, item.name].some(term => text.includes(normalize(term)));
+    }
+
+    function parseFrenchDate(value) {
+      const [day, month, year] = value.split('/').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function startNewMaintenanceIntervention() {
+      if (!maintenanceChoiceItemId) return;
+      const itemId = maintenanceChoiceItemId;
+      closeActionModal('maintenanceEntryModal');
+      startMaintenanceIntervention(itemId);
+    }
+
+    function recordPlannedMaintenance() {
+      if (!maintenanceChoiceItemId) return;
+      const item = maintenanceSchedule.items.find(entry => entry.id === maintenanceChoiceItemId);
+      const deadlineId = document.getElementById('maintenancePlannedSelect').value;
+      if (!item || !deadlineId) return;
+      const deadline = upcomingInterventions(vehiclesData[currentVehicleId]).find(entry => entry.id === deadlineId);
+      if (!deadline) return;
+      const itemId = maintenanceChoiceItemId;
+      closeActionModal('maintenanceEntryModal');
+      startMaintenanceIntervention(itemId, deadline.maintenanceItemId ? '' : deadline.id);
+      document.getElementById('interventionDeadline').value = deadline.id;
+      document.getElementById('interventionDescription').value = item.name;
+    }
+
+    function linkExistingMaintenance() {
+      if (!maintenanceChoiceItemId) return;
+      const interventionId = document.getElementById('maintenanceExistingSelect').value;
+      const intervention = vehiclesData[currentVehicleId].interventions.find(item => item.id === interventionId);
+      if (!intervention) return;
+      const dateParts = intervention.date.split('/');
+      const date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+      const km = Number(intervention.km.replace(/\D/g, ''));
+      if (!Number.isFinite(km) || !dateParts[2]) return;
+      maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
+      maintenanceRecords[currentVehicleId][maintenanceChoiceItemId] = {
+        date,
+        km,
+        interventionId: intervention.id
+      };
+      localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
+      maintenanceChoiceItemId = null;
+      closeActionModal('maintenanceEntryModal');
+      renderMaintenanceSchedule();
+      switchVehicle(currentVehicleId);
+    }
+
     function openActionModal(modalId) {
       const dialog = document.getElementById(modalId);
       const form = dialog.querySelector('form');
@@ -784,8 +1134,12 @@
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       form.reset();
       form.querySelectorAll('input').forEach(input => input.setCustomValidity(''));
+      form.elements.date.removeAttribute('max');
       form.elements.date.value = today;
-      if (modalId === 'interventionModal') updateInterventionTypeSelect();
+      if (modalId === 'interventionModal') {
+        updateInterventionTypeSelect();
+        updateInterventionDeadlineSelect();
+      }
       if (modalId === 'plannedInterventionModal') {
         updatePlannedInterventionTypeSelect();
         form.elements.date.min = today;
@@ -799,6 +1153,95 @@
 
     function closeActionModal(modalId) {
       document.getElementById(modalId).close();
+      if (modalId === 'interventionModal') {
+        completingDeadlineId = null;
+        pendingMaintenanceItemId = null;
+      }
+    }
+
+    function deadlineLabel(deadline) {
+      const date = deadline.date ? formatDate(deadline.date) : deadline.value;
+      const comment = deadline.comment ? ` — ${deadline.comment}` : '';
+      return `${deadline.name || deadline.type} — ${date}${comment}`;
+    }
+
+    function updateInterventionDeadlineSelect(selectedId = '') {
+      const deadlines = upcomingInterventions(vehiclesData[currentVehicleId]);
+      const select = document.getElementById('interventionDeadline');
+      select.innerHTML = '<option value="">Aucune échéance</option>' + deadlines.map(deadline =>
+        `<option value="${escapeHtml(deadline.id)}">${escapeHtml(deadlineLabel(deadline))}</option>`
+      ).join('');
+      select.value = selectedId;
+    }
+
+    function selectInterventionDeadline(deadlineId) {
+      if (!deadlineId) return;
+      const data = vehiclesData[currentVehicleId];
+      const deadline = upcomingInterventions(data).find(item => item.id === deadlineId);
+      if (!deadline) return;
+      updateInterventionTypeSelect(deadline.type);
+    }
+
+    function startDeadlineIntervention(deadlineId) {
+      const data = vehiclesData[currentVehicleId];
+      const deadline = upcomingInterventions(data).find(item => item.id === deadlineId);
+      if (!deadline) return;
+      const maintenanceItem = maintenanceSchedule.items.find(item =>
+        item.id === deadline.maintenanceItemId || item.type === deadline.type
+      );
+      if (maintenanceItem) {
+        startMaintenanceIntervention(maintenanceItem.id, deadline.id);
+        document.getElementById('interventionDeadline').value = deadline.id;
+        return;
+      }
+      openActionModal('interventionModal');
+      completingDeadlineId = deadline.id;
+      document.getElementById('interventionDeadline').value = deadline.id;
+      selectInterventionDeadline(deadline.id);
+    }
+
+    function matchingDeadlines(data, type) {
+      return upcomingInterventions(data).filter(deadline => deadline.type === type);
+    }
+
+    function removeDeadline(data, deadlineId) {
+      data.deadlines = data.deadlines.filter(deadline => deadline.id !== deadlineId);
+      data.plannedInterventions = data.plannedInterventions.filter(deadline => deadline.id !== deadlineId);
+    }
+
+    function askToCompleteDeadline(deadlines, intervention) {
+      confirmationDeadlines = deadlines;
+      confirmationIntervention = intervention;
+      const select = document.getElementById('completeDeadlineSelect');
+      select.innerHTML = deadlines.map(deadline =>
+        `<option value="${escapeHtml(deadline.id)}">${escapeHtml(deadlineLabel(deadline))}</option>`
+      ).join('');
+      document.getElementById('completeDeadlineMessage').textContent =
+        'Cette intervention correspond-elle à une des échéances suivantes ?';
+      document.getElementById('completeDeadlineModal').showModal();
+    }
+
+    function answerDeadlineCompletion(completed) {
+      if (completed && confirmationDeadlines.length) {
+        const deadlineId = document.getElementById('completeDeadlineSelect').value;
+        const deadline = confirmationDeadlines.find(item => item.id === deadlineId);
+        if (!deadline) return;
+        const data = vehiclesData[currentVehicleId];
+        removeDeadline(data, deadlineId);
+        const maintenanceItem = maintenanceSchedule.items.find(item =>
+          item.id === deadline.maintenanceItemId || item.type === deadline.type
+        );
+        if (maintenanceItem && confirmationIntervention) {
+          maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
+          maintenanceRecords[currentVehicleId][maintenanceItem.id] = confirmationIntervention;
+          localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
+          if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
+        }
+        switchVehicle(currentVehicleId);
+      }
+      confirmationDeadlines = [];
+      confirmationIntervention = null;
+      closeActionModal('completeDeadlineModal');
     }
 
     function addCostToCurrentMonth(category, amount, date, eventName = null) {
@@ -841,22 +1284,52 @@
     function saveIntervention(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
+      const completedDeadlineId = completingDeadlineId;
       const safeUrl = values.url ? normalizeDocumentUrl(values.url) : '';
       if (values.url && !safeUrl) {
         event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
         event.currentTarget.elements.url.reportValidity();
         return;
       }
+      completingDeadlineId = null;
       const price = Number(values.price);
       const type = values.type;
       const description = values.description.trim();
+      const maintenanceItemId = pendingMaintenanceItemId;
       vehiclesData[currentVehicleId].interventions.unshift({
         id: createRecordId(), date: formatDate(values.date), type, name: description || type, garage: values.garage,
         km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '', docUrl: safeUrl
       });
       addCostToCurrentMonth('maint', price, values.date, type);
+      const data = vehiclesData[currentVehicleId];
+      const completedIntervention = {
+        date: values.date,
+        km: Number(values.km),
+        interventionId: data.interventions[0].id
+      };
+      if (maintenanceItemId) {
+        maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
+        maintenanceRecords[currentVehicleId][maintenanceItemId] = completedIntervention;
+        localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
+        pendingMaintenanceItemId = null;
+        renderMaintenanceSchedule();
+      }
+      if (completedDeadlineId) {
+        removeDeadline(data, completedDeadlineId);
+      }
       switchVehicle(currentVehicleId);
       closeActionModal('interventionModal');
+      if (!completedDeadlineId) {
+        const selectedDeadline = values.deadlineId
+          ? matchingDeadlines(data, type).find(deadline => deadline.id === values.deadlineId)
+          : null;
+        if (selectedDeadline) {
+          askToCompleteDeadline([selectedDeadline], completedIntervention);
+        } else if (!values.deadlineId) {
+          const deadlines = matchingDeadlines(data, type);
+          if (deadlines.length) askToCompleteDeadline(deadlines, completedIntervention);
+        }
+      }
     }
 
     function updatePlannedInterventionTypeSelect() {
@@ -868,6 +1341,7 @@
       event.preventDefault();
       const values = formData(event.currentTarget);
       vehiclesData[currentVehicleId].plannedInterventions.push({
+        id: createDeadlineId(),
         type: values.type,
         date: values.date,
         comment: values.comment.trim()
@@ -994,19 +1468,26 @@
 
       renderChart(data);
       const fixedDeadlines = data.deadlines.map(deadline =>
-        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><span class="deadline-value">${escapeHtml(deadline.value)}</span></div>`
+        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><div class="deadline-actions"><span class="deadline-value">${escapeHtml(deadline.value)}</span><button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(deadline.name)} comme effectuée" onclick="startDeadlineIntervention('${escapeHtml(deadline.id)}')">+</button></div></div>`
       ).join('');
-      const plannedInterventions = data.plannedInterventions
+      const plannedInterventions = [...data.plannedInterventions, ...calculatedMaintenanceDeadlines(data)]
         .slice()
         .sort((first, second) => first.date.localeCompare(second.date))
-        .map(intervention =>
-          `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(intervention.type)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><span class="deadline-value">${escapeHtml(formatDate(intervention.date))}</span></div>`
+        .map(intervention => {
+          const label = intervention.name || intervention.type;
+          const date = intervention.date ? formatDate(intervention.date) : intervention.value;
+          const value = [date, intervention.value && intervention.date ? intervention.value : ''].filter(Boolean).join(' · ');
+          const clickAction = intervention.maintenanceItemId
+            ? `startMaintenanceIntervention('${escapeHtml(intervention.maintenanceItemId)}', '${escapeHtml(intervention.id)}')`
+            : `startDeadlineIntervention('${escapeHtml(intervention.id)}')`;
+          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span><button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
+        }
         ).join('');
       document.getElementById('deadlinesList').innerHTML = fixedDeadlines + plannedInterventions;
 
       // Remplissage des tables
       document.getElementById('interventions-table').innerHTML = data.interventions.map(i =>
-        `<tr><td data-label="Date">${escapeHtml(i.date)}</td><td data-label="Intervention"><strong>${escapeHtml(i.type || i.name)}</strong>${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td data-label="Kilométrage">${escapeHtml(i.km)}</td><td data-label="Coût">${escapeHtml(i.price)}</td><td data-label="Document">${renderInterventionDocuments(data, i)}</td></tr>`
+        `<tr><td data-label="Date">${escapeHtml(i.date)}</td><td data-label="Intervention"><strong>${escapeHtml(i.type || i.name)}</strong>${i.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td data-label="Kilométrage">${escapeHtml(i.km)}</td><td data-label="Coût">${escapeHtml(i.price)}</td><td data-label="Document">${renderInterventionDocuments(data, i)}</td></tr>`
       ).join('');
 
       document.getElementById('fuel-table').innerHTML = data.fuel.map(f =>
@@ -1020,6 +1501,7 @@
       document.getElementById('documents-table').innerHTML = data.documents.map(doc =>
         `<tr><td>${escapeHtml(doc.date)}</td><td><strong>${escapeHtml(doc.name)}</strong></td><td>${escapeHtml(doc.category)}</td><td>${escapeHtml(interventionLabel(data, doc.interventionId))}</td><td>${documentLink(doc.url, 'Ouvrir le lien')}</td></tr>`
       ).join('');
+      document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
     }
 
     function renderInterventionDocuments(data, intervention) {
@@ -1042,7 +1524,7 @@
       btn.classList.add('active');
     }
 
-    switchVehicle('v1');
+    switchVehicle('v2');
   </script>
 </body>
 </html>
