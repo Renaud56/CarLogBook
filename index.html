@@ -214,6 +214,22 @@
       width: 108px;
       min-width: 108px;
     }
+    .chart-column.annual-column { width: 140px; min-width: 140px; }
+    .chart-bar-pair { display: flex; align-items: flex-end; gap: 10px; }
+    .chart-bar-group { display: flex; flex-direction: column; align-items: center; }
+    .chart-bar-value {
+      min-height: 16px;
+      margin-bottom: 4px;
+      color: var(--text-main);
+      font-size: 0.62rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .chart-mileage-bar {
+      width: 28px;
+      border-radius: 6px 6px 0 0;
+      background: var(--accent);
+    }
 
     .bar-stack {
       width: 28px;
@@ -254,35 +270,21 @@
       margin-bottom: 4px;
     }
 
-    .chart-events {
+    .chart-month-interventions {
       position: absolute;
-      top: -70px;
-      left: 0;
-      width: 100%;
-      display: grid;
-      gap: 4px;
-    }
-
-    .event-label {
-      display: block;
-      padding: 4px 6px;
-      border-left: 3px solid var(--c-maint);
+      top: -48px;
+      left: 50%;
+      min-width: 36px;
+      min-height: 36px;
+      transform: translateX(-50%);
+      border: 0;
+      border-radius: 50%;
       background: #fff7e6;
-      color: var(--text-main);
-      font-size: 0.72rem;
-      line-height: 1.25;
-      overflow-wrap: anywhere;
+      font-size: 1.1rem;
+      cursor: pointer;
     }
-    .chart-event-tags { display: flex; gap: 3px; overflow: hidden; white-space: nowrap; }
-    .chart-event-tag {
-      min-width: 0;
-      overflow: hidden;
-      padding: 1px 4px;
-      border-radius: 999px;
-      background: #ffedc2;
-      font-size: 0.62rem;
-      text-overflow: ellipsis;
-    }
+    .chart-month-interventions:hover { background: #ffedc2; }
+    .chart-month-interventions:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .chart-legend {
       display: flex;
@@ -309,11 +311,11 @@
 
     .chart-wrapper.interventions-only { height: auto; min-height: 90px; align-items: stretch; padding-top: 12px; }
     .interventions-only .chart-column { height: auto; min-height: 68px; justify-content: flex-start; }
-    .interventions-only .chart-events { position: static; margin-bottom: 8px; }
+    .interventions-only .chart-month-interventions { position: static; transform: none; margin-bottom: 8px; }
+    .interventions-only .chart-bar-pair { display: none; }
     .interventions-only .column-total,
     .interventions-only .bar-stack { display: none; }
     .chart-empty { padding: 30px 20px; color: var(--text-muted); font-size: 0.9rem; }
-
     /* Tabs & Tables */
     .nav-tabs {
       display: flex;
@@ -347,6 +349,7 @@
       min-width: 0;
     }
     .history-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
+    .history-toolbar { flex-wrap: wrap; }
     .history-filter { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
     .history-filter select {
       min-height: 40px;
@@ -427,7 +430,7 @@
     th { padding: 12px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
     td { padding: 14px 12px; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
 
-    .link-btn { color: var(--accent); text-decoration: none; font-weight: 500; font-size: 0.85rem; }
+    .link-btn { color: var(--accent); text-decoration: none; font-weight: 500; font-size: 0.85rem; overflow-wrap: anywhere; }
 
     /* Formulaires modaux */
     dialog.action-modal {
@@ -657,20 +660,20 @@
           <!-- Généré dynamiquement en JS -->
         </div>
       </div>
-
       <div class="chart-legend">
         <button class="legend-toggle" data-series="fuel" aria-pressed="true" onclick="toggleChartSeries('fuel')"><span class="dot" style="background: var(--c-fuel)"></span> Carburant</button>
         <button class="legend-toggle" data-series="maint" aria-pressed="true" onclick="toggleChartSeries('maint')"><span class="dot" style="background: var(--c-maint)"></span> Entretien / Réparations</button>
         <button class="legend-toggle" data-series="insur" aria-pressed="true" onclick="toggleChartSeries('insur')"><span class="dot" style="background: var(--c-insur)"></span> Coûts fixes</button>
         <button class="legend-toggle" data-series="parts" aria-pressed="true" onclick="toggleChartSeries('parts')"><span class="dot" style="background: var(--c-parts)"></span> Achats / Pièces</button>
         <button class="legend-toggle" data-series="interventions" aria-pressed="true" onclick="toggleChartSeries('interventions')"><span style="font-size:0.9rem">🛠️</span> Interventions</button>
+        <button class="legend-toggle" data-series="mileage" aria-pressed="true" onclick="toggleChartSeries('mileage')" hidden><span class="dot" style="background: var(--accent)"></span> Km parcourus</button>
         <button class="legend-toggle" id="interventionsOnlyToggle" aria-pressed="false" onclick="toggleInterventionsOnly()">Interventions uniquement</button>
       </div>
     </div>
 
     <!-- Navigation Onglets -->
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="showTab('interventions', this)">🛠️ Entretiens & Factures</button>
+      <button class="tab-btn active" id="interventionsTabButton" onclick="showTab('interventions', this)">🛠️ Entretiens & Factures</button>
       <button class="tab-btn" onclick="showTab('fuel', this)">⛽ Carburant</button>
       <button class="tab-btn" onclick="showTab('purchases', this)">🛒 Achats / Pièces</button>
       <button class="tab-btn" onclick="showTab('documents', this)">📎 Documents</button>
@@ -688,6 +691,8 @@
               <option value="">Toutes les interventions</option>
             </select>
           </label>
+          <span class="history-count" id="interventionMonthFilter" hidden></span>
+          <button class="btn-cancel" id="clearInterventionMonthFilter" type="button" onclick="clearInterventionMonthFilter()" hidden>Effacer le filtre du mois</button>
           <span class="history-count" id="interventionHistoryCount" aria-live="polite"></span>
         </div>
         <table>
@@ -1152,10 +1157,11 @@
     ];
     let interventionTypes = !TEST_MODE && initialBackup && initialBackup.interventionTypes.length
       ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
-    const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
+    const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true, mileage: true };
     let chartInterventionsOnly = false;
     let chartSelectedYear = null;
     let interventionTypeFilter = '';
+    let interventionMonthFilter = null;
     Object.values(vehiclesData).forEach(normalizeVehicleFixedCosts);
 
     function createRecordId() {
@@ -1703,6 +1709,7 @@
         const fuel = mergeEntries(vehicleId, 'fuel', latest.fuel, previous.fuel);
         const purchases = mergeEntries(vehicleId, 'purchase', latest.purchases, previous.purchases);
         const documents = mergeEntries(vehicleId, 'document', latest.documents, previous.documents);
+        const deadlines = mergeEntries(vehicleId, 'deadline', latest.deadlines, previous.deadlines);
         const plannedInterventions = mergeEntries(vehicleId, 'planned', latest.plannedInterventions, previous.plannedInterventions);
         const monthlyStats = mergeRecords(
           latest.monthlyStats.map(month => ({ ...month, id: month.month })),
@@ -1741,7 +1748,7 @@
           ...latest,
           fixedCostsByYear,
           fixedCostIdsByYear,
-          deadlines: latest.deadlines,
+          deadlines,
           plannedInterventions,
           monthlyStats,
           interventions,
@@ -2543,6 +2550,38 @@
       return eventsByMonth;
     }
 
+    function chartMileageByYear(data) {
+      const readingsByDate = new Map();
+      data.interventions.forEach(intervention => {
+        const dateParts = String(intervention.date || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        const km = Number(String(intervention.km || '').replace(/\D/g, ''));
+        if (!dateParts || !Number.isFinite(km) || km <= 0) return;
+        const [, day, month, year] = dateParts;
+        const date = new Date(Number(year), Number(month) - 1, Number(day));
+        if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month) - 1 || date.getDate() !== Number(day)) return;
+        const dateKey = `${year}-${month}-${day}`;
+        readingsByDate.set(dateKey, Math.max(readingsByDate.get(dateKey) || 0, km));
+      });
+
+      const readings = [...readingsByDate.entries()]
+        .map(([date, km]) => ({ date, year: date.slice(0, 4), km }))
+        .sort((first, second) => first.date.localeCompare(second.date));
+      const mileageByYear = new Map();
+      let previousReading = null;
+      readings.forEach(reading => {
+        if (previousReading && reading.km >= previousReading.km) {
+          const distance = reading.km - previousReading.km;
+          if (distance > 0) {
+            mileageByYear.set(reading.year, (mileageByYear.get(reading.year) || 0) + distance);
+          }
+          previousReading = reading;
+        } else if (!previousReading) {
+          previousReading = reading;
+        }
+      });
+      return mileageByYear;
+    }
+
     function showChartYear(year) {
       chartSelectedYear = year;
       renderChart(vehiclesData[currentVehicleId]);
@@ -2557,6 +2596,11 @@
       const container = document.getElementById('chartWrapper');
       const periodControls = document.getElementById('chartPeriodControls');
       const eventsByMonth = chartInterventionsByMonth(data);
+      const mileageByYear = chartMileageByYear(data);
+      const mileageLegendToggle = document.querySelector('[data-series="mileage"]');
+      const showAnnualMileage = !chartSelectedYear && chartVisibility.mileage;
+      mileageLegendToggle.hidden = Boolean(chartSelectedYear);
+      mileageLegendToggle.setAttribute('aria-pressed', String(chartVisibility.mileage));
       const visibleCategories = ['fuel', 'maint', 'insur', 'parts'].filter(category => chartVisibility[category]);
       const monthlyDataByLabel = new Map();
       data.monthlyStats.forEach(month => {
@@ -2606,6 +2650,14 @@
           });
         }
       });
+      mileageByYear.forEach((distance, year) => {
+        if (!statsByYear.has(year)) {
+          statsByYear.set(year, {
+            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0
+          });
+        }
+        statsByYear.get(year).mileage = distance;
+      });
 
       let chartData;
       if (chartSelectedYear) {
@@ -2617,7 +2669,6 @@
         chartData = [...statsByYear.values()].sort((first, second) => Number(first.year) - Number(second.year));
         periodControls.innerHTML = '<span>Vue annuelle · touchez une année pour afficher ses mois.</span>';
       }
-
       container.classList.toggle('interventions-only', chartInterventionsOnly);
       if (chartInterventionsOnly) {
         chartData = chartVisibility.interventions
@@ -2626,7 +2677,8 @@
             : annualEvents.has(period.year))
           : [];
       }
-      if (!chartInterventionsOnly && !chartVisibility.interventions && visibleCategories.length === 0) {
+      if (!chartInterventionsOnly && !chartVisibility.interventions && visibleCategories.length === 0 &&
+          !(showAnnualMileage && mileageByYear.size > 0)) {
         chartData = [];
       }
       if (chartData.length === 0) {
@@ -2635,31 +2687,49 @@
       }
       container.innerHTML = '';
       const maxTotal = Math.max(...chartData.map(period => visibleCategories.reduce((total, category) => total + (Number(period[category]) || 0), 0))) || 1;
+      const maxMileage = Math.max(0, ...chartData.map(period => Number(period.mileage) || 0)) || 1;
       const maxHeightPx = 140; 
 
       chartData.forEach(period => {
         const total = visibleCategories.reduce((sum, category) => sum + (Number(period[category]) || 0), 0);
         const col = document.createElement('div');
-        col.className = 'chart-column';
-        const events = chartVisibility.interventions && chartSelectedYear
-          ? (eventsByMonth.get(period.month) || [])
+        col.className = `chart-column${!chartSelectedYear ? ' annual-column' : ''}`;
+        const monthInterventions = chartVisibility.interventions && chartSelectedYear
+          ? data.interventions.filter(intervention => {
+            const dateParts = String(intervention.date || '').split('/');
+            return dateParts[1] === String(period.monthIndex + 1).padStart(2, '0') &&
+              dateParts[2] === chartSelectedYear;
+          })
           : [];
-        const eventLabels = events.map(event =>
-          `<div class="event-label" title="${escapeHtml(event.label)}"><div class="chart-event-tags">${(event.tags || [event.label]).map(tag => `<span class="chart-event-tag">${escapeHtml(tag)}</span>`).join('')}</div>${event.date ? `<br>${escapeHtml(event.date)}` : ''}${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
-        ).join('');
-        const eventList = eventLabels ? `<div class="chart-events">${eventLabels}</div>` : '';
+        const interventionButton = monthInterventions.length
+          ? `<button class="chart-month-interventions" type="button" aria-label="Afficher ${monthInterventions.length} intervention${monthInterventions.length === 1 ? '' : 's'} de ${escapeHtml(period.month)}" title="Afficher les interventions de ${escapeHtml(period.month)}" onclick="showInterventionsForMonth('${escapeHtml(period.year)}', ${period.monthIndex})">🛠️</button>`
+          : '';
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
           `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${Number(period[category]) || 0}€"></div>`
         ).join('');
-
-        col.innerHTML = `
-          ${eventList}
-          <div class="column-total">${total}€</div>
+        const costBar = `
+          <div class="chart-bar-value">${total}€</div>
           <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
             ${segments}
           </div>
+        `;
+        const mileage = Number(period.mileage) || 0;
+        const bars = showAnnualMileage && mileage > 0
+          ? `<div class="chart-bar-pair">
+              <div class="chart-bar-group">${costBar}</div>
+              <div class="chart-bar-group">
+                <div class="chart-bar-value">${mileage.toLocaleString('fr-FR')} km</div>
+                <div class="chart-mileage-bar" style="height: ${(mileage / maxMileage) * maxHeightPx}px;" title="${mileage.toLocaleString('fr-FR')} km estimés (échelle distincte des coûts)"></div>
+              </div>
+            </div>`
+          : `<div class="column-total">${total}€</div>
+             <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">${segments}</div>`;
+
+        col.innerHTML = `
+          ${interventionButton}
+          ${bars}
           <div class="column-label">${chartSelectedYear
             ? escapeHtml(period.month)
             : `<button class="chart-year-button" type="button" aria-label="Afficher les mois de ${escapeHtml(period.year)}" onclick="showChartYear('${escapeHtml(period.year)}')">${escapeHtml(period.year)}</button>`}</div>
@@ -2675,7 +2745,10 @@
     }
 
     function switchVehicle(vId) {
-      if (currentVehicleId !== vId) chartSelectedYear = null;
+      if (currentVehicleId !== vId) {
+        chartSelectedYear = null;
+        interventionMonthFilter = null;
+      }
       currentVehicleId = vId;
       const data = vehiclesData[vId];
 
@@ -2686,7 +2759,7 @@
 
       renderChart(data);
       const fixedDeadlines = data.deadlines.map(deadline =>
-        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><div class="deadline-actions"><span class="deadline-value">${escapeHtml(deadline.value)}</span><button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(deadline.name)} comme effectuée" onclick="startDeadlineIntervention('${escapeHtml(deadline.id)}')">+</button></div></div>`
+        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><div class="deadline-actions"><span class="deadline-value">${escapeHtml(deadline.value)}</span>${deleteButton('deadline', data.deadlines.indexOf(deadline), deadline.name)}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(deadline.name)} comme effectuée" onclick="startDeadlineIntervention('${escapeHtml(deadline.id)}')">+</button></div></div>`
       ).join('');
       const plannedInterventions = [...data.plannedInterventions, ...calculatedMaintenanceDeadlines(data)]
         .slice()
@@ -2733,8 +2806,24 @@
       interventionTypeFilter = types.includes(selectedType) ? selectedType : '';
       filter.value = interventionTypeFilter;
 
+      const monthFilter = document.getElementById('interventionMonthFilter');
+      const clearMonthFilterButton = document.getElementById('clearInterventionMonthFilter');
+      if (interventionMonthFilter) {
+        const monthName = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][interventionMonthFilter.monthIndex];
+        monthFilter.textContent = `Mois : ${monthName} ${interventionMonthFilter.year}`;
+        monthFilter.hidden = false;
+        clearMonthFilterButton.hidden = false;
+      } else {
+        monthFilter.hidden = true;
+        clearMonthFilterButton.hidden = true;
+      }
       const visibleInterventions = data.interventions.filter(item =>
-        !interventionTypeFilter || interventionTags(item).includes(interventionTypeFilter)
+        (!interventionTypeFilter || interventionTags(item).includes(interventionTypeFilter)) &&
+        (!interventionMonthFilter || (() => {
+          const [, month, year] = String(item.date || '').split('/');
+          return year === interventionMonthFilter.year &&
+            Number(month) - 1 === interventionMonthFilter.monthIndex;
+        })())
       );
       document.getElementById('interventionHistoryCount').textContent =
         `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
@@ -2746,9 +2835,6 @@
         const detail = intervention.name && intervention.name !== title && intervention.name !== tags.join(' · ')
           ? intervention.name : '';
         const links = renderInterventionDocuments(data, intervention);
-        const invoiceButton = intervention.docUrl || intervention.doc
-          ? deleteButton('invoice', index, title)
-          : '';
         const rowLabel = `${tags.join(', ') || title}, ${intervention.date}, ${intervention.km}`;
         return `<tr data-intervention-id="${escapeHtml(intervention.id)}" tabindex="0" aria-label="Afficher le détail : ${escapeHtml(rowLabel)}" aria-haspopup="dialog">
           <td data-label="Date">
@@ -2763,7 +2849,6 @@
               ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
               ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
               <div class="intervention-mobile-actions">
-                ${invoiceButton}
                 ${deleteButton('intervention', index, title)}
               </div>
             </div>
@@ -2771,7 +2856,7 @@
           <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${additionalTags}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
           <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
           <td data-label="Coût">${escapeHtml(intervention.price)}</td>
-          <td data-label="Document">${links}${invoiceButton ? `<br>${invoiceButton}` : ''}</td>
+          <td data-label="Document">${links}</td>
           <td data-label="Action">${deleteButton('intervention', index, title)}</td>
         </tr>`;
       }).join('');
@@ -2843,6 +2928,7 @@
         fuel: 'le plein',
         purchase: 'l’achat',
         document: 'le document',
+        deadline: 'l’échéance',
         planned: 'l’échéance planifiée'
       }[type] || 'cet élément';
       const accessibleLabel = `Supprimer ${itemType} « ${label} »`;
@@ -2852,11 +2938,12 @@
     let pendingDelete = null;
 
     function requestDeleteRecord(type, index, label) {
-      if (!['intervention', 'fuel', 'purchase', 'document', 'invoice', 'planned'].includes(type)) return;
+      if (!['intervention', 'fuel', 'purchase', 'document', 'invoice', 'deadline', 'planned'].includes(type)) return;
       pendingDelete = { type, index };
       const typeLabels = {
         intervention: 'l’intervention', fuel: 'le plein', purchase: 'l’achat',
         document: 'le document', invoice: 'la facture liée à l’intervention',
+        deadline: 'l’échéance',
         planned: 'l’échéance planifiée'
       };
       const linkedDocumentCount = type === 'intervention'
@@ -2927,6 +3014,7 @@
         fuel: data.fuel,
         purchase: data.purchases,
         document: data.documents,
+        deadline: data.deadlines,
         planned: data.plannedInterventions
       };
       const record = recordLists[type][index];
@@ -2975,14 +3063,32 @@
 
     function filterInterventions(type) {
       interventionTypeFilter = type;
+      interventionMonthFilter = null;
+      renderInterventionHistory(vehiclesData[currentVehicleId]);
+    }
+
+    function showInterventionsForMonth(year, monthIndex) {
+      interventionTypeFilter = '';
+      interventionMonthFilter = { year: String(year), monthIndex };
+      const interventionsTabButton = document.getElementById('interventionsTabButton');
+      showTab('interventions', interventionsTabButton);
+      renderInterventionHistory(vehiclesData[currentVehicleId]);
+      document.getElementById('interventions').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearInterventionMonthFilter() {
+      interventionMonthFilter = null;
       renderInterventionHistory(vehiclesData[currentVehicleId]);
     }
 
     function renderInterventionDocuments(data, intervention) {
       const links = [];
-      if (intervention.docUrl) links.push(documentLink(intervention.docUrl, '📎 Facture'));
-      else if (intervention.doc) links.push(escapeHtml(`📎 ${intervention.doc}`));
-      data.documents.filter(doc => doc.interventionId === intervention.id).forEach(doc => links.push(documentLink(doc.url, `📎 ${doc.name}`)));
+      const invoiceUrl = normalizeDocumentUrl(intervention.docUrl);
+      if (invoiceUrl) links.push(documentLink(invoiceUrl, 'URL'));
+      data.documents.filter(doc => doc.interventionId === intervention.id).forEach(doc => {
+        const url = normalizeDocumentUrl(doc.url);
+        if (url) links.push(documentLink(url, 'URL'));
+      });
       return links.join('<br>') || '—';
     }
 
