@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suivi Véhicule - AutoLog</title>
+  <title>Suivi entretien</title>
   <style>
     :root {
       --bg-primary: #f4f6f9;
@@ -111,6 +111,8 @@
     .kpi-card .label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
     .kpi-card .value { font-size: 1.6rem; font-weight: 700; margin: 6px 0; color: var(--text-main); }
     .kpi-card .sub { font-size: 0.8rem; color: var(--text-muted); }
+    .mileage-value-row { display: flex; align-items: center; gap: 8px; }
+    .mileage-value-row .value { min-width: 0; margin: 6px 0; }
     .deadline-list { display: grid; gap: 10px; margin-top: 12px; }
     .deadline-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .deadline-item:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -133,6 +135,21 @@
     }
     .deadline-complete:hover { border-color: var(--accent); background: #eff6ff; }
     .deadline-add { width: 100%; margin-top: 12px; }
+    .mileage-edit {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      margin: 0;
+      padding: 0;
+    }
+    .mileage-edit svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .fixed-cost-records-field { margin-top: 18px; }
+    .fixed-cost-year-list { display: grid; gap: 7px; }
+    .fixed-cost-year-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; }
+    .fixed-cost-year-row strong { min-width: 0; overflow-wrap: anywhere; }
+    .fixed-cost-year-edit { min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--accent); font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
 
     /* Component: Graphique Coulissant */
     .chart-card {
@@ -148,6 +165,27 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+    }
+
+    .chart-period-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 10px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .chart-period-back {
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .chart-scroll-container {
@@ -195,6 +233,19 @@
       color: var(--text-muted);
       margin-top: 8px;
     }
+    .chart-year-button {
+      padding: 2px 6px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .chart-year-button:hover { background: #eff6ff; }
+    .chart-year-button:focus-visible,
+    .chart-period-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .column-total {
       font-size: 0.7rem;
@@ -221,6 +272,16 @@
       font-size: 0.72rem;
       line-height: 1.25;
       overflow-wrap: anywhere;
+    }
+    .chart-event-tags { display: flex; gap: 3px; overflow: hidden; white-space: nowrap; }
+    .chart-event-tag {
+      min-width: 0;
+      overflow: hidden;
+      padding: 1px 4px;
+      border-radius: 999px;
+      background: #ffedc2;
+      font-size: 0.62rem;
+      text-overflow: ellipsis;
     }
 
     .chart-legend {
@@ -299,20 +360,68 @@
     }
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
     .intervention-mobile-card { display: none; }
+    .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    .history-intervention-tag {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    #interventions tbody tr[data-intervention-id] { cursor: pointer; }
+    #interventions tbody tr[data-intervention-id]:hover { background: #f8fafc; }
+    #interventions tbody tr[data-intervention-id]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .intervention-detail-list { display: grid; gap: 12px; }
+    .intervention-detail-item { display: grid; gap: 4px; min-width: 0; }
+    .intervention-detail-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
+    .intervention-detail-value { overflow-wrap: anywhere; }
+    .intervention-detail-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .intervention-detail-actions button {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-main);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .intervention-detail-actions .intervention-detail-edit {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
     .delete-button {
-      min-height: 38px;
-      padding: 6px 10px;
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
       border: 1px solid #fecaca;
-      border-radius: 7px;
+      border-radius: 8px;
       background: #fff;
       color: #b91c1c;
       font: inherit;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 1rem;
       cursor: pointer;
-      white-space: nowrap;
     }
     .delete-button:hover { background: #fef2f2; }
+    .delete-confirm-button {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      background: #fff;
+      color: #b91c1c;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .delete-confirm-button:hover { background: #fef2f2; }
 
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { padding: 12px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
@@ -341,6 +450,7 @@
     .modal-close { border: 0; background: transparent; color: var(--text-muted); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 2px 6px; }
     .modal-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field[hidden] { display: none; }
     .field.full-width { grid-column: 1 / -1; }
     .field label { font-size: 0.85rem; font-weight: 600; }
     .field input, .field select, .field textarea {
@@ -348,6 +458,28 @@
       border-radius: 6px; background: #fff; color: var(--text-main); font: inherit; font-size: 16px;
     }
     .field textarea { min-height: 88px; resize: vertical; }
+    .field-heading { display: grid; gap: 3px; }
+    .field-hint { color: var(--text-muted); font-size: 0.78rem; font-weight: 400; }
+    .intervention-type-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 5px; }
+    .intervention-type-tile {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 5px 7px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text-main);
+      font-size: 0.76rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .intervention-type-tile.selected { border-color: var(--accent); background: #eff6ff; color: #1d4ed8; }
+    .intervention-type-tile input { width: 16px; height: 16px; min-height: 16px; flex: 0 0 16px; margin: 0; padding: 0; border: 0; accent-color: var(--accent); }
+    .intervention-type-tile span { min-width: 0; overflow-wrap: anywhere; }
+    .intervention-type-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .intervention-type-header .btn-manage-types { min-height: 36px; padding: 0 10px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
     .modal-actions button { min-height: 44px; padding: 0 16px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
     .btn-cancel { border: 1px solid var(--border); background: #fff; color: var(--text-main); }
@@ -356,8 +488,8 @@
     .btn-manage-types { min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
     .type-list { display: grid; gap: 8px; max-height: 45vh; overflow-y: auto; list-style: none; }
     .type-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
-    .type-list button { min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--danger); font: inherit; cursor: pointer; }
-    .type-list button:disabled { color: var(--text-muted); cursor: not-allowed; }
+    .type-list button { display: grid; place-items: center; width: 40px; min-width: 40px; min-height: 40px; padding: 0; border: 1px solid #fecaca; border-radius: 8px; background: #fff7f7; color: #dc2626; font: inherit; font-size: 1rem; cursor: pointer; }
+    .type-list button:disabled { border-color: #fecaca; background: #fff7f7; color: #dc2626; cursor: not-allowed; }
     .form-message { min-height: 1.2em; margin-top: 8px; color: var(--danger); font-size: 0.85rem; }
     dialog.maintenance-modal {
       width: min(1050px, calc(100% - 24px));
@@ -399,8 +531,10 @@
       .backup-actions { grid-template-columns: 1fr; }
       .chart-card { padding: 16px; }
       .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
+      .chart-period-controls { align-items: flex-start; flex-direction: column; }
       .chart-column { width: 108px; min-width: 108px; }
       .chart-legend { gap: 8px 14px; }
+      .intervention-detail-actions button { flex: 1; }
       .content-card { padding: 16px 12px; }
       .history-toolbar { align-items: stretch; flex-direction: column; gap: 6px; }
       .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
@@ -426,8 +560,8 @@
       .intervention-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; }
       .intervention-mobile-detail { margin-top: 3px; color: var(--text-muted); font-size: 0.82rem; overflow-wrap: anywhere; }
       .intervention-mobile-links { margin-top: 3px; font-size: 0.8rem; }
-      .intervention-mobile-actions { display: flex; justify-content: flex-end; margin-top: 7px; }
-      .delete-button { min-height: 40px; }
+      .intervention-mobile-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 7px; }
+      .delete-button { width: 40px; min-width: 40px; min-height: 40px; }
       .modal-form { padding: 18px 16px; }
       .maintenance-content { padding: 16px 12px; }
       .maintenance-table,
@@ -456,6 +590,9 @@
       .maintenance-row-actions { width: 100%; min-width: 0; grid-template-columns: 1fr; }
       .modal-fields { grid-template-columns: 1fr; gap: 12px; }
       .field.full-width { grid-column: auto; }
+      .field-with-action { grid-template-columns: minmax(0, 1fr); }
+      .intervention-type-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .intervention-type-tile { min-height: 36px; padding: 4px 6px; gap: 5px; font-size: 0.72rem; line-height: 1.15; }
       .modal-actions button { flex: 1; }
     }
   </style>
@@ -463,7 +600,7 @@
 <body>
 
   <header>
-    <div class="brand">🚗 AutoLog Drive</div>
+    <div class="brand">🚗 Suivi entretien</div>
     <div class="vehicle-picker">
       <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted);">Véhicule :</label>
       <select id="vehicleSelect" onchange="switchVehicle(this.value)">
@@ -482,13 +619,17 @@
       <button class="btn-action" onclick="openActionModal('interventionModal')">🛠️ + Intervention</button>
       <button class="btn-action" onclick="openActionModal('purchaseModal')">🛒 + Achat</button>
       <button class="btn-action" onclick="openActionModal('documentModal')">📎 + Document</button>
+      <button class="btn-action" type="button" onclick="openFixedCostsModal()">💶 Coûts fixes</button>
     </div>
 
     <!-- KPI / Synthèse -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="label">Kilométrage Actuel</div>
-        <div class="value" id="kpi-km">84 500 km</div>
+        <div class="mileage-value-row">
+          <div class="value" id="kpi-km">84 500 km</div>
+          <button class="btn-manage-types mileage-edit" type="button" aria-label="Modifier le kilométrage" title="Modifier le kilométrage" onclick="openMileageModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></button>
+        </div>
         <div class="sub" id="kpi-km-year">Moyenne: ~11 200 km / an</div>
       </div>
       <div class="kpi-card">
@@ -506,10 +647,11 @@
     <!-- Graphique Coulissant Répartition + Interventions -->
     <div class="chart-card">
       <div class="chart-header">
-        <h3> Historique des Coûts Mensuels & Interventions</h3>
-        <span style="font-size: 0.8rem; color: var(--text-muted);">Glissez horizontalement pour remonter le temps ➔</span>
+        <h3>Historique des coûts & interventions</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Touchez une année pour afficher les mois.</span>
       </div>
 
+      <div class="chart-period-controls" id="chartPeriodControls"></div>
       <div class="chart-scroll-container" id="scrollContainer">
         <div class="chart-wrapper" id="chartWrapper">
           <!-- Généré dynamiquement en JS -->
@@ -519,7 +661,7 @@
       <div class="chart-legend">
         <button class="legend-toggle" data-series="fuel" aria-pressed="true" onclick="toggleChartSeries('fuel')"><span class="dot" style="background: var(--c-fuel)"></span> Carburant</button>
         <button class="legend-toggle" data-series="maint" aria-pressed="true" onclick="toggleChartSeries('maint')"><span class="dot" style="background: var(--c-maint)"></span> Entretien / Réparations</button>
-        <button class="legend-toggle" data-series="insur" aria-pressed="true" onclick="toggleChartSeries('insur')"><span class="dot" style="background: var(--c-insur)"></span> Assurance</button>
+        <button class="legend-toggle" data-series="insur" aria-pressed="true" onclick="toggleChartSeries('insur')"><span class="dot" style="background: var(--c-insur)"></span> Coûts fixes</button>
         <button class="legend-toggle" data-series="parts" aria-pressed="true" onclick="toggleChartSeries('parts')"><span class="dot" style="background: var(--c-parts)"></span> Achats / Pièces</button>
         <button class="legend-toggle" data-series="interventions" aria-pressed="true" onclick="toggleChartSeries('interventions')"><span style="font-size:0.9rem">🛠️</span> Interventions</button>
         <button class="legend-toggle" id="interventionsOnlyToggle" aria-pressed="false" onclick="toggleInterventionsOnly()">Interventions uniquement</button>
@@ -539,6 +681,7 @@
       <div class="content-card">
         <h3>Historique des réparations</h3>
         <div class="history-toolbar">
+          <span class="field-hint">Touchez une ligne pour consulter et modifier son détail.</span>
           <label class="history-filter" for="interventionTypeFilter">
             <span>Type d’intervention</span>
             <select id="interventionTypeFilter" onchange="filterInterventions(this.value)">
@@ -630,7 +773,7 @@
     <form class="modal-form" id="fuelForm" onsubmit="saveFuel(event)">
       <div class="modal-header"><div><h2 id="fuelModalTitle">Ajouter un plein</h2><p>Enregistrez le carburant et le kilométrage.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('fuelModal')">&times;</button></div>
       <div class="modal-fields">
-        <div class="field"><label for="fuelDate">Date</label><input id="fuelDate" name="date" type="date" required></div>
+        <div class="field"><label for="fuelDateDisplay">Date (JJ/MM/AAAA)</label><input id="fuelDate" name="date" type="hidden"><input id="fuelDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du plein (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="fuelKm">Kilométrage (km)</label><input id="fuelKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
         <div class="field"><label for="fuelVolume">Volume (L)</label><input id="fuelVolume" name="volume" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
         <div class="field"><label for="fuelTotal">Montant total (€)</label><input id="fuelTotal" name="total" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
@@ -640,14 +783,69 @@
     </form>
   </dialog>
 
+  <dialog class="action-modal" id="mileageModal" aria-labelledby="mileageModalTitle">
+    <form class="modal-form" id="mileageForm" onsubmit="saveMileage(event)">
+      <div class="modal-header">
+        <div><h2 id="mileageModalTitle">Modifier le kilométrage</h2><p>Mettez à jour le kilométrage actuel du véhicule.</p></div>
+        <button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('mileageModal')">&times;</button>
+      </div>
+      <div class="field">
+        <label for="currentMileage">Kilométrage actuel (km)</label>
+        <input id="currentMileage" name="km" type="number" min="0" step="1" inputmode="numeric" required>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" type="button" onclick="closeActionModal('mileageModal')">Annuler</button>
+        <button class="btn-save" type="submit">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="action-modal" id="fixedCostsModal" aria-labelledby="fixedCostsTitle">
+    <form class="modal-form" id="fixedCostsForm" onsubmit="saveFixedCost(event)">
+      <div class="modal-header">
+        <div><h2 id="fixedCostsTitle">Coûts fixes</h2><p>Enregistrez un montant annuel, réparti du 1er janvier au 31 décembre. Vous pouvez le modifier pour chaque année.</p></div>
+        <button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('fixedCostsModal')">&times;</button>
+      </div>
+      <div class="modal-fields">
+        <div class="field">
+          <label for="fixedCostName">Coût</label>
+          <input id="fixedCostName" name="name" type="text" maxlength="60" list="fixedCostSuggestions" placeholder="Assurance, leasing, parking..." required>
+          <datalist id="fixedCostSuggestions"><option value="Assurance"><option value="Leasing"><option value="Parking"></datalist>
+        </div>
+        <div class="field">
+          <label for="fixedCostYear">Année</label>
+          <input id="fixedCostYear" name="year" type="number" min="2000" max="2099" step="1" inputmode="numeric" required>
+        </div>
+        <div class="field full-width"><label for="fixedCostAmount">Montant pour l’année (€)</label><input id="fixedCostAmount" name="amount" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+      </div>
+      <div class="field full-width fixed-cost-records-field">
+        <span class="field-label">Coûts enregistrés par année</span>
+        <div class="fixed-cost-year-list" id="fixedCostYearList"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" type="button" onclick="closeActionModal('fixedCostsModal')">Fermer</button>
+        <button class="btn-save" type="submit">Enregistrer le coût annuel</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog class="action-modal" id="interventionModal" aria-labelledby="interventionModalTitle">
     <form class="modal-form" id="interventionForm" onsubmit="saveIntervention(event)">
       <div class="modal-header"><div><h2 id="interventionModalTitle">Ajouter une intervention</h2><p>Consignez un entretien ou une réparation.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('interventionModal')">&times;</button></div>
       <div class="modal-fields">
-        <div class="field"><label for="interventionDate">Date</label><input id="interventionDate" name="date" type="date" required></div>
+        <div class="field"><label for="interventionDateDisplay">Date (JJ/MM/AAAA)</label><input id="interventionDate" name="date" type="hidden"><input id="interventionDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l’intervention (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="interventionKm">Kilométrage (km)</label><input id="interventionKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
-        <div class="field full-width"><label for="interventionDeadline">Échéance concernée (facultatif)</label><select id="interventionDeadline" name="deadlineId" onchange="selectInterventionDeadline(this.value)"><option value="">Aucune échéance</option></select></div>
-        <div class="field full-width field-with-action"><div class="field"><label for="interventionType">Type d'intervention</label><select id="interventionType" name="type" required></select></div><button class="btn-manage-types" type="button" onclick="openInterventionTypesModal()">Gérer</button></div>
+        <div class="field full-width" id="interventionDeadlineField"><label for="interventionDeadline">Échéance concernée (facultatif)</label><select id="interventionDeadline" name="deadlineId" onchange="selectInterventionDeadline(this.value)"><option value="">Aucune échéance</option></select></div>
+        <div class="field full-width">
+          <div class="field">
+            <div class="intervention-type-header">
+              <div class="field-heading"><span class="field-label">Types d’intervention</span><span class="field-hint">Sélectionnez un ou plusieurs types</span></div>
+              <button class="btn-manage-types" type="button" onclick="openInterventionTypesModal()">Gérer</button>
+            </div>
+            <div class="intervention-type-tiles" id="interventionTypeTiles" role="group" aria-label="Types d’intervention"></div>
+          </div>
+          <p class="form-message" id="interventionTypeError" aria-live="polite"></p>
+        </div>
         <div class="field full-width"><label for="interventionDescription">Description (facultatif)</label><input id="interventionDescription" name="description" type="text" maxlength="120" placeholder="Détail ou pièce remplacée"></div>
         <div class="field"><label for="interventionPrice">Montant (€)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field"><label for="interventionGarage">Garage (facultatif)</label><input id="interventionGarage" name="garage" type="text" maxlength="80"></div>
@@ -657,12 +855,26 @@
     </form>
   </dialog>
 
+  <dialog class="action-modal" id="interventionDetailsModal" aria-labelledby="interventionDetailsTitle">
+    <div class="modal-form">
+      <div class="modal-header">
+        <div><h2 id="interventionDetailsTitle">Détail de l’intervention</h2><p>Informations enregistrées dans l’historique.</p></div>
+        <button class="modal-close" type="button" aria-label="Fermer" onclick="closeInterventionDetails()">&times;</button>
+      </div>
+      <div class="intervention-detail-list" id="interventionDetailsContent"></div>
+      <div class="intervention-detail-actions">
+        <button class="intervention-detail-close" type="button" onclick="closeInterventionDetails()">Fermer</button>
+        <button class="intervention-detail-edit" type="button" onclick="editIntervention()">Modifier</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="action-modal" id="plannedInterventionModal" aria-labelledby="plannedInterventionModalTitle">
     <form class="modal-form" id="plannedInterventionForm" onsubmit="savePlannedIntervention(event)">
       <div class="modal-header"><div><h2 id="plannedInterventionModalTitle">Planifier une intervention</h2><p>Ajoutez une prochaine échéance pour ce véhicule.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('plannedInterventionModal')">&times;</button></div>
       <div class="modal-fields">
         <div class="field"><label for="plannedInterventionType">Type d'intervention</label><select id="plannedInterventionType" name="type" required></select></div>
-        <div class="field"><label for="plannedInterventionDate">Date prévue</label><input id="plannedInterventionDate" name="date" type="date" required></div>
+        <div class="field"><label for="plannedInterventionDateDisplay">Date prévue (JJ/MM/AAAA)</label><input id="plannedInterventionDate" name="date" type="hidden"><input id="plannedInterventionDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date prévue (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field full-width"><label for="plannedInterventionComment">Commentaire (facultatif)</label><textarea id="plannedInterventionComment" name="comment" maxlength="300" placeholder="Ex. prendre rendez-vous au garage"></textarea></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('plannedInterventionModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'échéance</button></div>
@@ -685,7 +897,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn-cancel" type="button" onclick="cancelDeleteRecord()">Annuler</button>
-        <button class="delete-button" type="button" onclick="confirmDeleteRecord()">Supprimer</button>
+        <button class="delete-confirm-button" type="button" onclick="confirmDeleteRecord()">Supprimer</button>
       </div>
     </div>
   </dialog>
@@ -707,7 +919,7 @@
     <form class="modal-form" id="purchaseForm" onsubmit="savePurchase(event)">
       <div class="modal-header"><div><h2 id="purchaseModalTitle">Ajouter un achat</h2><p>Ajoutez une pièce ou un équipement.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('purchaseModal')">&times;</button></div>
       <div class="modal-fields">
-        <div class="field"><label for="purchaseDate">Date</label><input id="purchaseDate" name="date" type="date" required></div>
+        <div class="field"><label for="purchaseDateDisplay">Date (JJ/MM/AAAA)</label><input id="purchaseDate" name="date" type="hidden"><input id="purchaseDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l’achat (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="purchasePrice">Prix (€)</label><input id="purchasePrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field full-width"><label for="purchaseItem">Article</label><input id="purchaseItem" name="item" type="text" maxlength="120" required></div>
         <div class="field full-width"><label for="purchaseStore">Magasin (facultatif)</label><input id="purchaseStore" name="store" type="text" maxlength="80"></div>
@@ -720,7 +932,7 @@
     <form class="modal-form" id="documentForm" onsubmit="saveDocument(event)">
       <div class="modal-header"><div><h2 id="documentModalTitle">Ajouter un document</h2><p>Seul le lien est enregistré, pas le fichier.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('documentModal')">&times;</button></div>
       <div class="modal-fields">
-        <div class="field"><label for="documentDate">Date</label><input id="documentDate" name="date" type="date" required></div>
+        <div class="field"><label for="documentDateDisplay">Date (JJ/MM/AAAA)</label><input id="documentDate" name="date" type="hidden"><input id="documentDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du document (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Contrôle technique">Contrôle technique</option><option value="Autre">Autre</option></select></div>
         <div class="field full-width"><label for="documentName">Nom du document</label><input id="documentName" name="name" type="text" maxlength="120" required></div>
         <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
@@ -772,7 +984,9 @@
     const testVehiclesData = {
       v1: {
         km: "84 500 km",
-        additionalCost: 0,
+        fixedCostsByYear: { "2026": { Assurance: 480, Parking: 240 } },
+        fixedCostIdsByYear: {},
+        additionalCost: 720,
         kmYear: "11 200 km / an",
         totalCost: "1 420 €",
         costMonth: "118 € / mois",
@@ -811,7 +1025,9 @@
       },
       v2: {
         km: "162 000 km",
-        additionalCost: 0,
+        fixedCostsByYear: { "2026": { Assurance: 600, Leasing: 2400 } },
+        fixedCostIdsByYear: {},
+        additionalCost: 3000,
         kmYear: "14 500 km / an",
         totalCost: "2 350 €",
         costMonth: "195 € / mois",
@@ -832,6 +1048,7 @@
           { month: "Oct 26", fuel: 93, maint: 0, insur: 50, parts: 0, event: null }
         ],
         interventions: [
+          { id: "v2-demo-multiple-types", date: "06/10/2026", type: "Vidange", types: ["Vidange", "Pneumatiques", "Courroie"], name: "Exemple : plusieurs opérations le même jour", km: "161 500 km", price: "650 €", doc: "", demo: true },
           { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", demo: true },
           { id: "v2-demo-cabin-filter", date: "07/10/2024", type: "Filtre d’habitacle", name: "Filtre d’habitacle (pollen)", km: "132 000 km", price: "35 €", doc: "", demo: true },
           { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", demo: true },
@@ -859,6 +1076,8 @@
       return Object.fromEntries(Object.keys(testVehiclesData).map(vehicleId => [vehicleId, {
         ...testVehiclesData[vehicleId],
         km: '0 km',
+        fixedCostsByYear: {},
+        fixedCostIdsByYear: {},
         additionalCost: 0,
         kmYear: '—',
         totalCost: '0 €',
@@ -920,6 +1139,9 @@
     let confirmationIntervention = null;
     let pendingMaintenanceItemId = null;
     let maintenanceChoiceItemId = null;
+    let editingInterventionId = null;
+    let detailsInterventionId = null;
+    let editingFixedCost = null;
     let maintenanceRecords = TEST_MODE ? {} : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
     let deletedRecords = TEST_MODE ? [] : initialBackup && Array.isArray(initialBackup.deletedRecords)
       ? initialBackup.deletedRecords.slice() : [];
@@ -932,7 +1154,9 @@
       ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
     const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
     let chartInterventionsOnly = false;
+    let chartSelectedYear = null;
     let interventionTypeFilter = '';
+    Object.values(vehiclesData).forEach(normalizeVehicleFixedCosts);
 
     function createRecordId() {
       recordSequence += 1;
@@ -949,21 +1173,41 @@
       return `${currentVehicleId}-${type}-${Date.now()}-${recordSequence}`;
     }
 
-    function updateInterventionTypeSelect(selectedType = '') {
-      const select = document.getElementById('interventionType');
-      select.innerHTML = interventionTypes.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
-      if (selectedType && interventionTypes.includes(selectedType)) select.value = selectedType;
+    function interventionTags(intervention) {
+      const values = Array.isArray(intervention.types) ? intervention.types : [intervention.type || intervention.name];
+      return [...new Set(values.filter(value => typeof value === 'string' && value.trim()))];
+    }
+
+    function updateInterventionTypeTiles(selectedType = '') {
+      const selectedTypes = Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
+      const tiles = document.getElementById('interventionTypeTiles');
+      if (!tiles) return;
+      tiles.innerHTML = interventionTypes.map((type, index) => {
+        const selected = selectedTypes.includes(type);
+        return `<label class="intervention-type-tile${selected ? ' selected' : ''}"><input type="checkbox" name="types" value="${escapeHtml(type)}" onchange="toggleInterventionTypeTile(this)"${selected ? ' checked' : ''}><span>${escapeHtml(type)}</span></label>`;
+      }).join('');
+    }
+
+    function toggleInterventionTypeTile(checkbox) {
+      checkbox.closest('.intervention-type-tile').classList.toggle('selected', checkbox.checked);
+      document.getElementById('interventionTypeError').textContent = '';
+    }
+
+    function renderHistoryInterventionTags(types) {
+      return types.length
+        ? `<div class="history-intervention-tags">${types.map(type => `<span class="history-intervention-tag">${escapeHtml(type)}</span>`).join('')}</div>`
+        : '';
     }
 
     function renderInterventionTypes() {
       const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle => [
-        ...vehicle.interventions.map(item => item.type),
+        ...vehicle.interventions.flatMap(interventionTags),
         ...vehicle.plannedInterventions.map(item => item.type),
         ...vehicle.deadlines.map(item => item.type)
       ].concat(maintenanceSchedule.items.map(item => item.type)).filter(Boolean)));
       document.getElementById('interventionTypesList').innerHTML = interventionTypes.map((type, index) => {
         const isUsed = usedTypes.has(type);
-        return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>Supprimer</button></li>`;
+        return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" aria-label="Supprimer le type ${escapeHtml(type)}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>🗑️</button></li>`;
       }).join('');
     }
 
@@ -990,7 +1234,7 @@
         return;
       }
       interventionTypes.push(type);
-      updateInterventionTypeSelect(type);
+      updateInterventionTypeTiles(type);
       renderInterventionTypes();
       message.innerText = `« ${type} » a été ajouté.`;
       input.value = '';
@@ -1001,12 +1245,12 @@
       const type = interventionTypes[index];
       const isUsed = maintenanceSchedule.items.some(item => item.type === type) ||
         Object.values(vehiclesData).some(vehicle =>
-          [...vehicle.interventions, ...vehicle.plannedInterventions, ...vehicle.deadlines]
-            .some(item => item.type === type)
+          vehicle.interventions.some(intervention => interventionTags(intervention).includes(type)) ||
+          [...vehicle.plannedInterventions, ...vehicle.deadlines].some(item => item.type === type)
         );
       if (isUsed) return;
       interventionTypes.splice(index, 1);
-      updateInterventionTypeSelect();
+      updateInterventionTypeTiles();
       renderInterventionTypes();
       persistData();
     }
@@ -1026,7 +1270,7 @@
     function updateDocumentInterventionSelect() {
       const select = document.getElementById('documentIntervention');
       const options = vehiclesData[currentVehicleId].interventions.map(item => {
-        const label = `${item.type || item.name} (${item.date})`;
+        const label = `${interventionTags(item).join(' · ') || item.name} (${item.date})`;
         return `<option value="${escapeHtml(item.id)}">${escapeHtml(label)}</option>`;
       });
       select.innerHTML = '<option value="">Aucune intervention</option>' + options.join('');
@@ -1059,8 +1303,284 @@
       return `${day}/${month}/${year}`;
     }
 
+    function updateDateField(input) {
+      const digits = input.value.replace(/\D/g, '').slice(0, 8);
+      const day = digits.slice(0, 2);
+      const month = digits.slice(2, 4);
+      const year = digits.slice(4, 8);
+      input.value = day + (digits.length > 2 ? `/${month}` : '') + (digits.length > 4 ? `/${year}` : '');
+      input.setCustomValidity('');
+
+      const hiddenInput = input.parentElement.querySelector('input[type="hidden"][name="date"]');
+      hiddenInput.value = '';
+      if (digits.length !== 8) {
+        if (digits.length) input.setCustomValidity('Saisissez la date au format JJ/MM/AAAA.');
+        return;
+      }
+
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
+      const isValidDate = date.getFullYear() === Number(year) &&
+        date.getMonth() === Number(month) - 1 && date.getDate() === Number(day);
+      if (!isValidDate) {
+        input.setCustomValidity('Cette date n’existe pas.');
+        return;
+      }
+
+      const isoDate = `${year}-${month}-${day}`;
+      const minDate = input.dataset.minDate || '';
+      if (minDate && isoDate < minDate) {
+        input.setCustomValidity('Choisissez une date à partir d’aujourd’hui.');
+        return;
+      }
+      hiddenInput.value = isoDate;
+    }
+
+    function setDateField(hiddenInput, isoDate) {
+      const displayInput = hiddenInput.parentElement.querySelector('.date-entry');
+      displayInput.dataset.minDate = hiddenInput.dataset.minDate || '';
+      displayInput.value = isoDate ? formatDate(isoDate) : '';
+      updateDateField(displayInput);
+    }
+
     function formatEuro(value) {
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+    }
+
+    function currentMileageValue(data) {
+      return Number(String(data.km || '').replace(/\D/g, '')) || 0;
+    }
+
+    function formatKilometerValue(value) {
+      return `${Number(value).toLocaleString('fr-FR')} km`;
+    }
+
+    function updateCurrentKilometers(data, kilometers) {
+      if (kilometers > currentMileageValue(data)) data.km = formatKilometerValue(kilometers);
+    }
+
+    function openMileageModal() {
+      document.getElementById('currentMileage').value = currentMileageValue(vehiclesData[currentVehicleId]);
+      document.getElementById('mileageModal').showModal();
+    }
+
+    function saveMileage(event) {
+      event.preventDefault();
+      const kilometers = Number(formData(event.currentTarget).km);
+      if (!Number.isSafeInteger(kilometers) || kilometers < 0) {
+        event.currentTarget.elements.km.reportValidity();
+        return;
+      }
+      vehiclesData[currentVehicleId].km = formatKilometerValue(kilometers);
+      persistData();
+      switchVehicle(currentVehicleId);
+      closeActionModal('mileageModal');
+    }
+
+    function fixedCostMonthName(monthIndex) {
+      return ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'][monthIndex];
+    }
+
+    function fixedCostsForYear(data, year) {
+      const costs = (data.fixedCostsByYear || {})[year];
+      const values = costs && typeof costs === 'object' && !Array.isArray(costs)
+        ? Object.fromEntries(Object.entries(costs)
+          .filter(([name, amount]) => name.trim() && Number.isFinite(Number(amount)) && Number(amount) >= 0)
+          .map(([name, amount]) => [name.trim(), Number(amount)]))
+        : {};
+      const legacyInsurance = Number((data.insuranceByYear || {})[year]);
+      if (!Object.hasOwn(values, 'Assurance') && Number.isFinite(legacyInsurance) && legacyInsurance >= 0) {
+        values.Assurance = legacyInsurance;
+      }
+      return values;
+    }
+
+    function fixedCostsFromVehicle(data, year) {
+      const costs = (data.fixedCostsByYear || {})[year];
+      const values = costs && typeof costs === 'object' && !Array.isArray(costs)
+        ? { ...costs } : {};
+      const legacyInsurance = Number((data.insuranceByYear || {})[year]);
+      if (!Object.hasOwn(values, 'Assurance') && Number.isFinite(legacyInsurance) && legacyInsurance >= 0) {
+        values.Assurance = legacyInsurance;
+      }
+      return Object.fromEntries(Object.entries(values)
+        .filter(([name, amount]) => name.trim() && Number.isFinite(Number(amount)) && Number(amount) >= 0)
+        .map(([name, amount]) => [name.trim(), Number(amount)]));
+    }
+
+    function fixedCostAnnualTotal(costs) {
+      return Object.values(costs).reduce((total, amount) => total + Number(amount || 0), 0);
+    }
+
+    function fixedCostRecordId(year, name) {
+      return `fixed-cost-${year}-${encodeURIComponent(name)}`;
+    }
+
+    function fixedCostIdsForYear(data, year) {
+      const ids = (data.fixedCostIdsByYear || {})[year];
+      return ids && typeof ids === 'object' && !Array.isArray(ids) ? ids : {};
+    }
+
+    function fixedCostRecordsFromVehicle(data) {
+      const years = new Set([
+        ...Object.keys(data.fixedCostsByYear || {}),
+        ...Object.keys(data.insuranceByYear || {})
+      ]);
+      return [...years].flatMap(year =>
+        Object.entries(fixedCostsFromVehicle(data, year)).map(([name, amount]) => ({
+          id: fixedCostIdsForYear(data, year)[name] || fixedCostRecordId(year, name),
+          year,
+          name,
+          amount: Number(amount)
+        }))
+      );
+    }
+
+    function fixedCostDeletionKey(vehicleId, id) {
+      return deletionKey(vehicleId, 'fixedCost', { id });
+    }
+
+    function fixedCostsMonthlyStats(data, year, costs) {
+      const annualAmount = fixedCostAnnualTotal(costs);
+      const monthlyAmount = Math.floor(annualAmount * 100 / 12) / 100;
+      for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
+        const monthLabel = `${fixedCostMonthName(monthIndex)} ${String(year).slice(-2)}`;
+        let month = data.monthlyStats.find(item => item.month === monthLabel);
+        if (!month) {
+          month = { month: monthLabel, fuel: 0, maint: 0, insur: 0, parts: 0, event: null };
+          data.monthlyStats.push(month);
+        }
+        month.insur = monthIndex === 11
+          ? Math.round((annualAmount - monthlyAmount * 11) * 100) / 100
+          : monthlyAmount;
+      }
+      const monthOrder = new Map(['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
+        .map((name, index) => [name, index]));
+      data.monthlyStats.sort((first, second) => {
+        const [firstMonth, firstYear] = first.month.split(' ');
+        const [secondMonth, secondYear] = second.month.split(' ');
+        return (Number(firstYear) - Number(secondYear)) * 12 +
+          (monthOrder.get(firstMonth) || 0) - (monthOrder.get(secondMonth) || 0);
+      });
+    }
+
+    function normalizeVehicleFixedCosts(data) {
+      const legacyByYear = data.insuranceByYear && typeof data.insuranceByYear === 'object'
+        ? data.insuranceByYear : {};
+      const years = [...new Set([
+        ...Object.keys(data.fixedCostsByYear || {}),
+        ...Object.keys(legacyByYear)
+      ])].filter(year => /^\d{4}$/.test(year) && Number(year) >= 2000 && Number(year) <= 2099);
+      const normalizedByYear = {};
+      const normalizedIdsByYear = {};
+      let normalizedFixedCosts = 0;
+      years.forEach(year => {
+        const costs = fixedCostsFromVehicle(data, year);
+        normalizedByYear[year] = costs;
+        const previousIds = fixedCostIdsForYear(data, year);
+        normalizedIdsByYear[year] = Object.fromEntries(Object.keys(costs).map(name =>
+          [name, previousIds[name] || fixedCostRecordId(year, name)]
+        ));
+        normalizedFixedCosts += fixedCostAnnualTotal(costs);
+        fixedCostsMonthlyStats(data, Number(year), costs);
+      });
+      data.fixedCostsByYear = normalizedByYear;
+      data.fixedCostIdsByYear = normalizedIdsByYear;
+      const legacyInsuranceTotal = Object.entries(legacyByYear)
+        .filter(([year]) => /^\d{4}$/.test(year) && Number(year) >= 2000 && Number(year) <= 2099)
+        .reduce((sum, [, amount]) => sum + (Number(amount) || 0), 0);
+      if (Object.keys(legacyByYear).length) {
+        data.additionalCost = Math.max(0, (Number(data.additionalCost) || 0) +
+          normalizedFixedCosts - legacyInsuranceTotal);
+      }
+      delete data.insuranceByYear;
+    }
+
+    function renderFixedCostYearList() {
+      const entries = Object.entries(vehiclesData[currentVehicleId].fixedCostsByYear || {})
+        .flatMap(([year, costs]) => Object.entries(costs || {}).map(([name, amount]) => ({ year, name, amount })))
+        .filter(item => /^\d{4}$/.test(item.year) && Number.isFinite(Number(item.amount)))
+        .sort((first, second) => Number(second.year) - Number(first.year) || first.name.localeCompare(second.name, 'fr'));
+      const container = document.getElementById('fixedCostYearList');
+      container.innerHTML = entries.length
+        ? entries.map(({ year, name, amount }) =>
+          `<div class="fixed-cost-year-row"><strong>${escapeHtml(name)} · ${escapeHtml(year)}</strong><span>${escapeHtml(formatEuro(Number(amount)))}</span><button class="fixed-cost-year-edit" type="button" data-name="${escapeHtml(name)}" data-year="${escapeHtml(year)}" onclick="selectFixedCost(this.dataset.name, this.dataset.year)">Modifier</button><button class="delete-button" type="button" data-name="${escapeHtml(name)}" data-year="${escapeHtml(year)}" aria-label="Supprimer ${escapeHtml(name)} pour ${escapeHtml(year)}" title="Supprimer ${escapeHtml(name)} pour ${escapeHtml(year)}" onclick="requestDeleteFixedCost(this.dataset.name, this.dataset.year)">🗑️</button></div>`
+        ).join('')
+        : '<span class="field-hint">Aucun coût enregistré pour ce véhicule.</span>';
+    }
+
+    function selectFixedCost(name, year) {
+      const costs = fixedCostsForYear(vehiclesData[currentVehicleId], year);
+      editingFixedCost = { name, year };
+      document.getElementById('fixedCostName').value = name;
+      document.getElementById('fixedCostYear').value = year;
+      document.getElementById('fixedCostAmount').value = costs[name] ?? '';
+      document.getElementById('fixedCostAmount').focus();
+    }
+
+    function requestDeleteFixedCost(name, year) {
+      pendingDelete = { type: 'fixedCost', name, year };
+      document.getElementById('deleteRecordMessage').textContent =
+        `Voulez-vous vraiment supprimer le coût fixe « ${name} » pour ${year} ? Cette action est définitive.`;
+      document.getElementById('deleteRecordModal').showModal();
+    }
+
+    function openFixedCostsModal() {
+      const year = String(new Date().getFullYear());
+      const form = document.getElementById('fixedCostsForm');
+      form.reset();
+      editingFixedCost = null;
+      document.getElementById('fixedCostYear').value = year;
+      document.getElementById('fixedCostName').value = 'Assurance';
+      document.getElementById('fixedCostAmount').value =
+        fixedCostsForYear(vehiclesData[currentVehicleId], year).Assurance ?? '';
+      renderFixedCostYearList();
+      document.getElementById('fixedCostsModal').showModal();
+    }
+
+    function saveFixedCost(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const name = values.name.trim();
+      const year = Number(values.year);
+      const amount = Number(values.amount);
+      if (!name || !Number.isInteger(year) || year < 2000 || year > 2099 || !Number.isFinite(amount) || amount < 0) {
+        event.currentTarget.reportValidity();
+        return;
+      }
+      const data = vehiclesData[currentVehicleId];
+      data.fixedCostsByYear = data.fixedCostsByYear || {};
+      const source = editingFixedCost;
+      const sourceCosts = source ? fixedCostsForYear(data, source.year) : {};
+      const sourceIds = source ? { ...fixedCostIdsForYear(data, source.year) } : {};
+      const targetCosts = source && source.year === String(year) ? sourceCosts : fixedCostsForYear(data, year);
+      const targetIds = source && source.year === String(year) ? sourceIds : { ...fixedCostIdsForYear(data, year) };
+      const previousAmount = source ? Number(sourceCosts[source.name]) || 0 : Number(targetCosts[name]) || 0;
+      const replacedAmount = source && (source.year !== String(year) || source.name !== name)
+        ? Number(targetCosts[name]) || 0 : 0;
+      const sourceId = source ? sourceIds[source.name] || fixedCostRecordId(source.year, source.name) : '';
+      const targetId = targetIds[name];
+      if (source && sourceId && targetId && sourceId !== targetId) {
+        deletedRecords = [...new Set([...deletedRecords, fixedCostDeletionKey(currentVehicleId, sourceId)])];
+      }
+      if (source) delete sourceCosts[source.name];
+      if (source && (source.name !== name || source.year !== String(year))) delete sourceIds[source.name];
+      targetCosts[name] = amount;
+      const recordId = targetId && sourceId !== targetId ? targetId : sourceId || targetId || createDataId('fixed-cost');
+      targetIds[name] = recordId;
+      if (source) {
+        data.fixedCostsByYear[source.year] = sourceCosts;
+        data.fixedCostIdsByYear[source.year] = sourceIds;
+      }
+      data.fixedCostsByYear[year] = targetCosts;
+      data.fixedCostIdsByYear = data.fixedCostIdsByYear || {};
+      data.fixedCostIdsByYear[year] = targetIds;
+      data.additionalCost = Math.max(0, data.additionalCost + amount - previousAmount - replacedAmount);
+      if (source && source.year !== String(year)) fixedCostsMonthlyStats(data, Number(source.year), sourceCosts);
+      fixedCostsMonthlyStats(data, year, targetCosts);
+      editingFixedCost = null;
+      renderFixedCostYearList();
+      persistData();
+      switchVehicle(currentVehicleId);
     }
 
     function totalCostWithEntries(data) {
@@ -1193,9 +1713,34 @@
           month.maint = recordMonthTotal(interventions, 'price', month.month);
           month.parts = recordMonthTotal(purchases, 'price', month.month);
         });
+        const costYears = new Set([
+          ...Object.keys(previous.fixedCostsByYear || {}),
+          ...Object.keys(previous.insuranceByYear || {}),
+          ...Object.keys(latest.fixedCostsByYear || {}),
+          ...Object.keys(latest.insuranceByYear || {})
+        ]);
+        const fixedCostsByYear = {};
+        const fixedCostIdsByYear = {};
+        const fixedCostRecords = mergeEntries(vehicleId, 'fixedCost',
+          fixedCostRecordsFromVehicle(latest), fixedCostRecordsFromVehicle(previous))
+          .filter(record => /^\d{4}$/.test(record.year) && Number(record.year) >= 2000 &&
+            Number(record.year) <= 2099 && record.name && Number.isFinite(record.amount) && record.amount >= 0);
+        fixedCostRecords.forEach(record => {
+          fixedCostsByYear[record.year] = fixedCostsByYear[record.year] || {};
+          fixedCostIdsByYear[record.year] = fixedCostIdsByYear[record.year] || {};
+          fixedCostsByYear[record.year][record.name] = record.amount;
+          fixedCostIdsByYear[record.year][record.name] = record.id;
+        });
+        costYears.forEach(year => {
+          const numericYear = Number(year);
+          if (!Number.isInteger(numericYear) || numericYear < 2000 || numericYear > 2099) return;
+          fixedCostsMonthlyStats({ monthlyStats }, numericYear, fixedCostsByYear[year] || {});
+        });
         vehicles[vehicleId] = {
           ...previous,
           ...latest,
+          fixedCostsByYear,
+          fixedCostIdsByYear,
           deadlines: latest.deadlines,
           plannedInterventions,
           monthlyStats,
@@ -1205,7 +1750,8 @@
           documents,
           additionalCost: interventions.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
             fuel.reduce((sum, item) => sum + parseEuroAmount(item.total), 0) +
-            purchases.reduce((sum, item) => sum + parseEuroAmount(item.price), 0)
+            purchases.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
+            Object.values(fixedCostsByYear).reduce((sum, costs) => sum + fixedCostAnnualTotal(costs), 0)
         };
       });
       const mergedMaintenanceRecords = Object.fromEntries([...new Set([
@@ -1252,6 +1798,7 @@
 
     function applyBackupData(data, shouldScheduleSync = true) {
       if (!isBackupData(data)) throw new Error('Données de sauvegarde invalides');
+      Object.values(data.vehicles).forEach(normalizeVehicleFixedCosts);
       localStorage.setItem(backupStorageKey, JSON.stringify(data));
       localStorage.setItem(backupTimestampKey, String(data.ts || 0));
       vehiclesData = data.vehicles;
@@ -1260,7 +1807,7 @@
       interventionTypes = data.interventionTypes.slice();
       currentVehicleId = ['v1', 'v2'].includes(data.currentVehicleId) ? data.currentVehicleId : 'v2';
       document.getElementById('vehicleSelect').value = currentVehicleId;
-      updateInterventionTypeSelect();
+      updateInterventionTypeTiles();
       updatePlannedInterventionTypeSelect();
       switchVehicle(currentVehicleId);
       if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
@@ -1533,7 +2080,7 @@
       pendingMaintenanceItemId = item.id;
       completingDeadlineId = deadlineId && !deadlineId.startsWith('maintenance-') ? deadlineId : null;
       document.getElementById('interventionDate').max = localDateValue();
-      updateInterventionTypeSelect(item.type);
+      updateInterventionTypeTiles(item.type);
       document.getElementById('interventionDescription').value = item.name;
     }
 
@@ -1561,7 +2108,7 @@
       const existingSelect = document.getElementById('maintenanceExistingSelect');
       existingSelect.innerHTML = interventions.map(intervention => {
         const demoPrefix = intervention.demo ? 'DÉMO — ' : '';
-        const label = `${demoPrefix}${intervention.type || intervention.name} — ${intervention.date} — ${intervention.km}`;
+        const label = `${demoPrefix}${interventionTags(intervention).join(' · ') || intervention.name} — ${intervention.date} — ${intervention.km}`;
         return `<option value="${escapeHtml(intervention.id)}">${escapeHtml(label)}</option>`;
       }).join('');
       const existingAction = document.getElementById('maintenanceExistingAction');
@@ -1576,7 +2123,7 @@
 
     function matchesMaintenanceIntervention(item, intervention) {
       const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
-      const text = normalize(`${intervention.type || ''} ${intervention.name || ''}`);
+      const text = normalize(`${interventionTags(intervention).join(' ')} ${intervention.name || ''}`);
       return [item.type, item.name].some(term => text.includes(normalize(term)));
     }
 
@@ -1635,15 +2182,21 @@
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       form.reset();
       form.querySelectorAll('input').forEach(input => input.setCustomValidity(''));
-      form.elements.date.removeAttribute('max');
-      form.elements.date.value = today;
+      form.elements.date.dataset.minDate = '';
+      setDateField(form.elements.date, today);
       if (modalId === 'interventionModal') {
-        updateInterventionTypeSelect();
+        document.getElementById('interventionModalTitle').textContent = 'Ajouter une intervention';
+        document.querySelector('#interventionForm button[type="submit"]').textContent = 'Enregistrer l’intervention';
+        document.getElementById('interventionDeadlineField').hidden = false;
+        updateInterventionTypeTiles();
+        document.getElementById('interventionTypeError').textContent = '';
         updateInterventionDeadlineSelect();
       }
       if (modalId === 'plannedInterventionModal') {
         updatePlannedInterventionTypeSelect();
-        form.elements.date.min = today;
+        form.elements.date.dataset.minDate = today;
+        form.elements.date.nextElementSibling.dataset.minDate = today;
+        setDateField(form.elements.date, today);
       }
       if (modalId === 'documentModal') updateDocumentInterventionSelect();
       if (form.elements.km) {
@@ -1657,6 +2210,7 @@
       if (modalId === 'interventionModal') {
         completingDeadlineId = null;
         pendingMaintenanceItemId = null;
+        editingInterventionId = null;
       }
     }
 
@@ -1680,7 +2234,7 @@
       const data = vehiclesData[currentVehicleId];
       const deadline = upcomingInterventions(data).find(item => item.id === deadlineId);
       if (!deadline) return;
-      updateInterventionTypeSelect(deadline.type);
+      updateInterventionTypeTiles(deadline.type);
     }
 
     function startDeadlineIntervention(deadlineId) {
@@ -1701,8 +2255,9 @@
       selectInterventionDeadline(deadline.id);
     }
 
-    function matchingDeadlines(data, type) {
-      return upcomingInterventions(data).filter(deadline => deadline.type === type);
+    function matchingDeadlines(data, types) {
+      const matchingTypes = Array.isArray(types) ? types : [types];
+      return upcomingInterventions(data).filter(deadline => matchingTypes.includes(deadline.type));
     }
 
     function removeDeadline(data, deadlineId) {
@@ -1788,6 +2343,13 @@
     function saveIntervention(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
+      const types = new FormData(event.currentTarget).getAll('types').filter(type => typeof type === 'string');
+      if (!types.length) {
+        document.getElementById('interventionTypeError').textContent = 'Sélectionnez au moins un type d’intervention.';
+        const firstTile = document.querySelector('#interventionTypeTiles input');
+        if (firstTile) firstTile.focus();
+        return;
+      }
       const completedDeadlineId = completingDeadlineId;
       const safeUrl = values.url ? normalizeDocumentUrl(values.url) : '';
       if (values.url && !safeUrl) {
@@ -1795,17 +2357,71 @@
         event.currentTarget.elements.url.reportValidity();
         return;
       }
+      const data = vehiclesData[currentVehicleId];
+      if (editingInterventionId) {
+        const intervention = data.interventions.find(item => item.id === editingInterventionId);
+        if (!intervention) {
+          closeActionModal('interventionModal');
+          return;
+        }
+        const trackCost = intervention.costTracked === true;
+        const previousDate = intervention.date;
+        const previousType = intervention.type;
+        if (trackCost) removeTrackedCost(data, intervention, 'maint', 'price');
+        const description = values.description.trim();
+        const km = `${Number(values.km).toLocaleString('fr-FR')} km`;
+        Object.assign(intervention, {
+          date: formatDate(values.date),
+          type: types[0],
+          types,
+          name: description || types.join(' · '),
+          km,
+          price: formatEuro(Number(values.price)),
+          garage: values.garage.trim(),
+          docUrl: safeUrl
+        });
+        updateCurrentKilometers(data, Number(values.km));
+        const previousMonth = interventionMonthLabel(previousDate);
+        const updatedMonth = interventionMonthLabel(intervention.date);
+        if (previousMonth && previousMonth !== updatedMonth) {
+          const oldMonthlyStats = data.monthlyStats.find(month => month.month === previousMonth);
+          const hasOtherInterventions = data.interventions.some(item =>
+            item !== intervention && interventionMonthLabel(item.date) === previousMonth
+          );
+          if (oldMonthlyStats && oldMonthlyStats.event === previousType && !hasOtherInterventions) {
+            oldMonthlyStats.event = null;
+          }
+        }
+        if (trackCost) addCostToCurrentMonth('maint', Number(values.price), values.date, types[0]);
+        const vehicleMaintenanceRecords = maintenanceRecords[currentVehicleId] || {};
+        Object.entries(vehicleMaintenanceRecords).forEach(([itemId, record]) => {
+          if (record.interventionId === intervention.id) {
+            const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+            if (item && !types.includes(item.type)) {
+              delete vehicleMaintenanceRecords[itemId];
+            } else {
+              record.date = values.date;
+              record.km = Number(values.km);
+            }
+          }
+        });
+        editingInterventionId = null;
+        persistData();
+        switchVehicle(currentVehicleId);
+        closeActionModal('interventionModal');
+        return;
+      }
       completingDeadlineId = null;
       const price = Number(values.price);
-      const type = values.type;
+      const type = types[0];
       const description = values.description.trim();
       const maintenanceItemId = pendingMaintenanceItemId;
-      vehiclesData[currentVehicleId].interventions.unshift({
-        id: createRecordId(), costTracked: true, date: formatDate(values.date), type, name: description || type, garage: values.garage,
+      data.interventions.unshift({
+        id: createRecordId(), costTracked: true, date: formatDate(values.date), type, types, name: description || types.join(' · '), garage: values.garage,
         km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '', docUrl: safeUrl
       });
+      updateCurrentKilometers(data, Number(values.km));
       addCostToCurrentMonth('maint', price, values.date, type);
-      const data = vehiclesData[currentVehicleId];
       const completedIntervention = {
         date: values.date,
         km: Number(values.km),
@@ -1825,12 +2441,12 @@
       closeActionModal('interventionModal');
       if (!completedDeadlineId) {
         const selectedDeadline = values.deadlineId
-          ? matchingDeadlines(data, type).find(deadline => deadline.id === values.deadlineId)
+          ? matchingDeadlines(data, types).find(deadline => deadline.id === values.deadlineId)
           : null;
         if (selectedDeadline) {
           askToCompleteDeadline([selectedDeadline], completedIntervention);
         } else if (!values.deadlineId) {
-          const deadlines = matchingDeadlines(data, type);
+          const deadlines = matchingDeadlines(data, types);
           if (deadlines.length) askToCompleteDeadline(deadlines, completedIntervention);
         }
       }
@@ -1889,64 +2505,153 @@
       closeActionModal('documentModal');
     }
 
-    function chartInterventionsByMonth(data) {
+    function interventionMonthLabel(date) {
+      const [, month, year] = String(date || '').split('/');
       const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      return month && year ? `${monthNames[Number(month) - 1]} ${year.slice(-2)}` : '';
+    }
+
+    function chartPeriodFromMonthLabel(label) {
+      const [month, shortYear] = String(label || '').split(' ');
+      const monthIndex = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'].indexOf(month);
+      if (monthIndex < 0 || !/^\d{2}$/.test(shortYear || '')) return null;
+      return { year: String(2000 + Number(shortYear)), monthIndex };
+    }
+
+    function chartInterventionsByMonth(data) {
       const eventsByMonth = new Map();
       data.interventions.forEach(intervention => {
-        const [, month, year] = intervention.date.split('/');
-        const monthLabel = `${monthNames[Number(month) - 1]} ${year.slice(-2)}`;
-        const label = intervention.type || intervention.name;
+        const monthLabel = interventionMonthLabel(intervention.date);
+        if (!monthLabel) return;
+        const tags = interventionTags(intervention);
+        const label = tags.join(' · ') || intervention.name;
         const events = eventsByMonth.get(monthLabel) || [];
         events.push({
           label,
+          tags,
           date: intervention.date,
-          detail: intervention.type && intervention.name !== intervention.type ? intervention.name : ''
+          detail: intervention.name && intervention.name !== tags[0] && intervention.name !== tags.join(' · ')
+            ? intervention.name : ''
         });
         eventsByMonth.set(monthLabel, events);
       });
       data.monthlyStats.forEach(month => {
         if (month.event && !eventsByMonth.has(month.month)) {
-          eventsByMonth.set(month.month, [{ label: month.event, detail: '' }]);
+          eventsByMonth.set(month.month, [{ label: month.event, tags: [month.event], detail: '' }]);
         }
       });
       return eventsByMonth;
     }
 
+    function showChartYear(year) {
+      chartSelectedYear = year;
+      renderChart(vehiclesData[currentVehicleId]);
+    }
+
+    function showChartYears() {
+      chartSelectedYear = null;
+      renderChart(vehiclesData[currentVehicleId]);
+    }
+
     function renderChart(data) {
       const container = document.getElementById('chartWrapper');
+      const periodControls = document.getElementById('chartPeriodControls');
       const eventsByMonth = chartInterventionsByMonth(data);
       const visibleCategories = ['fuel', 'maint', 'insur', 'parts'].filter(category => chartVisibility[category]);
-      let monthlyData = data.monthlyStats;
+      const monthlyDataByLabel = new Map();
+      data.monthlyStats.forEach(month => {
+        const period = chartPeriodFromMonthLabel(month.month);
+        if (period) monthlyDataByLabel.set(month.month, { ...month, year: period.year, monthIndex: period.monthIndex });
+      });
+      eventsByMonth.forEach((events, label) => {
+        if (monthlyDataByLabel.has(label)) return;
+        const period = chartPeriodFromMonthLabel(label);
+        if (period) {
+          monthlyDataByLabel.set(label, {
+            month: label, year: period.year, monthIndex: period.monthIndex,
+            fuel: 0, maint: 0, insur: 0, parts: 0
+          });
+        }
+      });
+      const monthlyData = [...monthlyDataByLabel.values()].sort((first, second) =>
+        Number(first.year) - Number(second.year) || first.monthIndex - second.monthIndex);
+      const statsByYear = new Map();
+      monthlyData.forEach(month => {
+        const yearlyStats = statsByYear.get(month.year) || {
+          month: month.year,
+          year: month.year,
+          monthIndex: -1,
+          fuel: 0,
+          maint: 0,
+          insur: 0,
+          parts: 0
+        };
+        ['fuel', 'maint', 'insur', 'parts'].forEach(category => {
+          yearlyStats[category] += Number(month[category]) || 0;
+        });
+        statsByYear.set(month.year, yearlyStats);
+      });
+      const annualEvents = new Map();
+      eventsByMonth.forEach((events, monthLabel) => {
+        const period = chartPeriodFromMonthLabel(monthLabel);
+        if (!period) return;
+        const currentEvents = annualEvents.get(period.year) || [];
+        currentEvents.push(...events);
+        annualEvents.set(period.year, currentEvents);
+      });
+      annualEvents.forEach((events, year) => {
+        if (!statsByYear.has(year)) {
+          statsByYear.set(year, {
+            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0
+          });
+        }
+      });
+
+      let chartData;
+      if (chartSelectedYear) {
+        chartData = monthlyData
+          .filter(month => month.year === chartSelectedYear)
+          .sort((first, second) => first.monthIndex - second.monthIndex);
+        periodControls.innerHTML = `<button class="chart-period-back" type="button" onclick="showChartYears()">‹ Toutes les années</button><span>Détail mensuel · ${escapeHtml(chartSelectedYear)}</span>`;
+      } else {
+        chartData = [...statsByYear.values()].sort((first, second) => Number(first.year) - Number(second.year));
+        periodControls.innerHTML = '<span>Vue annuelle · touchez une année pour afficher ses mois.</span>';
+      }
+
       container.classList.toggle('interventions-only', chartInterventionsOnly);
       if (chartInterventionsOnly) {
-        monthlyData = chartVisibility.interventions
-          ? monthlyData.filter(month => eventsByMonth.has(month.month))
+        chartData = chartVisibility.interventions
+          ? chartData.filter(period => chartSelectedYear
+            ? eventsByMonth.has(period.month)
+            : annualEvents.has(period.year))
           : [];
       }
       if (!chartInterventionsOnly && !chartVisibility.interventions && visibleCategories.length === 0) {
-        monthlyData = [];
+        chartData = [];
       }
-      if (monthlyData.length === 0) {
+      if (chartData.length === 0) {
         container.innerHTML = '<p class="chart-empty">Aucune donnée à afficher avec ces filtres.</p>';
         return;
       }
       container.innerHTML = '';
-      const maxTotal = Math.max(...monthlyData.map(month => visibleCategories.reduce((total, category) => total + month[category], 0))) || 1;
+      const maxTotal = Math.max(...chartData.map(period => visibleCategories.reduce((total, category) => total + (Number(period[category]) || 0), 0))) || 1;
       const maxHeightPx = 140; 
 
-      monthlyData.forEach(d => {
-        const total = visibleCategories.reduce((sum, category) => sum + d[category], 0);
+      chartData.forEach(period => {
+        const total = visibleCategories.reduce((sum, category) => sum + (Number(period[category]) || 0), 0);
         const col = document.createElement('div');
         col.className = 'chart-column';
-        const events = chartVisibility.interventions ? (eventsByMonth.get(d.month) || []) : [];
+        const events = chartVisibility.interventions && chartSelectedYear
+          ? (eventsByMonth.get(period.month) || [])
+          : [];
         const eventLabels = events.map(event =>
-          `<div class="event-label"><strong>${escapeHtml(event.label)}</strong>${event.date ? `<br>${escapeHtml(event.date)}` : ''}${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
+          `<div class="event-label" title="${escapeHtml(event.label)}"><div class="chart-event-tags">${(event.tags || [event.label]).map(tag => `<span class="chart-event-tag">${escapeHtml(tag)}</span>`).join('')}</div>${event.date ? `<br>${escapeHtml(event.date)}` : ''}${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
         ).join('');
         const eventList = eventLabels ? `<div class="chart-events">${eventLabels}</div>` : '';
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
-          `<div class="bar-segment" style="height: ${(d[category] / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${d[category]}€"></div>`
+          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${Number(period[category]) || 0}€"></div>`
         ).join('');
 
         col.innerHTML = `
@@ -1955,7 +2660,9 @@
           <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
             ${segments}
           </div>
-          <div class="column-label">${escapeHtml(d.month)}</div>
+          <div class="column-label">${chartSelectedYear
+            ? escapeHtml(period.month)
+            : `<button class="chart-year-button" type="button" aria-label="Afficher les mois de ${escapeHtml(period.year)}" onclick="showChartYear('${escapeHtml(period.year)}')">${escapeHtml(period.year)}</button>`}</div>
         `;
         container.appendChild(col);
       });
@@ -1968,6 +2675,7 @@
     }
 
     function switchVehicle(vId) {
+      if (currentVehicleId !== vId) chartSelectedYear = null;
       currentVehicleId = vId;
       const data = vehiclesData[vId];
 
@@ -2018,7 +2726,7 @@
     function renderInterventionHistory(data) {
       const filter = document.getElementById('interventionTypeFilter');
       const selectedType = interventionTypeFilter;
-      const types = [...new Set(data.interventions.map(item => item.type || item.name).filter(Boolean))]
+      const types = [...new Set(data.interventions.flatMap(interventionTags))]
         .sort((first, second) => first.localeCompare(second, 'fr'));
       filter.innerHTML = '<option value="">Toutes les interventions</option>' +
         types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
@@ -2026,20 +2734,23 @@
       filter.value = interventionTypeFilter;
 
       const visibleInterventions = data.interventions.filter(item =>
-        !interventionTypeFilter || (item.type || item.name) === interventionTypeFilter
+        !interventionTypeFilter || interventionTags(item).includes(interventionTypeFilter)
       );
       document.getElementById('interventionHistoryCount').textContent =
         `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
       document.getElementById('interventions-table').innerHTML = visibleInterventions.map(intervention => {
         const index = data.interventions.indexOf(intervention);
-        const title = intervention.type || intervention.name;
-        const detail = intervention.type && intervention.name !== intervention.type ? intervention.name : '';
+        const tags = interventionTags(intervention);
+        const title = tags[0] || intervention.name;
+        const additionalTags = renderHistoryInterventionTags(tags.slice(1));
+        const detail = intervention.name && intervention.name !== title && intervention.name !== tags.join(' · ')
+          ? intervention.name : '';
         const links = renderInterventionDocuments(data, intervention);
         const invoiceButton = intervention.docUrl || intervention.doc
           ? deleteButton('invoice', index, title)
           : '';
-        const deleteAction = `requestDeleteRecord('intervention', ${index}, ${escapeHtml(JSON.stringify(title))})`;
-        return `<tr>
+        const rowLabel = `${tags.join(', ') || title}, ${intervention.date}, ${intervention.km}`;
+        return `<tr data-intervention-id="${escapeHtml(intervention.id)}" tabindex="0" aria-label="Afficher le détail : ${escapeHtml(rowLabel)}" aria-haspopup="dialog">
           <td data-label="Date">
             <span class="intervention-desktop-date">${escapeHtml(intervention.date)}</span>
             <div class="intervention-mobile-card">
@@ -2047,16 +2758,17 @@
                 <strong class="intervention-mobile-title">${escapeHtml(title)}${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}</strong>
                 <span class="intervention-mobile-price">${escapeHtml(intervention.price)}</span>
               </div>
+              ${additionalTags}
               <div class="intervention-mobile-meta"><span>${escapeHtml(intervention.date)}</span><span>${escapeHtml(intervention.km)}</span></div>
               ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
               ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
               <div class="intervention-mobile-actions">
-                ${invoiceButton ? `<span>${invoiceButton.replace('🗑️</button>', '🗑️ Facture</button>')}</span>` : ''}
-                <button class="delete-button" type="button" aria-label="Supprimer ${escapeHtml(title)}" onclick="${deleteAction}">🗑️ Intervention</button>
+                ${invoiceButton}
+                ${deleteButton('intervention', index, title)}
               </div>
             </div>
           </td>
-          <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
+          <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${additionalTags}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
           <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
           <td data-label="Coût">${escapeHtml(intervention.price)}</td>
           <td data-label="Document">${links}${invoiceButton ? `<br>${invoiceButton}` : ''}</td>
@@ -2065,8 +2777,76 @@
       }).join('');
     }
 
+    function openInterventionDetails(interventionId) {
+      const data = vehiclesData[currentVehicleId];
+      const intervention = data.interventions.find(item => item.id === interventionId);
+      if (!intervention) return;
+      detailsInterventionId = interventionId;
+      const tags = interventionTags(intervention);
+      const description = intervention.name && intervention.name !== tags[0] && intervention.name !== tags.join(' · ')
+        ? intervention.name : '—';
+      const invoice = intervention.docUrl
+        ? documentLink(intervention.docUrl, 'Ouvrir le lien de facture')
+        : escapeHtml(intervention.doc || '—');
+      const linkedDocuments = data.documents.filter(item => item.interventionId === intervention.id);
+      const documents = [
+        invoice !== '—' ? `<div>${invoice}</div>` : '',
+        ...linkedDocuments.map(item => `<div>${documentLink(item.url, item.name)}</div>`)
+      ].filter(Boolean).join('') || '—';
+      const detailItems = [
+        ['Types', renderHistoryInterventionTags(tags) || '—'],
+        ['Date', escapeHtml(intervention.date)],
+        ['Kilométrage', escapeHtml(intervention.km)],
+        ['Description', escapeHtml(description)],
+        ['Garage', escapeHtml(intervention.garage || '—')],
+        ['Montant', escapeHtml(intervention.price)],
+        ['Facture et documents', documents]
+      ];
+      document.getElementById('interventionDetailsTitle').textContent = tags.join(' · ') || intervention.name || 'Détail de l’intervention';
+      document.getElementById('interventionDetailsContent').innerHTML = detailItems.map(([label, value]) =>
+        `<div class="intervention-detail-item"><span class="intervention-detail-label">${escapeHtml(label)}</span><div class="intervention-detail-value">${value}</div></div>`
+      ).join('');
+      document.getElementById('interventionDetailsModal').showModal();
+    }
+
+    function closeInterventionDetails() {
+      detailsInterventionId = null;
+      document.getElementById('interventionDetailsModal').close();
+    }
+
+    function editIntervention() {
+      if (!detailsInterventionId) return;
+      const intervention = vehiclesData[currentVehicleId].interventions.find(item => item.id === detailsInterventionId);
+      if (!intervention) return;
+      const types = interventionTags(intervention);
+      const [day, month, year] = intervention.date.split('/');
+      const form = document.getElementById('interventionForm');
+      closeInterventionDetails();
+      openActionModal('interventionModal');
+      editingInterventionId = intervention.id;
+      document.getElementById('interventionModalTitle').textContent = 'Modifier l’intervention';
+      document.querySelector('#interventionForm button[type="submit"]').textContent = 'Enregistrer les modifications';
+      document.getElementById('interventionDeadlineField').hidden = true;
+      setDateField(form.elements.date, `${year}-${month}-${day}`);
+      form.elements.km.value = intervention.km.replace(/\D/g, '');
+      form.elements.description.value = intervention.name === types.join(' · ') ? '' : intervention.name || '';
+      form.elements.price.value = parseEuroAmount(intervention.price);
+      form.elements.garage.value = intervention.garage || '';
+      form.elements.url.value = intervention.docUrl || '';
+      updateInterventionTypeTiles(types);
+    }
+
     function deleteButton(type, index, label) {
-      return `<button class="delete-button" type="button" aria-label="Supprimer ${escapeHtml(label)}" onclick="requestDeleteRecord('${type}', ${index}, ${escapeHtml(JSON.stringify(label))})">🗑️</button>`;
+      const itemType = {
+        intervention: 'l’intervention',
+        invoice: 'la facture liée à l’intervention',
+        fuel: 'le plein',
+        purchase: 'l’achat',
+        document: 'le document',
+        planned: 'l’échéance planifiée'
+      }[type] || 'cet élément';
+      const accessibleLabel = `Supprimer ${itemType} « ${label} »`;
+      return `<button class="delete-button" type="button" aria-label="${escapeHtml(accessibleLabel)}" title="${escapeHtml(accessibleLabel)}" onclick="requestDeleteRecord('${type}', ${index}, ${escapeHtml(JSON.stringify(label))})">🗑️</button>`;
     }
 
     let pendingDelete = null;
@@ -2113,6 +2893,34 @@
       if (!pendingDelete) return;
       const { type, index } = pendingDelete;
       const data = vehiclesData[currentVehicleId];
+      if (type === 'fixedCost') {
+        const year = String(pendingDelete.year);
+        const costs = fixedCostsForYear(data, year);
+        const ids = { ...fixedCostIdsForYear(data, year) };
+        const { name } = pendingDelete;
+        if (!Object.hasOwn(costs, name)) {
+          cancelDeleteRecord();
+          setSyncStatus('Suppression impossible : ce coût n’existe plus.');
+          return;
+        }
+        const id = ids[name] || fixedCostRecordId(year, name);
+        const amount = Number(costs[name]) || 0;
+        delete costs[name];
+        delete ids[name];
+        data.fixedCostsByYear[year] = costs;
+        data.fixedCostIdsByYear[year] = ids;
+        deletedRecords = [...new Set([...deletedRecords, fixedCostDeletionKey(currentVehicleId, id)])];
+        data.additionalCost = Math.max(0, data.additionalCost - amount);
+        fixedCostsMonthlyStats(data, Number(year), costs);
+        pendingDelete = null;
+        document.getElementById('deleteRecordModal').close();
+        editingFixedCost = null;
+        renderFixedCostYearList();
+        persistData();
+        switchVehicle(currentVehicleId);
+        setSyncStatus('Coût fixe supprimé.');
+        return;
+      }
       const recordLists = {
         intervention: data.interventions,
         invoice: data.interventions,
@@ -2180,7 +2988,7 @@
 
     function interventionLabel(data, interventionId) {
       const intervention = data.interventions.find(item => item.id === interventionId);
-      return intervention ? `${intervention.type || intervention.name} (${intervention.date})` : '';
+      return intervention ? `${interventionTags(intervention).join(' · ') || intervention.name} (${intervention.date})` : '';
     }
 
     function showTab(tabId, btn) {
@@ -2189,6 +2997,19 @@
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
     }
+
+    const interventionHistoryBody = document.getElementById('interventions-table');
+    interventionHistoryBody.addEventListener('click', event => {
+      if (event.target.closest('a, button')) return;
+      const row = event.target.closest('tr[data-intervention-id]');
+      if (row) openInterventionDetails(row.dataset.interventionId);
+    });
+    interventionHistoryBody.addEventListener('keydown', event => {
+      if (event.target.matches('tr[data-intervention-id]') && ['Enter', ' '].includes(event.key)) {
+        event.preventDefault();
+        openInterventionDetails(event.target.dataset.interventionId);
+      }
+    });
 
     document.getElementById('vehicleSelect').value = currentVehicleId;
     switchVehicle(currentVehicleId);

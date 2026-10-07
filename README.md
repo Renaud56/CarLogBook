@@ -18,6 +18,16 @@ Ouvrir `index.html?test=1` pour afficher les données de démonstration intégr�
 
 Hors mode de test, les données de démonstration ne sont pas préchargées ; les véhicules commencent avec des listes vides.
 
+## Historique des interventions
+
+Une intervention peut être associée à plusieurs types à la fois, par exemple une vidange, des pneus et une courroie réalisés le même jour. Sélectionnez les tuiles correspondantes ; les types apparaissent dans l’historique, sont filtrables individuellement et sont affichés de façon compacte sur le graphique. Touchez une ligne de l’historique pour consulter les détails et corriger les types, la description, le montant ou le lien de facture. Le bouton **Gérer** permet d’ajouter des types personnalisés.
+
+Le kilométrage actuel se modifie depuis la carte de synthèse. L’ajout d’une intervention avec un kilométrage supérieur le met automatiquement à jour. Le bouton **Coûts fixes** permet de saisir les dépenses récurrentes (assurance, leasing, parking, etc.) avec un montant par année civile, modifiable ou supprimable séparément pour chaque année. Chaque montant annuel est réparti de janvier à décembre sur le graphique. Le graphique affiche une vue annuelle ; touchez une année pour consulter les montants et interventions mois par mois. Les boutons de légende permettent d’afficher ou de masquer les catégories dans les deux vues.
+
+Le mode de test (`index.html?test=1`) contient des coûts fixes annuels pour les deux véhicules. Ils sont automatiquement répartis sur les mois et intégrés aux graphiques de démonstration.
+
+Les dates se saisissent directement au format **JJ/MM/AAAA** avec le clavier numérique du téléphone. Les dates impossibles et les dates passées pour une intervention planifiée sont refusées.
+
 ## Programme d'entretien
 
 Le programme indicatif est décrit dans [maintenance-schedule.js](./maintenance-schedule.js). Les échéances de référence sont reprises de la liste fournie par le propriétaire pour un moteur 110 ch ; l'application concerne un véhicule déclaré en 115 ch. Vérifier l'applicabilité avec le carnet d'entretien ou le programme Renault lié au VIN.
