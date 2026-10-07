@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suivi Véhicule - AutoLog</title>
+  <style>
+    :root {
+      --bg-primary: #f4f6f9;
+      --card-bg: #ffffff;
+      --accent: #2563eb;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      
+      /* Couleurs de répartition */
+      --c-fuel: #2563eb;
+      --c-maint: #f59e0b;
+      --c-insur: #10b981;
+      --c-parts: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-primary); color: var(--text-main); padding-bottom: 40px; }
+
+    /* Header & Vehicle Selector */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    
+    .vehicle-picker select {
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+
+    /* Quick Action Buttons */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-action {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .btn-action:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .kpi-card .label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+    .kpi-card .value { font-size: 1.6rem; font-weight: 700; margin: 6px 0; color: var(--text-main); }
+    .kpi-card .sub { font-size: 0.8rem; color: var(--text-muted); }
+    .deadline-list { display: grid; gap: 10px; margin-top: 12px; }
+    .deadline-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .deadline-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .deadline-name { font-size: 0.85rem; font-weight: 600; }
+    .deadline-value { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
+
+    /* Component: Graphique Coulissant */
+    .chart-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .chart-scroll-container {
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 10px;
+    }
+
+    .chart-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      height: 260px;
+      min-width: max-content;
+      padding: 76px 20px 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chart-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      position: relative;
+      width: 108px;
+      min-width: 108px;
+    }
+
+    .bar-stack {
+      width: 28px;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+      background: #f1f5f9;
+      position: relative;
+    }
+
+    .bar-segment { width: 100%; }
+
+    .column-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .column-total {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .chart-events {
+      position: absolute;
+      top: -70px;
+      left: 0;
+      width: 100%;
+      display: grid;
+      gap: 4px;
+    }
+
+    .event-label {
+      display: block;
+      padding: 4px 6px;
+      border-left: 3px solid var(--c-maint);
+      background: #fff7e6;
+      color: var(--text-main);
+      font-size: 0.72rem;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 15px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .legend-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 2px;
+      border: 0;
+      background: transparent;
+      color: var(--text-main);
+      font: inherit;
+      cursor: pointer;
+    }
+    .legend-toggle[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through; }
+    .legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    .chart-wrapper.interventions-only { height: auto; min-height: 90px; align-items: stretch; padding-top: 12px; }
+    .interventions-only .chart-column { height: auto; min-height: 68px; justify-content: flex-start; }
+    .interventions-only .chart-events { position: static; margin-bottom: 8px; }
+    .interventions-only .column-total,
+    .interventions-only .bar-stack { display: none; }
+    .chart-empty { padding: 30px 20px; color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Tabs & Tables */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tab-btn.active { background: var(--accent); color: white; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .content-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 12px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+    td { padding: 14px 12px; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+
+    .link-btn { color: var(--accent); text-decoration: none; font-weight: 500; font-size: 0.85rem; }
+
+    /* Formulaires modaux */
+    dialog.action-modal {
+      width: min(520px, calc(100% - 24px));
+      max-height: min(90vh, 760px);
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      background: var(--card-bg);
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+    }
+
+    dialog.action-modal::backdrop { background: rgba(15, 23, 42, 0.55); }
+    .modal-form { padding: 20px; }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 1.2rem; margin-bottom: 4px; }
+    .modal-header p { color: var(--text-muted); font-size: 0.85rem; }
+    .modal-close { border: 0; background: transparent; color: var(--text-muted); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 2px 6px; }
+    .modal-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field.full-width { grid-column: 1 / -1; }
+    .field label { font-size: 0.85rem; font-weight: 600; }
+    .field input, .field select, .field textarea {
+      width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: #fff; color: var(--text-main); font: inherit; font-size: 16px;
+    }
+    .field textarea { min-height: 88px; resize: vertical; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .modal-actions button { min-height: 44px; padding: 0 16px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
+    .btn-cancel { border: 1px solid var(--border); background: #fff; color: var(--text-main); }
+    .btn-save { border: 1px solid var(--accent); background: var(--accent); color: #fff; }
+    .field-with-action { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    .btn-manage-types { min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+    .type-list { display: grid; gap: 8px; max-height: 45vh; overflow-y: auto; list-style: none; }
+    .type-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .type-list button { min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--danger); font: inherit; cursor: pointer; }
+    .type-list button:disabled { color: var(--text-muted); cursor: not-allowed; }
+    .form-message { min-height: 1.2em; margin-top: 8px; color: var(--danger); font-size: 0.85rem; }
+
+    @media (max-width: 600px) {
+      header { padding: 12px 14px; gap: 8px; }
+      .brand { font-size: 1rem; }
+      .vehicle-picker select { max-width: 155px; padding: 8px; }
+      .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart-card { padding: 16px; }
+      .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
+      .chart-column { width: 108px; min-width: 108px; }
+      .chart-legend { gap: 8px 14px; }
+      .modal-form { padding: 18px 16px; }
+      .modal-fields { grid-template-columns: 1fr; gap: 12px; }
+      .field.full-width { grid-column: auto; }
+      .modal-actions button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">🚗 AutoLog Drive</div>
+    <div class="vehicle-picker">
+      <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted); margin-right: 5px;">Véhicule :</label>
+      <select id="vehicleSelect" onchange="switchVehicle(this.value)">
+        <option value="v1">Peugeot 208 (AA-123-BB)</option>
+        <option value="v2">Renault Scenic (CC-456-DD)</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Actions Rapides -->
+    <div class="quick-actions">
+      <button class="btn-action" onclick="openActionModal('fuelModal')">⛽ + Plein</button>
+      <button class="btn-action" onclick="openActionModal('interventionModal')">🛠️ + Intervention</button>
+      <button class="btn-action" onclick="openActionModal('purchaseModal')">🛒 + Achat</button>
+      <button class="btn-action" onclick="openActionModal('documentModal')">📎 + Document</button>
+    </div>
+
+    <!-- KPI / Synthèse -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="label">Kilométrage Actuel</div>
+        <div class="value" id="kpi-km">84 500 km</div>
+        <div class="sub" id="kpi-km-year">Moyenne: ~11 200 km / an</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Coût Total (12 mois)</div>
+        <div class="value" id="kpi-cost">1 420 €</div>
+        <div class="sub" id="kpi-cost-month">Moyenne : 118 € / mois</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Prochaines Échéances</div>
+        <div class="deadline-list" id="deadlinesList"></div>
+      </div>
+    </div>
+
+    <!-- Graphique Coulissant Répartition + Interventions -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3> Historique des Coûts Mensuels & Interventions</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Glissez horizontalement pour remonter le temps ➔</span>
+      </div>
+
+      <div class="chart-scroll-container" id="scrollContainer">
+        <div class="chart-wrapper" id="chartWrapper">
+          <!-- Généré dynamiquement en JS -->
+        </div>
+      </div>
+
+      <div class="chart-legend">
+        <button class="legend-toggle" data-series="fuel" aria-pressed="true" onclick="toggleChartSeries('fuel')"><span class="dot" style="background: var(--c-fuel)"></span> Carburant</button>
+        <button class="legend-toggle" data-series="maint" aria-pressed="true" onclick="toggleChartSeries('maint')"><span class="dot" style="background: var(--c-maint)"></span> Entretien / Réparations</button>
+        <button class="legend-toggle" data-series="insur" aria-pressed="true" onclick="toggleChartSeries('insur')"><span class="dot" style="background: var(--c-insur)"></span> Assurance</button>
+        <button class="legend-toggle" data-series="parts" aria-pressed="true" onclick="toggleChartSeries('parts')"><span class="dot" style="background: var(--c-parts)"></span> Achats / Pièces</button>
+        <button class="legend-toggle" data-series="interventions" aria-pressed="true" onclick="toggleChartSeries('interventions')"><span style="font-size:0.9rem">🛠️</span> Interventions</button>
+        <button class="legend-toggle" id="interventionsOnlyToggle" aria-pressed="false" onclick="toggleInterventionsOnly()">Interventions uniquement</button>
+      </div>
+    </div>
+
+    <!-- Navigation Onglets -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('interventions', this)">🛠️ Entretiens & Factures</button>
+      <button class="tab-btn" onclick="showTab('fuel', this)">⛽ Carburant</button>
+      <button class="tab-btn" onclick="showTab('purchases', this)">🛒 Achats / Pièces</button>
+      <button class="tab-btn" onclick="showTab('documents', this)">📎 Documents</button>
+    </div>
+
+    <!-- Contenu Onglets -->
+    <div id="interventions" class="tab-content active">
+      <div class="content-card">
+        <h3>Historique des réparations</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Intervention</th>
+              <th>Kilométrage</th>
+              <th>Coût</th>
+              <th>Document</th>
+            </tr>
+          </thead>
+          <tbody id="interventions-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="fuel" class="tab-content">
+      <div class="content-card">
+        <h3>Suivi des pleins</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Volume</th>
+              <th>Prix / L</th>
+              <th>Montant</th>
+              <th>Km</th>
+            </tr>
+          </thead>
+          <tbody id="fuel-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="purchases" class="tab-content">
+      <div class="content-card">
+        <h3>Achats & Équipements</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Article</th>
+              <th>Magasin</th>
+              <th>Prix</th>
+            </tr>
+          </thead>
+          <tbody id="purchases-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="documents" class="tab-content">
+      <div class="content-card">
+        <h3>Liens des documents</h3>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Document</th><th>Catégorie</th><th>Intervention liée</th><th>Lien</th></tr>
+          </thead>
+          <tbody id="documents-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <dialog class="action-modal" id="fuelModal" aria-labelledby="fuelModalTitle">
+    <form class="modal-form" id="fuelForm" onsubmit="saveFuel(event)">
+      <div class="modal-header"><div><h2 id="fuelModalTitle">Ajouter un plein</h2><p>Enregistrez le carburant et le kilométrage.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('fuelModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="fuelDate">Date</label><input id="fuelDate" name="date" type="date" required></div>
+        <div class="field"><label for="fuelKm">Kilométrage (km)</label><input id="fuelKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
+        <div class="field"><label for="fuelVolume">Volume (L)</label><input id="fuelVolume" name="volume" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
+        <div class="field"><label for="fuelTotal">Montant total (€)</label><input id="fuelTotal" name="total" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
+        <div class="field"><label for="fuelPricePerL">Prix au litre (€/L, facultatif)</label><input id="fuelPricePerL" name="pricePerL" type="number" min="0.001" step="0.001" inputmode="decimal"></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('fuelModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le plein</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="action-modal" id="interventionModal" aria-labelledby="interventionModalTitle">
+    <form class="modal-form" id="interventionForm" onsubmit="saveIntervention(event)">
+      <div class="modal-header"><div><h2 id="interventionModalTitle">Ajouter une intervention</h2><p>Consignez un entretien ou une réparation.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('interventionModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="interventionDate">Date</label><input id="interventionDate" name="date" type="date" required></div>
+        <div class="field"><label for="interventionKm">Kilométrage (km)</label><input id="interventionKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
+        <div class="field full-width field-with-action"><div class="field"><label for="interventionType">Type d'intervention</label><select id="interventionType" name="type" required></select></div><button class="btn-manage-types" type="button" onclick="openInterventionTypesModal()">Gérer</button></div>
+        <div class="field full-width"><label for="interventionDescription">Description (facultatif)</label><input id="interventionDescription" name="description" type="text" maxlength="120" placeholder="Détail ou pièce remplacée"></div>
+        <div class="field"><label for="interventionPrice">Montant (€)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+        <div class="field"><label for="interventionGarage">Garage (facultatif)</label><input id="interventionGarage" name="garage" type="text" maxlength="80"></div>
+        <div class="field full-width"><label for="interventionUrl">Lien vers la facture (facultatif)</label><input id="interventionUrl" name="url" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('interventionModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'intervention</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="action-modal" id="interventionTypesModal" aria-labelledby="interventionTypesTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="interventionTypesTitle">Types d'intervention</h2><p>Ajoutez ou retirez les types non utilisés.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('interventionTypesModal')">&times;</button></div>
+      <div class="field-with-action">
+        <div class="field"><label for="newInterventionType">Nouveau type</label><input id="newInterventionType" type="text" maxlength="60" placeholder="Ex. Climatisation"></div>
+        <button class="btn-manage-types" type="button" onclick="addInterventionType()">Ajouter</button>
+      </div>
+      <p class="form-message" id="interventionTypeMessage" aria-live="polite"></p>
+      <ul class="type-list" id="interventionTypesList"></ul>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('interventionTypesModal')">Terminer</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="purchaseModal" aria-labelledby="purchaseModalTitle">
+    <form class="modal-form" id="purchaseForm" onsubmit="savePurchase(event)">
+      <div class="modal-header"><div><h2 id="purchaseModalTitle">Ajouter un achat</h2><p>Ajoutez une pièce ou un équipement.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('purchaseModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="purchaseDate">Date</label><input id="purchaseDate" name="date" type="date" required></div>
+        <div class="field"><label for="purchasePrice">Prix (€)</label><input id="purchasePrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+        <div class="field full-width"><label for="purchaseItem">Article</label><input id="purchaseItem" name="item" type="text" maxlength="120" required></div>
+        <div class="field full-width"><label for="purchaseStore">Magasin (facultatif)</label><input id="purchaseStore" name="store" type="text" maxlength="80"></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('purchaseModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'achat</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="action-modal" id="documentModal" aria-labelledby="documentModalTitle">
+    <form class="modal-form" id="documentForm" onsubmit="saveDocument(event)">
+      <div class="modal-header"><div><h2 id="documentModalTitle">Ajouter un document</h2><p>Seul le lien est enregistré, pas le fichier.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('documentModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="documentDate">Date</label><input id="documentDate" name="date" type="date" required></div>
+        <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Contrôle technique">Contrôle technique</option><option value="Autre">Autre</option></select></div>
+        <div class="field full-width"><label for="documentName">Nom du document</label><input id="documentName" name="name" type="text" maxlength="120" required></div>
+        <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
+        <div class="field full-width"><label for="documentUrl">URL du document</label><input id="documentUrl" name="url" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('documentModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le lien</button></div>
+    </form>
+  </dialog>
+
+  <script>
+    const vehiclesData = {
+      v1: {
+        km: "84 500 km",
+        additionalCost: 0,
+        kmYear: "11 200 km / an",
+        totalCost: "1 420 €",
+        costMonth: "118 € / mois",
+        deadlines: [
+          { name: "Contrôle technique", value: "À renseigner" },
+          { name: "Courroie", value: "À renseigner" },
+          { name: "Vidange + 4 filtres", value: "Avant 87 000 km" }
+        ],
+        monthlyStats: [
+          { month: "Nov 25", fuel: 60, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Déc 25", fuel: 85, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Jan 26", fuel: 70, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Fév 26", fuel: 65, maint: 0, insur: 40, parts: 38, event: "Ampoules" },
+          { month: "Mar 26", fuel: 80, maint: 45, insur: 40, parts: 0, event: "Filtres" },
+          { month: "Avr 26", fuel: 75, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Mai 26", fuel: 90, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Juin 26", fuel: 70, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Juil 26", fuel: 110, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Août 26", fuel: 120, maint: 0, insur: 40, parts: 32, event: "Essuie-glaces" },
+          { month: "Sep 26", fuel: 72, maint: 0, insur: 40, parts: 0, event: null },
+          { month: "Oct 26", fuel: 75, maint: 105, insur: 40, parts: 0, event: "Vidange" }
+        ],
+        interventions: [
+          { id: "v1-intervention-1", date: "05/10/2026", name: "Vidange + Filtre à Huile", km: "84 000 km", price: "105 €", doc: "Facture_Peugeot.pdf" },
+          { id: "v1-intervention-2", date: "12/03/2026", name: "Filtre à Air & Habitacle", km: "81 200 km", price: "45 €", doc: "Facture_Norauto.pdf" }
+        ],
+        fuel: [
+          { date: "01/10/2026", volume: "42 L", priceL: "1.78 €", total: "74.76 €", km: "84 500 km" }
+        ],
+        purchases: [
+          { date: "20/08/2026", item: "Jeu d'essuie-glaces Bosch", store: "Amazon", price: "32 €" },
+          { date: "10/02/2026", item: "Ampoule H7 LED", store: "Oscaro", price: "38 €" }
+        ],
+        documents: []
+      },
+      v2: {
+        km: "162 000 km",
+        additionalCost: 0,
+        kmYear: "14 500 km / an",
+        totalCost: "2 350 €",
+        costMonth: "195 € / mois",
+        deadlines: [
+          { name: "Contrôle technique", value: "À renseigner" },
+          { name: "Courroie", value: "URGENT" },
+          { name: "Vidange + 4 filtres", value: "À renseigner" }
+        ],
+        monthlyStats: [
+          { month: "Nov 25", fuel: 90, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Déc 25", fuel: 110, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Jan 26", fuel: 85, maint: 160, insur: 50, parts: 110, event: "Freins & Batt." },
+          { month: "Fév 26", fuel: 95, maint: 240, insur: 50, parts: 0, event: "Pneus Av." },
+          { month: "Mar 26", fuel: 100, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Avr 26", fuel: 90, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Mai 26", fuel: 105, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Juin 26", fuel: 115, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Juil 26", fuel: 140, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Août 26", fuel: 130, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Sep 26", fuel: 89, maint: 0, insur: 50, parts: 0, event: null },
+          { month: "Oct 26", fuel: 93, maint: 0, insur: 50, parts: 0, event: null }
+        ],
+        interventions: [
+          { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf" },
+          { id: "v2-intervention-2", date: "10/01/2026", name: "Plaquettes de frein", km: "156 500 km", price: "160 €", doc: "Facture_Garage.pdf" }
+        ],
+        fuel: [
+          { date: "03/10/2026", volume: "55 L", priceL: "1.69 €", total: "92.95 €", km: "162 000 km" }
+        ],
+        purchases: [
+          { date: "12/01/2026", item: "Batterie Varta 70Ah", store: "MisterAuto", price: "110 €" }
+        ],
+        documents: []
+      }
+    };
+
+    let currentVehicleId = 'v1';
+    let recordSequence = 0;
+    const interventionTypes = ['Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique', 'Réparation', 'Autre'];
+    const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
+    let chartInterventionsOnly = false;
+
+    function createRecordId() {
+      recordSequence += 1;
+      return `${currentVehicleId}-intervention-${Date.now()}-${recordSequence}`;
+    }
+
+    function updateInterventionTypeSelect(selectedType = '') {
+      const select = document.getElementById('interventionType');
+      select.innerHTML = interventionTypes.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
+      if (selectedType && interventionTypes.includes(selectedType)) select.value = selectedType;
+    }
+
+    function renderInterventionTypes() {
+      const usedTypes = new Set(Object.values(vehiclesData).flatMap(vehicle => vehicle.interventions.map(item => item.type).filter(Boolean)));
+      document.getElementById('interventionTypesList').innerHTML = interventionTypes.map((type, index) => {
+        const isUsed = usedTypes.has(type);
+        return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>Supprimer</button></li>`;
+      }).join('');
+    }
+
+    function openInterventionTypesModal() {
+      document.getElementById('interventionTypeMessage').innerText = '';
+      document.getElementById('newInterventionType').value = '';
+      renderInterventionTypes();
+      document.getElementById('interventionTypesModal').showModal();
+      document.getElementById('newInterventionType').focus();
+    }
+
+    function addInterventionType() {
+      const input = document.getElementById('newInterventionType');
+      const type = input.value.trim();
+      const message = document.getElementById('interventionTypeMessage');
+      if (!type) {
+        message.innerText = 'Saisissez un nom de type.';
+        input.focus();
+        return;
+      }
+      if (interventionTypes.some(existing => existing.toLocaleLowerCase('fr') === type.toLocaleLowerCase('fr'))) {
+        message.innerText = 'Ce type existe déjà.';
+        input.focus();
+        return;
+      }
+      interventionTypes.push(type);
+      updateInterventionTypeSelect(type);
+      renderInterventionTypes();
+      message.innerText = `« ${type} » a été ajouté.`;
+      input.value = '';
+    }
+
+    function removeInterventionType(index) {
+      const type = interventionTypes[index];
+      const isUsed = Object.values(vehiclesData).some(vehicle => vehicle.interventions.some(item => item.type === type));
+      if (isUsed) return;
+      interventionTypes.splice(index, 1);
+      updateInterventionTypeSelect();
+      renderInterventionTypes();
+    }
+
+    function toggleChartSeries(series) {
+      chartVisibility[series] = !chartVisibility[series];
+      document.querySelector(`[data-series="${series}"]`).setAttribute('aria-pressed', String(chartVisibility[series]));
+      renderChart(vehiclesData[currentVehicleId]);
+    }
+
+    function toggleInterventionsOnly() {
+      chartInterventionsOnly = !chartInterventionsOnly;
+      document.getElementById('interventionsOnlyToggle').setAttribute('aria-pressed', String(chartInterventionsOnly));
+      renderChart(vehiclesData[currentVehicleId]);
+    }
+
+    function updateDocumentInterventionSelect() {
+      const select = document.getElementById('documentIntervention');
+      const options = vehiclesData[currentVehicleId].interventions.map(item => {
+        const label = `${item.type || item.name} (${item.date})`;
+        return `<option value="${escapeHtml(item.id)}">${escapeHtml(label)}</option>`;
+      });
+      select.innerHTML = '<option value="">Aucune intervention</option>' + options.join('');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[character]);
+    }
+
+    function normalizeDocumentUrl(value) {
+      try {
+        const url = new URL(value);
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+      } catch {
+        return '';
+      }
+    }
+
+    function documentLink(url, label) {
+      const safeUrl = normalizeDocumentUrl(url);
+      return safeUrl
+        ? `<a href="${escapeHtml(safeUrl)}" class="link-btn" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`
+        : escapeHtml(label || '—');
+    }
+
+    function formatDate(value) {
+      const [year, month, day] = value.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
+    function formatEuro(value) {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+    }
+
+    function totalCostWithEntries(data) {
+      return Number(data.totalCost.replace(/[^\d,.-]/g, '').replace(',', '.')) + data.additionalCost;
+    }
+
+    function formData(form) {
+      return Object.fromEntries(new FormData(form).entries());
+    }
+
+    function openActionModal(modalId) {
+      const dialog = document.getElementById(modalId);
+      const form = dialog.querySelector('form');
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      form.reset();
+      form.querySelectorAll('input').forEach(input => input.setCustomValidity(''));
+      form.elements.date.value = today;
+      if (modalId === 'interventionModal') updateInterventionTypeSelect();
+      if (modalId === 'documentModal') updateDocumentInterventionSelect();
+      if (form.elements.km) {
+        form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
+      }
+      dialog.showModal();
+    }
+
+    function closeActionModal(modalId) {
+      document.getElementById(modalId).close();
+    }
+
+    function addCostToCurrentMonth(category, amount, date, eventName = null) {
+      const data = vehiclesData[currentVehicleId];
+      const dateValue = new Date(`${date}T12:00:00`);
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const monthLabel = `${monthNames[dateValue.getMonth()]} ${String(dateValue.getFullYear()).slice(-2)}`;
+      let month = data.monthlyStats.find(item => item.month === monthLabel);
+      if (!month) {
+        month = { month: monthLabel, fuel: 0, maint: 0, insur: 0, parts: 0, event: null };
+        data.monthlyStats.push(month);
+      }
+      month[category] += amount;
+      if (eventName) month.event = eventName;
+      data.additionalCost += amount;
+      if (currentVehicleId === document.getElementById('vehicleSelect').value) {
+        document.getElementById('kpi-cost').innerText = formatEuro(totalCostWithEntries(data));
+        document.getElementById('kpi-cost-month').innerText = `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois`;
+        renderChart(data);
+      }
+    }
+
+    function saveFuel(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const volume = Number(values.volume);
+      const total = Number(values.total);
+      const pricePerL = values.pricePerL ? Number(values.pricePerL) : total / volume;
+      const data = vehiclesData[currentVehicleId];
+      data.fuel.unshift({
+        date: formatDate(values.date), volume: `${volume} L`, priceL: formatEuro(pricePerL),
+        total: formatEuro(total), km: `${Number(values.km).toLocaleString('fr-FR')} km`
+      });
+      data.km = `${Number(values.km).toLocaleString('fr-FR')} km`;
+      addCostToCurrentMonth('fuel', total, values.date);
+      switchVehicle(currentVehicleId);
+      closeActionModal('fuelModal');
+    }
+
+    function saveIntervention(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const safeUrl = values.url ? normalizeDocumentUrl(values.url) : '';
+      if (values.url && !safeUrl) {
+        event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        event.currentTarget.elements.url.reportValidity();
+        return;
+      }
+      const price = Number(values.price);
+      const type = values.type;
+      const description = values.description.trim();
+      vehiclesData[currentVehicleId].interventions.unshift({
+        id: createRecordId(), date: formatDate(values.date), type, name: description || type, garage: values.garage,
+        km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '', docUrl: safeUrl
+      });
+      addCostToCurrentMonth('maint', price, values.date, type);
+      switchVehicle(currentVehicleId);
+      closeActionModal('interventionModal');
+    }
+
+    function savePurchase(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const price = Number(values.price);
+      vehiclesData[currentVehicleId].purchases.unshift({
+        date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price)
+      });
+      addCostToCurrentMonth('parts', price, values.date, values.item);
+      switchVehicle(currentVehicleId);
+      closeActionModal('purchaseModal');
+    }
+
+    function saveDocument(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const safeUrl = normalizeDocumentUrl(values.url);
+      if (!safeUrl) {
+        event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        event.currentTarget.elements.url.reportValidity();
+        return;
+      }
+      vehiclesData[currentVehicleId].documents.unshift({
+        date: formatDate(values.date), name: values.name, category: values.category, url: safeUrl,
+        interventionId: values.interventionId || ''
+      });
+      switchVehicle(currentVehicleId);
+      closeActionModal('documentModal');
+    }
+
+    function chartInterventionsByMonth(data) {
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const eventsByMonth = new Map();
+      data.interventions.forEach(intervention => {
+        const [, month, year] = intervention.date.split('/');
+        const monthLabel = `${monthNames[Number(month) - 1]} ${year.slice(-2)}`;
+        const label = intervention.type || intervention.name;
+        const events = eventsByMonth.get(monthLabel) || [];
+        events.push({ label, detail: intervention.type && intervention.name !== intervention.type ? intervention.name : '' });
+        eventsByMonth.set(monthLabel, events);
+      });
+      data.monthlyStats.forEach(month => {
+        if (month.event && !eventsByMonth.has(month.month)) {
+          eventsByMonth.set(month.month, [{ label: month.event, detail: '' }]);
+        }
+      });
+      return eventsByMonth;
+    }
+
+    function renderChart(data) {
+      const container = document.getElementById('chartWrapper');
+      const eventsByMonth = chartInterventionsByMonth(data);
+      const visibleCategories = ['fuel', 'maint', 'insur', 'parts'].filter(category => chartVisibility[category]);
+      let monthlyData = data.monthlyStats;
+      container.classList.toggle('interventions-only', chartInterventionsOnly);
+      if (chartInterventionsOnly) {
+        monthlyData = chartVisibility.interventions
+          ? monthlyData.filter(month => eventsByMonth.has(month.month))
+          : [];
+      }
+      if (!chartInterventionsOnly && !chartVisibility.interventions && visibleCategories.length === 0) {
+        monthlyData = [];
+      }
+      if (monthlyData.length === 0) {
+        container.innerHTML = '<p class="chart-empty">Aucune donnée à afficher avec ces filtres.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      const maxTotal = Math.max(...monthlyData.map(month => visibleCategories.reduce((total, category) => total + month[category], 0))) || 1;
+      const maxHeightPx = 140; 
+
+      monthlyData.forEach(d => {
+        const total = visibleCategories.reduce((sum, category) => sum + d[category], 0);
+        const col = document.createElement('div');
+        col.className = 'chart-column';
+        const events = chartVisibility.interventions ? (eventsByMonth.get(d.month) || []) : [];
+        const eventLabels = events.map(event =>
+          `<div class="event-label"><strong>${escapeHtml(event.label)}</strong>${event.detail ? `<br>${escapeHtml(event.detail)}` : ''}</div>`
+        ).join('');
+        const eventList = eventLabels ? `<div class="chart-events">${eventLabels}</div>` : '';
+        const segments = [
+          ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts']
+        ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
+          `<div class="bar-segment" style="height: ${(d[category] / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${d[category]}€"></div>`
+        ).join('');
+
+        col.innerHTML = `
+          ${eventList}
+          <div class="column-total">${total}€</div>
+          <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
+            ${segments}
+          </div>
+          <div class="column-label">${escapeHtml(d.month)}</div>
+        `;
+        container.appendChild(col);
+      });
+
+      // Autofocus le défilement tout à droite (mois les plus récents)
+      setTimeout(() => {
+        const scrollObj = document.getElementById('scrollContainer');
+        scrollObj.scrollLeft = scrollObj.scrollWidth;
+      }, 50);
+    }
+
+    function switchVehicle(vId) {
+      currentVehicleId = vId;
+      const data = vehiclesData[vId];
+
+      document.getElementById('kpi-km').innerText = data.km;
+      document.getElementById('kpi-km-year').innerText = "Moyenne: ~" + data.kmYear;
+      document.getElementById('kpi-cost').innerText = data.additionalCost ? formatEuro(totalCostWithEntries(data)) : data.totalCost;
+      document.getElementById('kpi-cost-month').innerText = data.additionalCost ? `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois` : "Moyenne : " + data.costMonth;
+
+      renderChart(data);
+      document.getElementById('deadlinesList').innerHTML = data.deadlines.map(deadline =>
+        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><span class="deadline-value">${escapeHtml(deadline.value)}</span></div>`
+      ).join('');
+
+      // Remplissage des tables
+      document.getElementById('interventions-table').innerHTML = data.interventions.map(i =>
+        `<tr><td>${escapeHtml(i.date)}</td><td><strong>${escapeHtml(i.type || i.name)}</strong>${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td>${escapeHtml(i.km)}</td><td>${escapeHtml(i.price)}</td><td>${renderInterventionDocuments(data, i)}</td></tr>`
+      ).join('');
+
+      document.getElementById('fuel-table').innerHTML = data.fuel.map(f =>
+        `<tr><td>${escapeHtml(f.date)}</td><td>${escapeHtml(f.volume)}</td><td>${escapeHtml(f.priceL)}</td><td><strong>${escapeHtml(f.total)}</strong></td><td>${escapeHtml(f.km)}</td></tr>`
+      ).join('');
+
+      document.getElementById('purchases-table').innerHTML = data.purchases.map(p =>
+        `<tr><td>${escapeHtml(p.date)}</td><td><strong>${escapeHtml(p.item)}</strong></td><td>${escapeHtml(p.store || '—')}</td><td>${escapeHtml(p.price)}</td></tr>`
+      ).join('');
+
+      document.getElementById('documents-table').innerHTML = data.documents.map(doc =>
+        `<tr><td>${escapeHtml(doc.date)}</td><td><strong>${escapeHtml(doc.name)}</strong></td><td>${escapeHtml(doc.category)}</td><td>${escapeHtml(interventionLabel(data, doc.interventionId))}</td><td>${documentLink(doc.url, 'Ouvrir le lien')}</td></tr>`
+      ).join('');
+    }
+
+    function renderInterventionDocuments(data, intervention) {
+      const links = [];
+      if (intervention.docUrl) links.push(documentLink(intervention.docUrl, '📎 Facture'));
+      else if (intervention.doc) links.push(escapeHtml(`📎 ${intervention.doc}`));
+      data.documents.filter(doc => doc.interventionId === intervention.id).forEach(doc => links.push(documentLink(doc.url, `📎 ${doc.name}`)));
+      return links.join('<br>') || '—';
+    }
+
+    function interventionLabel(data, interventionId) {
+      const intervention = data.interventions.find(item => item.id === interventionId);
+      return intervention ? `${intervention.type || intervention.name} (${intervention.date})` : '';
+    }
+
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    switchVehicle('v1');
+  </script>
+</body>
+</html>
