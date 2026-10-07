@@ -285,6 +285,34 @@
       padding: 20px;
       min-width: 0;
     }
+    .history-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
+    .history-filter { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+    .history-filter select {
+      min-height: 40px;
+      max-width: 260px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text-main);
+      font: inherit;
+    }
+    .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
+    .intervention-mobile-card { display: none; }
+    .delete-button {
+      min-height: 38px;
+      padding: 6px 10px;
+      border: 1px solid #fecaca;
+      border-radius: 7px;
+      background: #fff;
+      color: #b91c1c;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .delete-button:hover { background: #fef2f2; }
 
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { padding: 12px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid var(--border); }
@@ -374,32 +402,32 @@
       .chart-column { width: 108px; min-width: 108px; }
       .chart-legend { gap: 8px 14px; }
       .content-card { padding: 16px 12px; }
+      .history-toolbar { align-items: stretch; flex-direction: column; gap: 6px; }
+      .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
+      .history-filter select { width: 100%; max-width: none; }
+      .history-count { text-align: right; }
       #interventions table,
       #interventions tbody,
       #interventions tr,
       #interventions td { display: block; width: 100%; }
       #interventions thead { display: none; }
       #interventions tr {
-        padding: 8px 0;
+        padding: 10px 0;
         border-bottom: 1px solid var(--border);
       }
       #interventions tr:last-child { border-bottom: 0; }
-      #interventions td {
-        display: grid;
-        grid-template-columns: minmax(88px, 0.4fr) minmax(0, 1fr);
-        gap: 10px;
-        padding: 8px 4px;
-        border-bottom: 0;
-        overflow-wrap: anywhere;
-      }
-      #interventions td::before {
-        content: attr(data-label);
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      #interventions td > * { min-width: 0; }
-      #interventions .link-btn { overflow-wrap: anywhere; }
+      #interventions td { display: none; padding: 0; border: 0; }
+      #interventions td:first-child { display: block; }
+      #interventions .intervention-desktop-date { display: none; }
+      #interventions .intervention-mobile-card { display: block; }
+      .intervention-mobile-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+      .intervention-mobile-title { min-width: 0; overflow-wrap: anywhere; font-size: 0.96rem; }
+      .intervention-mobile-price { flex: 0 0 auto; font-size: 0.92rem; font-weight: 700; }
+      .intervention-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; }
+      .intervention-mobile-detail { margin-top: 3px; color: var(--text-muted); font-size: 0.82rem; overflow-wrap: anywhere; }
+      .intervention-mobile-links { margin-top: 3px; font-size: 0.8rem; }
+      .intervention-mobile-actions { display: flex; justify-content: flex-end; margin-top: 7px; }
+      .delete-button { min-height: 40px; }
       .modal-form { padding: 18px 16px; }
       .maintenance-content { padding: 16px 12px; }
       .maintenance-table,
@@ -510,6 +538,15 @@
     <div id="interventions" class="tab-content active">
       <div class="content-card">
         <h3>Historique des réparations</h3>
+        <div class="history-toolbar">
+          <label class="history-filter" for="interventionTypeFilter">
+            <span>Type d’intervention</span>
+            <select id="interventionTypeFilter" onchange="filterInterventions(this.value)">
+              <option value="">Toutes les interventions</option>
+            </select>
+          </label>
+          <span class="history-count" id="interventionHistoryCount" aria-live="polite"></span>
+        </div>
         <table>
           <thead>
             <tr>
@@ -518,6 +555,7 @@
               <th>Kilométrage</th>
               <th>Coût</th>
               <th>Document</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="interventions-table"></tbody>
@@ -536,6 +574,7 @@
               <th>Prix / L</th>
               <th>Montant</th>
               <th>Km</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="fuel-table"></tbody>
@@ -553,6 +592,7 @@
               <th>Article</th>
               <th>Magasin</th>
               <th>Prix</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="purchases-table"></tbody>
@@ -565,7 +605,7 @@
         <h3>Liens des documents</h3>
         <table>
           <thead>
-            <tr><th>Date</th><th>Document</th><th>Catégorie</th><th>Intervention liée</th><th>Lien</th></tr>
+            <tr><th>Date</th><th>Document</th><th>Catégorie</th><th>Intervention liée</th><th>Lien</th><th>Action</th></tr>
           </thead>
           <tbody id="documents-table"></tbody>
         </table>
@@ -634,6 +674,19 @@
       <div class="modal-header"><div><h2 id="completeDeadlineTitle">Confirmer l'échéance</h2><p id="completeDeadlineMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="answerDeadlineCompletion(false)">&times;</button></div>
       <div class="field"><label for="completeDeadlineSelect">Échéance</label><select id="completeDeadlineSelect"></select></div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="answerDeadlineCompletion(false)">Non, conserver</button><button class="btn-save" type="button" onclick="answerDeadlineCompletion(true)">Oui, retirer l'échéance</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="deleteRecordModal" aria-labelledby="deleteRecordTitle">
+    <div class="modal-form">
+      <div class="modal-header">
+        <div><h2 id="deleteRecordTitle">Supprimer cet élément ?</h2><p id="deleteRecordMessage"></p></div>
+        <button class="modal-close" type="button" aria-label="Fermer" onclick="cancelDeleteRecord()">&times;</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" type="button" onclick="cancelDeleteRecord()">Annuler</button>
+        <button class="delete-button" type="button" onclick="confirmDeleteRecord()">Supprimer</button>
+      </div>
     </div>
   </dialog>
 
@@ -828,7 +881,9 @@
             .every(key => Array.isArray(vehicle[key]));
         }) &&
         data.maintenanceRecords && typeof data.maintenanceRecords === 'object' &&
-        Array.isArray(data.interventionTypes) && data.interventionTypes.every(type => typeof type === 'string'));
+        Array.isArray(data.interventionTypes) && data.interventionTypes.every(type => typeof type === 'string') &&
+        (data.deletedRecords === undefined || Array.isArray(data.deletedRecords) &&
+          data.deletedRecords.every(key => typeof key === 'string')));
     }
 
     function loadStoredBackup() {
@@ -866,6 +921,8 @@
     let pendingMaintenanceItemId = null;
     let maintenanceChoiceItemId = null;
     let maintenanceRecords = TEST_MODE ? {} : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
+    let deletedRecords = TEST_MODE ? [] : initialBackup && Array.isArray(initialBackup.deletedRecords)
+      ? initialBackup.deletedRecords.slice() : [];
     const defaultInterventionTypes = [
       'Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique',
       'Courroie', 'Filtre d’habitacle', 'Filtre à air', 'Filtre à gazole', 'Distribution',
@@ -875,6 +932,7 @@
       ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
     const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
     let chartInterventionsOnly = false;
+    let interventionTypeFilter = '';
 
     function createRecordId() {
       recordSequence += 1;
@@ -1026,6 +1084,7 @@
         exportedAt: new Date().toISOString(),
         vehicles: vehiclesData,
         maintenanceRecords,
+        deletedRecords,
         interventionTypes,
         currentVehicleId,
         ts
@@ -1101,17 +1160,30 @@
       return [...records.values()];
     }
 
+    function deletionKey(vehicleId, type, record) {
+      return JSON.stringify([vehicleId, type, record.id || JSON.stringify(record)]);
+    }
+
     function mergeBackupData(local, remote) {
       if (!isBackupData(remote)) throw new Error('Fichier de sauvegarde Google Drive invalide');
       const newer = (remote.ts || 0) > (local.ts || 0) ? remote : local;
       const older = newer === remote ? local : remote;
+      const mergedDeletions = [...new Set([...(local.deletedRecords || []), ...(remote.deletedRecords || [])])];
+      const isDeleted = (vehicleId, type, record) =>
+        mergedDeletions.includes(deletionKey(vehicleId, type, record));
+      const mergeEntries = (vehicleId, type, latest, previous) =>
+        mergeRecords(latest, previous).filter(record => !isDeleted(vehicleId, type, record));
       const vehicles = {};
       ['v1', 'v2'].forEach(vehicleId => {
         const latest = newer.vehicles[vehicleId];
         const previous = older.vehicles[vehicleId];
-        const interventions = mergeRecords(latest.interventions, previous.interventions);
-        const fuel = mergeRecords(latest.fuel, previous.fuel);
-        const purchases = mergeRecords(latest.purchases, previous.purchases);
+        const interventions = mergeEntries(vehicleId, 'intervention', latest.interventions, previous.interventions)
+          .map(intervention => isDeleted(vehicleId, 'invoice', intervention)
+            ? { ...intervention, docUrl: '', doc: '' } : intervention);
+        const fuel = mergeEntries(vehicleId, 'fuel', latest.fuel, previous.fuel);
+        const purchases = mergeEntries(vehicleId, 'purchase', latest.purchases, previous.purchases);
+        const documents = mergeEntries(vehicleId, 'document', latest.documents, previous.documents);
+        const plannedInterventions = mergeEntries(vehicleId, 'planned', latest.plannedInterventions, previous.plannedInterventions);
         const monthlyStats = mergeRecords(
           latest.monthlyStats.map(month => ({ ...month, id: month.month })),
           previous.monthlyStats.map(month => ({ ...month, id: month.month }))
@@ -1125,28 +1197,38 @@
           ...previous,
           ...latest,
           deadlines: latest.deadlines,
-          plannedInterventions: latest.plannedInterventions,
+          plannedInterventions,
           monthlyStats,
           interventions,
           fuel,
           purchases,
-          documents: mergeRecords(latest.documents, previous.documents),
+          documents,
           additionalCost: interventions.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
             fuel.reduce((sum, item) => sum + parseEuroAmount(item.total), 0) +
             purchases.reduce((sum, item) => sum + parseEuroAmount(item.price), 0)
         };
       });
+      const mergedMaintenanceRecords = Object.fromEntries([...new Set([
+        ...Object.keys(older.maintenanceRecords),
+        ...Object.keys(newer.maintenanceRecords)
+      ])].map(vehicleId => [vehicleId, {
+        ...(older.maintenanceRecords[vehicleId] || {}),
+        ...(newer.maintenanceRecords[vehicleId] || {})
+      }]));
+      Object.entries(mergedMaintenanceRecords).forEach(([vehicleId, records]) => {
+        Object.keys(records).forEach(itemId => {
+          const interventionId = records[itemId].interventionId;
+          if (interventionId && mergedDeletions.includes(deletionKey(vehicleId, 'intervention', { id: interventionId }))) {
+            delete records[itemId];
+          }
+        });
+      });
       return {
         ...older,
         ...newer,
         vehicles,
-        maintenanceRecords: Object.fromEntries([...new Set([
-          ...Object.keys(older.maintenanceRecords),
-          ...Object.keys(newer.maintenanceRecords)
-        ])].map(vehicleId => [vehicleId, {
-          ...(older.maintenanceRecords[vehicleId] || {}),
-          ...(newer.maintenanceRecords[vehicleId] || {})
-        }])),
+        maintenanceRecords: mergedMaintenanceRecords,
+        deletedRecords: mergedDeletions,
         interventionTypes: [...new Set([...newer.interventionTypes, ...older.interventionTypes])],
         currentVehicleId: newer.currentVehicleId || 'v2',
         ts: Math.max(local.ts || 0, remote.ts || 0)
@@ -1174,6 +1256,7 @@
       localStorage.setItem(backupTimestampKey, String(data.ts || 0));
       vehiclesData = data.vehicles;
       maintenanceRecords = data.maintenanceRecords;
+      deletedRecords = data.deletedRecords || [];
       interventionTypes = data.interventionTypes.slice();
       currentVehicleId = ['v1', 'v2'].includes(data.currentVehicleId) ? data.currentVehicleId : 'v2';
       document.getElementById('vehicleSelect').value = currentVehicleId;
@@ -1691,6 +1774,7 @@
       const data = vehiclesData[currentVehicleId];
       data.fuel.unshift({
         id: createDataId('fuel'),
+        costTracked: true,
         date: formatDate(values.date), volume: `${volume} L`, priceL: formatEuro(pricePerL),
         total: formatEuro(total), km: `${Number(values.km).toLocaleString('fr-FR')} km`
       });
@@ -1717,7 +1801,7 @@
       const description = values.description.trim();
       const maintenanceItemId = pendingMaintenanceItemId;
       vehiclesData[currentVehicleId].interventions.unshift({
-        id: createRecordId(), date: formatDate(values.date), type, name: description || type, garage: values.garage,
+        id: createRecordId(), costTracked: true, date: formatDate(values.date), type, name: description || type, garage: values.garage,
         km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '', docUrl: safeUrl
       });
       addCostToCurrentMonth('maint', price, values.date, type);
@@ -1777,6 +1861,7 @@
       const price = Number(values.price);
       vehiclesData[currentVehicleId].purchases.unshift({
         id: createDataId('purchase'),
+        costTracked: true,
         date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price)
       });
       addCostToCurrentMonth('parts', price, values.date, values.item);
@@ -1905,28 +1990,184 @@
           const clickAction = intervention.maintenanceItemId
             ? `startMaintenanceIntervention('${escapeHtml(intervention.maintenanceItemId)}', '${escapeHtml(intervention.id)}')`
             : `startDeadlineIntervention('${escapeHtml(intervention.id)}')`;
-          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span><button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
+          const deleteAction = !intervention.maintenanceItemId
+            ? deleteButton('planned', data.plannedInterventions.indexOf(intervention), label)
+            : '';
+          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
         }
         ).join('');
       document.getElementById('deadlinesList').innerHTML = fixedDeadlines + plannedInterventions;
 
       // Remplissage des tables
-      document.getElementById('interventions-table').innerHTML = data.interventions.map(i =>
-        `<tr><td data-label="Date">${escapeHtml(i.date)}</td><td data-label="Intervention"><strong>${escapeHtml(i.type || i.name)}</strong>${i.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${i.type && i.name !== i.type ? `<br><small>${escapeHtml(i.name)}</small>` : ''}${i.garage ? `<br><small>${escapeHtml(i.garage)}</small>` : ''}</td><td data-label="Kilométrage">${escapeHtml(i.km)}</td><td data-label="Coût">${escapeHtml(i.price)}</td><td data-label="Document">${renderInterventionDocuments(data, i)}</td></tr>`
+      renderInterventionHistory(data);
+
+      document.getElementById('fuel-table').innerHTML = data.fuel.map((fuel, index) =>
+        `<tr><td>${escapeHtml(fuel.date)}</td><td>${escapeHtml(fuel.volume)}</td><td>${escapeHtml(fuel.priceL)}</td><td><strong>${escapeHtml(fuel.total)}</strong></td><td>${escapeHtml(fuel.km)}</td><td>${deleteButton('fuel', index, fuel.date)}</td></tr>`
       ).join('');
 
-      document.getElementById('fuel-table').innerHTML = data.fuel.map(f =>
-        `<tr><td>${escapeHtml(f.date)}</td><td>${escapeHtml(f.volume)}</td><td>${escapeHtml(f.priceL)}</td><td><strong>${escapeHtml(f.total)}</strong></td><td>${escapeHtml(f.km)}</td></tr>`
+      document.getElementById('purchases-table').innerHTML = data.purchases.map((purchase, index) =>
+        `<tr><td>${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${deleteButton('purchase', index, purchase.item)}</td></tr>`
       ).join('');
 
-      document.getElementById('purchases-table').innerHTML = data.purchases.map(p =>
-        `<tr><td>${escapeHtml(p.date)}</td><td><strong>${escapeHtml(p.item)}</strong></td><td>${escapeHtml(p.store || '—')}</td><td>${escapeHtml(p.price)}</td></tr>`
-      ).join('');
-
-      document.getElementById('documents-table').innerHTML = data.documents.map(doc =>
-        `<tr><td>${escapeHtml(doc.date)}</td><td><strong>${escapeHtml(doc.name)}</strong></td><td>${escapeHtml(doc.category)}</td><td>${escapeHtml(interventionLabel(data, doc.interventionId))}</td><td>${documentLink(doc.url, 'Ouvrir le lien')}</td></tr>`
+      document.getElementById('documents-table').innerHTML = data.documents.map((documentRecord, index) =>
+        `<tr><td>${escapeHtml(documentRecord.date)}</td><td><strong>${escapeHtml(documentRecord.name)}</strong></td><td>${escapeHtml(documentRecord.category)}</td><td>${escapeHtml(interventionLabel(data, documentRecord.interventionId))}</td><td>${documentLink(documentRecord.url, 'Ouvrir le lien')}</td><td>${deleteButton('document', index, documentRecord.name)}</td></tr>`
       ).join('');
       document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+    }
+
+    function renderInterventionHistory(data) {
+      const filter = document.getElementById('interventionTypeFilter');
+      const selectedType = interventionTypeFilter;
+      const types = [...new Set(data.interventions.map(item => item.type || item.name).filter(Boolean))]
+        .sort((first, second) => first.localeCompare(second, 'fr'));
+      filter.innerHTML = '<option value="">Toutes les interventions</option>' +
+        types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
+      interventionTypeFilter = types.includes(selectedType) ? selectedType : '';
+      filter.value = interventionTypeFilter;
+
+      const visibleInterventions = data.interventions.filter(item =>
+        !interventionTypeFilter || (item.type || item.name) === interventionTypeFilter
+      );
+      document.getElementById('interventionHistoryCount').textContent =
+        `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
+      document.getElementById('interventions-table').innerHTML = visibleInterventions.map(intervention => {
+        const index = data.interventions.indexOf(intervention);
+        const title = intervention.type || intervention.name;
+        const detail = intervention.type && intervention.name !== intervention.type ? intervention.name : '';
+        const links = renderInterventionDocuments(data, intervention);
+        const invoiceButton = intervention.docUrl || intervention.doc
+          ? deleteButton('invoice', index, title)
+          : '';
+        const deleteAction = `requestDeleteRecord('intervention', ${index}, ${escapeHtml(JSON.stringify(title))})`;
+        return `<tr>
+          <td data-label="Date">
+            <span class="intervention-desktop-date">${escapeHtml(intervention.date)}</span>
+            <div class="intervention-mobile-card">
+              <div class="intervention-mobile-heading">
+                <strong class="intervention-mobile-title">${escapeHtml(title)}${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}</strong>
+                <span class="intervention-mobile-price">${escapeHtml(intervention.price)}</span>
+              </div>
+              <div class="intervention-mobile-meta"><span>${escapeHtml(intervention.date)}</span><span>${escapeHtml(intervention.km)}</span></div>
+              ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
+              ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
+              <div class="intervention-mobile-actions">
+                ${invoiceButton ? `<span>${invoiceButton.replace('🗑️</button>', '🗑️ Facture</button>')}</span>` : ''}
+                <button class="delete-button" type="button" aria-label="Supprimer ${escapeHtml(title)}" onclick="${deleteAction}">🗑️ Intervention</button>
+              </div>
+            </div>
+          </td>
+          <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
+          <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
+          <td data-label="Coût">${escapeHtml(intervention.price)}</td>
+          <td data-label="Document">${links}${invoiceButton ? `<br>${invoiceButton}` : ''}</td>
+          <td data-label="Action">${deleteButton('intervention', index, title)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function deleteButton(type, index, label) {
+      return `<button class="delete-button" type="button" aria-label="Supprimer ${escapeHtml(label)}" onclick="requestDeleteRecord('${type}', ${index}, ${escapeHtml(JSON.stringify(label))})">🗑️</button>`;
+    }
+
+    let pendingDelete = null;
+
+    function requestDeleteRecord(type, index, label) {
+      if (!['intervention', 'fuel', 'purchase', 'document', 'invoice', 'planned'].includes(type)) return;
+      pendingDelete = { type, index };
+      const typeLabels = {
+        intervention: 'l’intervention', fuel: 'le plein', purchase: 'l’achat',
+        document: 'le document', invoice: 'la facture liée à l’intervention',
+        planned: 'l’échéance planifiée'
+      };
+      const linkedDocumentCount = type === 'intervention'
+        ? vehiclesData[currentVehicleId].documents.filter(documentRecord =>
+          vehiclesData[currentVehicleId].interventions[index]?.id &&
+          documentRecord.interventionId === vehiclesData[currentVehicleId].interventions[index].id
+        ).length
+        : 0;
+      const linkedNotice = linkedDocumentCount
+        ? ` ${linkedDocumentCount} lien${linkedDocumentCount > 1 ? 's' : ''} de document associé${linkedDocumentCount > 1 ? 's seront également supprimés.' : ' sera également supprimé.'}`
+        : '';
+      document.getElementById('deleteRecordMessage').textContent =
+        `Voulez-vous vraiment supprimer ${typeLabels[type]} « ${label} » ?${linkedNotice} Cette action est définitive.`;
+      document.getElementById('deleteRecordModal').showModal();
+    }
+
+    function cancelDeleteRecord() {
+      pendingDelete = null;
+      document.getElementById('deleteRecordModal').close();
+    }
+
+    function removeTrackedCost(data, record, category, amountField) {
+      if (!record.costTracked) return;
+      const amount = parseEuroAmount(record[amountField]);
+      const [day, month, year] = String(record.date || '').split('/');
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const monthLabel = `${monthNames[Number(month) - 1]} ${String(year || '').slice(-2)}`;
+      const stats = data.monthlyStats.find(entry => entry.month === monthLabel);
+      if (stats) stats[category] = Math.max(0, stats[category] - amount);
+      data.additionalCost = Math.max(0, data.additionalCost - amount);
+    }
+
+    function confirmDeleteRecord() {
+      if (!pendingDelete) return;
+      const { type, index } = pendingDelete;
+      const data = vehiclesData[currentVehicleId];
+      const recordLists = {
+        intervention: data.interventions,
+        invoice: data.interventions,
+        fuel: data.fuel,
+        purchase: data.purchases,
+        document: data.documents,
+        planned: data.plannedInterventions
+      };
+      const record = recordLists[type][index];
+      if (!record) {
+        cancelDeleteRecord();
+        setSyncStatus('Suppression impossible : cet élément n’existe plus.');
+        return;
+      }
+      deletedRecords = [...new Set([...deletedRecords, deletionKey(currentVehicleId, type, record)])];
+      if (type === 'invoice') {
+        record.docUrl = '';
+        record.doc = '';
+      } else if (type === 'intervention') {
+        removeTrackedCost(data, record, 'maint', 'price');
+        if (record.id) {
+          const linkedDocuments = data.documents.filter(documentRecord => documentRecord.interventionId === record.id);
+          deletedRecords = [...new Set([
+            ...deletedRecords,
+            ...linkedDocuments.map(documentRecord => deletionKey(currentVehicleId, 'document', documentRecord))
+          ])];
+          data.documents = data.documents.filter(documentRecord => documentRecord.interventionId !== record.id);
+          const records = maintenanceRecords[currentVehicleId] || {};
+          Object.keys(records).forEach(itemId => {
+            if (records[itemId].interventionId === record.id) delete records[itemId];
+          });
+        }
+      } else if (type === 'fuel') {
+        removeTrackedCost(data, record, 'fuel', 'total');
+        if (Number(record.km.replace(/\D/g, '')) === Number(data.km.replace(/\D/g, ''))) {
+          const remainingKilometers = [...data.fuel, ...data.interventions]
+            .map(entry => Number(entry.km.replace(/\D/g, '')))
+            .filter(Number.isFinite);
+          data.km = formatKilometers(remainingKilometers.length ? Math.max(...remainingKilometers) : 0);
+        }
+      } else if (type === 'purchase') {
+        removeTrackedCost(data, record, 'parts', 'price');
+      }
+      if (type !== 'invoice') recordLists[type].splice(index, 1);
+      pendingDelete = null;
+      document.getElementById('deleteRecordModal').close();
+      persistData();
+      switchVehicle(currentVehicleId);
+      if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
+      setSyncStatus('Élément supprimé.');
+    }
+
+    function filterInterventions(type) {
+      interventionTypeFilter = type;
+      renderInterventionHistory(vehiclesData[currentVehicleId]);
     }
 
     function renderInterventionDocuments(data, intervention) {

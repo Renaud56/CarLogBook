@@ -6,11 +6,11 @@ Application de suivi de véhicule en HTML/CSS/JavaScript, conçue pour une utili
 
 Les véhicules, pleins, interventions, échéances, achats, liens de documents, types d'intervention et données de suivi d'entretien sont enregistrés dans le navigateur et synchronisés dans un fichier `carlogbook-shared.json` sur Google Drive.
 
-La première connexion se fait avec **Se connecter à Google Drive**. L'autorisation est ensuite redemandée automatiquement à l'ouverture ou à l'actualisation de la page. Les modifications sont envoyées à Drive après un court délai ; la synchronisation reprend aussi au retour sur la page. Elle nécessite une connexion Internet. Les documents ne sont jamais téléversés : seuls leurs liens sont enregistrés.
+La première connexion se fait avec **Se connecter à Google Drive**. Après activation, l'application redemande automatiquement l'autorisation à Google à l'ouverture ou à l'actualisation, comme YamsScorer ; les modifications et suppressions sont ensuite envoyées à Drive après un court délai. La synchronisation reprend aussi au retour sur la page tant que le jeton d'accès est valide. Si le navigateur bloque la fenêtre OAuth automatique, touchez le bouton Google Drive pour autoriser la reconnexion. La synchronisation nécessite une connexion Internet. Les documents ne sont jamais téléversés : seuls leurs liens sont enregistrés.
 
 L'application utilise le client OAuth Google Identity Services configuré dans `index.html`. L'origine HTTPS utilisée par CarLogBook doit être ajoutée aux **origines JavaScript autorisées** du client OAuth Google. Une connexion OAuth n'est pas disponible depuis une page `file://`.
 
-Les boutons **Exporter en JSON** et **Importer un JSON** permettent de conserver ou transférer une sauvegarde manuellement. L'import fusionne les entrées identifiées et conserve les données les plus récentes pour les échéances et informations de synthèse.
+Les boutons **Exporter en JSON** et **Importer un JSON** permettent de conserver ou transférer une sauvegarde manuellement. L'import fusionne les entrées identifiées et conserve les données les plus récentes pour les échéances et informations de synthèse. Chaque historique propose aussi une suppression avec confirmation ; les suppressions sont conservées lors de la fusion avec Google Drive.
 
 ## Mode de test
 
