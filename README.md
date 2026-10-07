@@ -1,5 +1,23 @@
 # CarLogBook
 
-Le programme indicatif de suivi du Renault Scénic est décrit dans [maintenance-schedule.js](./maintenance-schedule.js). Les échéances de référence sont reprises de la liste fournie par le propriétaire pour un moteur 110 ch ; l’application concerne un véhicule déclaré en 115 ch. Vérifier l’applicabilité avec le carnet d’entretien ou le programme Renault lié au VIN.
+Application de suivi de véhicule en HTML/CSS/JavaScript, conçue pour une utilisation mobile Android.
 
-Les dates et kilométrages de dernière réalisation enregistrés depuis la fenêtre « Suivi » sont conservés localement dans le navigateur (localStorage). La prochaine échéance est calculée avec le premier terme atteint (date ou kilométrage) et apparaît dans « Prochaines Échéances ». Une échéance manuelle du même type remplace l’affichage calculé pour éviter un doublon ; la validation de cette échéance actualise aussi le suivi du programme. Les données ne sont pas synchronisées et peuvent être perdues si les données du navigateur sont effacées.
+## Sauvegarde et synchronisation
+
+Les véhicules, pleins, interventions, échéances, achats, liens de documents, types d'intervention et données de suivi d'entretien sont enregistrés dans le navigateur et synchronisés dans un fichier `carlogbook-shared.json` sur Google Drive.
+
+La première connexion se fait avec **Se connecter à Google Drive**. L'autorisation est ensuite redemandée automatiquement à l'ouverture ou à l'actualisation de la page. Les modifications sont envoyées à Drive après un court délai ; la synchronisation reprend aussi au retour sur la page. Elle nécessite une connexion Internet. Les documents ne sont jamais téléversés : seuls leurs liens sont enregistrés.
+
+L'application utilise le client OAuth Google Identity Services configuré dans `index.html`. L'origine HTTPS utilisée par CarLogBook doit être ajoutée aux **origines JavaScript autorisées** du client OAuth Google. Une connexion OAuth n'est pas disponible depuis une page `file://`.
+
+Les boutons **Exporter en JSON** et **Importer un JSON** permettent de conserver ou transférer une sauvegarde manuellement. L'import fusionne les entrées identifiées et conserve les données les plus récentes pour les échéances et informations de synthèse.
+
+## Mode de test
+
+Ouvrir `index.html?test=1` pour afficher les données de démonstration intégrées à l'application. Comme dans YamsScorer, ce mode ne lit ni n'écrit les données enregistrées, et désactive l'import et la synchronisation Google Drive. L'export JSON reste disponible pour exporter les données de démonstration.
+
+Hors mode de test, les données de démonstration ne sont pas préchargées ; les véhicules commencent avec des listes vides.
+
+## Programme d'entretien
+
+Le programme indicatif est décrit dans [maintenance-schedule.js](./maintenance-schedule.js). Les échéances de référence sont reprises de la liste fournie par le propriétaire pour un moteur 110 ch ; l'application concerne un véhicule déclaré en 115 ch. Vérifier l'applicabilité avec le carnet d'entretien ou le programme Renault lié au VIN.

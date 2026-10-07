@@ -79,6 +79,18 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .btn-action:hover { background: var(--accent); color: white; border-color: var(--accent); }
+    .backup-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin: -8px 0 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .backup-panel h2 { font-size: 1rem; margin-bottom: 10px; }
+    .backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .backup-status { margin-top: 8px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+    .backup-note { margin-top: 4px; color: var(--text-muted); font-size: 0.75rem; }
 
     /* KPI Cards Grid */
     .kpi-grid {
@@ -356,6 +368,7 @@
       .vehicle-picker select { max-width: min(180px, 52vw); min-width: 0; padding: 8px; }
       .maintenance-open { padding: 8px; font-size: 0.78rem; }
       .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .backup-actions { grid-template-columns: 1fr; }
       .chart-card { padding: 16px; }
       .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
       .chart-column { width: 108px; min-width: 108px; }
@@ -559,6 +572,18 @@
       </div>
     </div>
 
+    <section class="backup-panel" aria-labelledby="backupTitle">
+      <h2 id="backupTitle">💾 Sauvegarde des données</h2>
+      <div class="backup-actions">
+        <button class="btn-action" type="button" onclick="exportBackup()">⬇ Exporter en JSON</button>
+        <button class="btn-action" type="button" onclick="document.getElementById('import-file').click()">⬆ Importer un JSON</button>
+        <button class="btn-action" id="sync-btn" type="button" onclick="syncClick()">☁ Se connecter à Google Drive</button>
+      </div>
+      <input type="file" id="import-file" accept=".json,application/json" hidden onchange="importBackup(event)">
+      <p class="backup-status" id="sync-status" role="status" aria-live="polite">Synchronisation Google Drive désactivée</p>
+      <p class="backup-note">Les données restent aussi enregistrées sur cet appareil. Seuls les liens sont stockés, pas les documents.</p>
+    </section>
+
   </div>
 
   <dialog class="action-modal" id="fuelModal" aria-labelledby="fuelModalTitle">
@@ -686,7 +711,12 @@
 
   <script src="maintenance-schedule.js"></script>
   <script>
-    const vehiclesData = {
+    const TEST_MODE = new URLSearchParams(location.search).get('test') === '1';
+    const backupStorageKey = 'carlogbook-data-v1';
+    const backupTimestampKey = 'carlogbook-data-ts-v1';
+    const driveEnabledKey = 'carlogbook-drive-enabled-v1';
+    const maintenanceStorageKey = 'carlogbook-maintenance-records-v1';
+    const testVehiclesData = {
       v1: {
         km: "84 500 km",
         additionalCost: 0,
@@ -772,20 +802,77 @@
       }
     };
 
-    let currentVehicleId = 'v2';
+    function createEmptyVehiclesData() {
+      return Object.fromEntries(Object.keys(testVehiclesData).map(vehicleId => [vehicleId, {
+        ...testVehiclesData[vehicleId],
+        km: '0 km',
+        additionalCost: 0,
+        kmYear: '—',
+        totalCost: '0 €',
+        costMonth: '0 € / mois',
+        deadlines: [],
+        plannedInterventions: [],
+        monthlyStats: [],
+        interventions: [],
+        fuel: [],
+        purchases: [],
+        documents: []
+      }]));
+    }
+
+    function isBackupData(data) {
+      return Boolean(data && data.app === 'carlogbook' && data.version === 1 &&
+        data.vehicles && ['v1', 'v2'].every(vehicleId => {
+          const vehicle = data.vehicles[vehicleId];
+          return vehicle && ['deadlines', 'plannedInterventions', 'monthlyStats', 'interventions', 'fuel', 'purchases', 'documents']
+            .every(key => Array.isArray(vehicle[key]));
+        }) &&
+        data.maintenanceRecords && typeof data.maintenanceRecords === 'object' &&
+        Array.isArray(data.interventionTypes) && data.interventionTypes.every(type => typeof type === 'string'));
+    }
+
+    function loadStoredBackup() {
+      try {
+        const saved = localStorage.getItem(backupStorageKey);
+        if (!saved) return null;
+        const data = JSON.parse(saved);
+        if (!isBackupData(data)) throw new Error('Format de sauvegarde inconnu');
+        return data;
+      } catch (error) {
+        setSyncStatus('Sauvegarde locale illisible : exportez-la ou importez une sauvegarde valide.');
+        console.error('[CarLogBook] Lecture de la sauvegarde locale impossible', error);
+        return null;
+      }
+    }
+
+    function loadLegacyMaintenanceRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(maintenanceStorageKey) || '{}');
+      } catch (error) {
+        setSyncStatus('Ancien suivi d’entretien illisible : il n’a pas pu être chargé.');
+        console.error('[CarLogBook] Lecture de l’ancien suivi impossible', error);
+        return {};
+      }
+    }
+
+    const initialBackup = TEST_MODE ? null : loadStoredBackup();
+    let vehiclesData = TEST_MODE ? testVehiclesData : initialBackup ? initialBackup.vehicles : createEmptyVehiclesData();
+    let currentVehicleId = TEST_MODE ? 'v2' : initialBackup && ['v1', 'v2'].includes(initialBackup.currentVehicleId)
+      ? initialBackup.currentVehicleId : 'v2';
     let recordSequence = 0;
     let completingDeadlineId = null;
     let confirmationDeadlines = [];
     let confirmationIntervention = null;
     let pendingMaintenanceItemId = null;
     let maintenanceChoiceItemId = null;
-    const maintenanceStorageKey = 'carlogbook-maintenance-records-v1';
-    const maintenanceRecords = JSON.parse(localStorage.getItem(maintenanceStorageKey) || '{}');
-    const interventionTypes = [
+    let maintenanceRecords = TEST_MODE ? {} : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
+    const defaultInterventionTypes = [
       'Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique',
       'Courroie', 'Filtre d’habitacle', 'Filtre à air', 'Filtre à gazole', 'Distribution',
       'Courroie d’accessoires', 'Liquide de frein', 'Liquide de refroidissement', 'Réparation', 'Autre'
     ];
+    let interventionTypes = !TEST_MODE && initialBackup && initialBackup.interventionTypes.length
+      ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
     const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true };
     let chartInterventionsOnly = false;
 
@@ -797,6 +884,11 @@
     function createDeadlineId() {
       recordSequence += 1;
       return `${currentVehicleId}-planned-${Date.now()}-${recordSequence}`;
+    }
+
+    function createDataId(type) {
+      recordSequence += 1;
+      return `${currentVehicleId}-${type}-${Date.now()}-${recordSequence}`;
     }
 
     function updateInterventionTypeSelect(selectedType = '') {
@@ -844,6 +936,7 @@
       renderInterventionTypes();
       message.innerText = `« ${type} » a été ajouté.`;
       input.value = '';
+      persistData();
     }
 
     function removeInterventionType(index) {
@@ -857,6 +950,7 @@
       interventionTypes.splice(index, 1);
       updateInterventionTypeSelect();
       renderInterventionTypes();
+      persistData();
     }
 
     function toggleChartSeries(series) {
@@ -918,6 +1012,330 @@
     function formData(form) {
       return Object.fromEntries(new FormData(form).entries());
     }
+
+    function setSyncStatus(message) {
+      const status = document.getElementById('sync-status');
+      if (status) status.textContent = message;
+    }
+
+    function backupSnapshot(ts = Number(localStorage.getItem(backupTimestampKey)) ||
+      (initialBackup && initialBackup.ts) || 0) {
+      return {
+        app: 'carlogbook',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        vehicles: vehiclesData,
+        maintenanceRecords,
+        interventionTypes,
+        currentVehicleId,
+        ts
+      };
+    }
+
+    function persistData() {
+      if (TEST_MODE) return false;
+      const ts = Date.now();
+      const data = backupSnapshot(ts);
+      try {
+        localStorage.setItem(backupStorageKey, JSON.stringify(data));
+        localStorage.setItem(backupTimestampKey, String(ts));
+        scheduleSync();
+        return true;
+      } catch (error) {
+        setSyncStatus('Erreur : sauvegarde locale impossible. Exportez les données dès que possible.');
+        console.error('[CarLogBook] Écriture de la sauvegarde locale impossible', error);
+        return false;
+      }
+    }
+
+    function exportBackup() {
+      const data = backupSnapshot();
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `carlogbook-${localDateValue()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setSyncStatus('Export JSON téléchargé.');
+    }
+
+    function importBackup(event) {
+      if (TEST_MODE) {
+        setSyncStatus('Import désactivé en mode test.');
+        event.target.value = '';
+        return;
+      }
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onerror = () => {
+        setSyncStatus('Erreur : lecture du fichier JSON impossible.');
+        event.target.value = '';
+      };
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!isBackupData(imported)) throw new Error('Format de sauvegarde inconnu');
+          const merged = mergeBackupData(backupSnapshot(), imported);
+          merged.ts = Date.now();
+          applyBackupData(merged);
+          setSyncStatus('Import terminé : les données ont été fusionnées.');
+        } catch (error) {
+          setSyncStatus('Fichier invalide : aucune donnée importée.');
+          console.error('[CarLogBook] Import JSON impossible', error);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function mergeRecords(newerRecords, olderRecords) {
+      const records = new Map();
+      [...(newerRecords || []), ...(olderRecords || [])].forEach(record => {
+        const key = record.id || JSON.stringify(record);
+        if (!records.has(key)) records.set(key, record);
+      });
+      return [...records.values()];
+    }
+
+    function mergeBackupData(local, remote) {
+      if (!isBackupData(remote)) throw new Error('Fichier de sauvegarde Google Drive invalide');
+      const newer = (remote.ts || 0) > (local.ts || 0) ? remote : local;
+      const older = newer === remote ? local : remote;
+      const vehicles = {};
+      ['v1', 'v2'].forEach(vehicleId => {
+        const latest = newer.vehicles[vehicleId];
+        const previous = older.vehicles[vehicleId];
+        const interventions = mergeRecords(latest.interventions, previous.interventions);
+        const fuel = mergeRecords(latest.fuel, previous.fuel);
+        const purchases = mergeRecords(latest.purchases, previous.purchases);
+        const monthlyStats = mergeRecords(
+          latest.monthlyStats.map(month => ({ ...month, id: month.month })),
+          previous.monthlyStats.map(month => ({ ...month, id: month.month }))
+        ).map(({ id, ...month }) => month);
+        monthlyStats.forEach(month => {
+          month.fuel = recordMonthTotal(fuel, 'total', month.month);
+          month.maint = recordMonthTotal(interventions, 'price', month.month);
+          month.parts = recordMonthTotal(purchases, 'price', month.month);
+        });
+        vehicles[vehicleId] = {
+          ...previous,
+          ...latest,
+          deadlines: latest.deadlines,
+          plannedInterventions: latest.plannedInterventions,
+          monthlyStats,
+          interventions,
+          fuel,
+          purchases,
+          documents: mergeRecords(latest.documents, previous.documents),
+          additionalCost: interventions.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
+            fuel.reduce((sum, item) => sum + parseEuroAmount(item.total), 0) +
+            purchases.reduce((sum, item) => sum + parseEuroAmount(item.price), 0)
+        };
+      });
+      return {
+        ...older,
+        ...newer,
+        vehicles,
+        maintenanceRecords: Object.fromEntries([...new Set([
+          ...Object.keys(older.maintenanceRecords),
+          ...Object.keys(newer.maintenanceRecords)
+        ])].map(vehicleId => [vehicleId, {
+          ...(older.maintenanceRecords[vehicleId] || {}),
+          ...(newer.maintenanceRecords[vehicleId] || {})
+        }])),
+        interventionTypes: [...new Set([...newer.interventionTypes, ...older.interventionTypes])],
+        currentVehicleId: newer.currentVehicleId || 'v2',
+        ts: Math.max(local.ts || 0, remote.ts || 0)
+      };
+    }
+
+    function parseEuroAmount(value) {
+      const amount = Number(String(value || '').replace(/[^\d,.-]/g, '').replace(',', '.'));
+      return Number.isFinite(amount) ? amount : 0;
+    }
+
+    function recordMonthTotal(records, amountKey, monthLabel) {
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      return records.reduce((total, record) => {
+        const parts = String(record.date || '').split('/');
+        if (parts.length !== 3) return total;
+        const label = `${monthNames[Number(parts[1]) - 1]} ${parts[2].slice(-2)}`;
+        return label === monthLabel ? total + parseEuroAmount(record[amountKey]) : total;
+      }, 0);
+    }
+
+    function applyBackupData(data, shouldScheduleSync = true) {
+      if (!isBackupData(data)) throw new Error('Données de sauvegarde invalides');
+      localStorage.setItem(backupStorageKey, JSON.stringify(data));
+      localStorage.setItem(backupTimestampKey, String(data.ts || 0));
+      vehiclesData = data.vehicles;
+      maintenanceRecords = data.maintenanceRecords;
+      interventionTypes = data.interventionTypes.slice();
+      currentVehicleId = ['v1', 'v2'].includes(data.currentVehicleId) ? data.currentVehicleId : 'v2';
+      document.getElementById('vehicleSelect').value = currentVehicleId;
+      updateInterventionTypeSelect();
+      updatePlannedInterventionTypeSelect();
+      switchVehicle(currentVehicleId);
+      if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
+      if (shouldScheduleSync) scheduleSync();
+    }
+
+    const GOOGLE_CLIENT_ID = '247129530373-otell6t5pgg182o3oiiq2u57ma3557tl.apps.googleusercontent.com';
+    const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive';
+    const DRIVE_FILE_NAME = 'carlogbook-shared.json';
+    let tokenClient = null;
+    let accessToken = null;
+    let tokenExpiresAt = 0;
+    let needsAuth = false;
+    let lastAuthAttempt = 0;
+    let syncBusy = false;
+    let syncAgain = false;
+    let syncTimeout = 0;
+    let driveFileId = null;
+
+    function setSync(connected, message) {
+      setSyncStatus(message);
+      document.getElementById('sync-btn').textContent = connected
+        ? '☁ Synchroniser maintenant' : '☁ Se connecter à Google Drive';
+    }
+
+    function gsiReady() {
+      if (TEST_MODE) return;
+      if (!window.google || !google.accounts || !google.accounts.oauth2) {
+        setSync(false, 'Connexion Google indisponible. Vérifiez votre connexion Internet.');
+        return;
+      }
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: GOOGLE_DRIVE_SCOPE,
+        callback: response => {
+          if (response.error) {
+            setSync(false, 'Connexion Google refusée : touchez le bouton pour réessayer.');
+            return;
+          }
+          accessToken = response.access_token;
+          tokenExpiresAt = Date.now() + (response.expires_in - 60) * 1000;
+          needsAuth = false;
+          localStorage.setItem(driveEnabledKey, '1');
+          syncNow();
+        },
+        error_callback: () => {
+          needsAuth = true;
+          setSync(false, 'Reconnexion requise : touchez le bouton Google Drive.');
+        }
+      });
+      if (localStorage.getItem(driveEnabledKey) === '1') requestDriveToken();
+    }
+
+    function requestDriveToken() {
+      if (!tokenClient) {
+        setSync(false, 'Connexion Google en cours de chargement.');
+        return;
+      }
+      lastAuthAttempt = Date.now();
+      tokenClient.requestAccessToken({ prompt: '' });
+    }
+
+    function syncClick() {
+      if (TEST_MODE) {
+        setSync(false, 'Synchronisation désactivée en mode test.');
+        return;
+      }
+      if (accessToken && Date.now() < tokenExpiresAt) syncNow();
+      else requestDriveToken();
+    }
+
+    function scheduleSync() {
+      if (!accessToken || Date.now() >= tokenExpiresAt || TEST_MODE) return;
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(syncNow, 2000);
+    }
+
+    async function driveApi(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { ...(options.headers || {}), Authorization: `Bearer ${accessToken}` }
+      });
+      if (response.status === 401) {
+        accessToken = null;
+        needsAuth = true;
+        throw new Error('auth');
+      }
+      if (!response.ok) throw new Error(`http ${response.status}`);
+      return response;
+    }
+
+    async function syncNow() {
+      if (TEST_MODE) return;
+      if (syncBusy) {
+        syncAgain = true;
+        return;
+      }
+      if (!accessToken || Date.now() >= tokenExpiresAt) {
+        needsAuth = true;
+        setSync(false, 'Reconnexion requise : touchez le bouton Google Drive.');
+        return;
+      }
+      syncBusy = true;
+      setSync(true, 'Synchronisation Google Drive…');
+      try {
+        const query = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+        const listing = await (await driveApi(
+          `https://www.googleapis.com/drive/v3/files?q=${query}&orderBy=createdTime&fields=files(id)`
+        )).json();
+        driveFileId = listing.files[0] && listing.files[0].id || null;
+        let data = backupSnapshot();
+        for (const file of listing.files) {
+          const remote = await (await driveApi(
+            `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`
+          )).json();
+          data = mergeBackupData(data, remote);
+        }
+        data.ts = Math.max(data.ts || 0, Date.now());
+        applyBackupData(data, false);
+        const json = JSON.stringify(data);
+        if (driveFileId) {
+          await driveApi(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: json
+          });
+        } else {
+          const boundary = 'carlogbook';
+          const response = await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+            body: `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: DRIVE_FILE_NAME, mimeType: 'application/json' })}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${json}\r\n--${boundary}--`
+          });
+          driveFileId = (await response.json()).id;
+        }
+        setSync(true, `Synchronisé à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`);
+      } catch (error) {
+        console.error('[CarLogBook] Synchronisation Google Drive impossible', error);
+        setSync(false, error.message === 'auth'
+          ? 'Reconnexion requise : touchez le bouton Google Drive.'
+          : 'Erreur de synchronisation Google Drive. Vérifiez votre connexion.');
+      } finally {
+        syncBusy = false;
+        if (syncAgain) {
+          syncAgain = false;
+          scheduleSync();
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && accessToken && Date.now() < tokenExpiresAt) syncNow();
+    });
+    document.addEventListener('pointerdown', () => {
+      if (needsAuth && localStorage.getItem(driveEnabledKey) === '1' && Date.now() - lastAuthAttempt > 30000) {
+        requestDriveToken();
+      }
+    });
 
     function localDateValue(date = new Date()) {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -1120,7 +1538,7 @@
         km,
         interventionId: intervention.id
       };
-      localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
+      persistData();
       maintenanceChoiceItemId = null;
       closeActionModal('maintenanceEntryModal');
       renderMaintenanceSchedule();
@@ -1234,9 +1652,9 @@
         if (maintenanceItem && confirmationIntervention) {
           maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
           maintenanceRecords[currentVehicleId][maintenanceItem.id] = confirmationIntervention;
-          localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
           if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
         }
+        persistData();
         switchVehicle(currentVehicleId);
       }
       confirmationDeadlines = [];
@@ -1272,11 +1690,13 @@
       const pricePerL = values.pricePerL ? Number(values.pricePerL) : total / volume;
       const data = vehiclesData[currentVehicleId];
       data.fuel.unshift({
+        id: createDataId('fuel'),
         date: formatDate(values.date), volume: `${volume} L`, priceL: formatEuro(pricePerL),
         total: formatEuro(total), km: `${Number(values.km).toLocaleString('fr-FR')} km`
       });
       data.km = `${Number(values.km).toLocaleString('fr-FR')} km`;
       addCostToCurrentMonth('fuel', total, values.date);
+      persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('fuelModal');
     }
@@ -1310,13 +1730,13 @@
       if (maintenanceItemId) {
         maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
         maintenanceRecords[currentVehicleId][maintenanceItemId] = completedIntervention;
-        localStorage.setItem(maintenanceStorageKey, JSON.stringify(maintenanceRecords));
         pendingMaintenanceItemId = null;
         renderMaintenanceSchedule();
       }
       if (completedDeadlineId) {
         removeDeadline(data, completedDeadlineId);
       }
+      persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('interventionModal');
       if (!completedDeadlineId) {
@@ -1346,6 +1766,7 @@
         date: values.date,
         comment: values.comment.trim()
       });
+      persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('plannedInterventionModal');
     }
@@ -1355,9 +1776,11 @@
       const values = formData(event.currentTarget);
       const price = Number(values.price);
       vehiclesData[currentVehicleId].purchases.unshift({
+        id: createDataId('purchase'),
         date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price)
       });
       addCostToCurrentMonth('parts', price, values.date, values.item);
+      persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('purchaseModal');
     }
@@ -1372,9 +1795,11 @@
         return;
       }
       vehiclesData[currentVehicleId].documents.unshift({
+        id: createDataId('document'),
         date: formatDate(values.date), name: values.name, category: values.category, url: safeUrl,
         interventionId: values.interventionId || ''
       });
+      persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('documentModal');
     }
@@ -1524,7 +1949,10 @@
       btn.classList.add('active');
     }
 
-    switchVehicle('v2');
+    document.getElementById('vehicleSelect').value = currentVehicleId;
+    switchVehicle(currentVehicleId);
+    if (TEST_MODE) setSyncStatus('Mode test actif : données de démonstration, aucune sauvegarde ni synchronisation.');
   </script>
+  <script src="https://accounts.google.com/gsi/client" async defer onload="gsiReady()"></script>
 </body>
 </html>
