@@ -2755,7 +2755,7 @@
       return eventsByMonth;
     }
 
-    function chartMileageByYear(data) {
+    function interventionMileageReadings(data) {
       const readingsByDate = new Map();
       data.interventions.forEach(intervention => {
         const dateParts = String(intervention.date || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -2771,6 +2771,11 @@
       const readings = [...readingsByDate.entries()]
         .map(([date, km]) => ({ date, year: date.slice(0, 4), km }))
         .sort((first, second) => first.date.localeCompare(second.date));
+      return readings;
+    }
+
+    function chartMileageByYear(data) {
+      const readings = interventionMileageReadings(data);
       const mileageByYear = new Map();
       let previousReading = null;
       readings.forEach(reading => {
@@ -2785,6 +2790,24 @@
         }
       });
       return mileageByYear;
+    }
+
+    function averageAnnualMileage(data) {
+      const readings = interventionMileageReadings(data);
+      const validReadings = [];
+      readings.forEach(reading => {
+        const previousReading = validReadings[validReadings.length - 1];
+        if (!previousReading || reading.km >= previousReading.km) validReadings.push(reading);
+      });
+      if (validReadings.length < 2) return null;
+      const first = validReadings[0];
+      const last = validReadings[validReadings.length - 1];
+      const firstDate = Date.parse(`${first.date}T00:00:00Z`);
+      const lastDate = Date.parse(`${last.date}T00:00:00Z`);
+      const elapsedDays = (lastDate - firstDate) / 86400000;
+      const distance = last.km - first.km;
+      if (elapsedDays < 30 || distance <= 0) return null;
+      return Math.round(distance * 365.25 / elapsedDays);
     }
 
     function showChartYear(year) {
@@ -2958,7 +2981,10 @@
       const data = vehiclesData[vId];
 
       document.getElementById('kpi-km').innerText = data.km;
-      document.getElementById('kpi-km-year').innerText = "Moyenne: ~" + data.kmYear;
+      const averageKmYear = averageAnnualMileage(data);
+      document.getElementById('kpi-km-year').innerText = averageKmYear === null
+        ? `Moyenne: ~${data.kmYear}`
+        : `Moyenne: ~${formatKilometers(averageKmYear)} / an`;
       document.getElementById('kpi-cost').innerText = data.additionalCost ? formatEuro(totalCostWithEntries(data)) : data.totalCost;
       document.getElementById('kpi-cost-month').innerText = data.additionalCost ? `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois` : "Moyenne : " + data.costMonth;
 
