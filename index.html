@@ -1252,8 +1252,10 @@
       return [...new Set(values.filter(value => typeof value === 'string' && value.trim()))];
     }
 
-    function updateInterventionTypeTiles(selectedType = '') {
-      const selectedTypes = Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
+    function updateInterventionTypeTiles(selectedType = null) {
+      const selectedTypes = selectedType === null
+        ? [...document.querySelectorAll('#interventionTypeTiles input[name="types"]:checked')].map(input => input.value)
+        : Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
       const tiles = document.getElementById('interventionTypeTiles');
       if (!tiles) return;
       tiles.innerHTML = interventionTypes.map((type, index) => {
@@ -2264,7 +2266,7 @@
         document.getElementById('interventionModalTitle').textContent = 'Ajouter une intervention';
         document.querySelector('#interventionForm button[type="submit"]').textContent = 'Enregistrer l’intervention';
         document.getElementById('interventionDeadlineField').hidden = false;
-        updateInterventionTypeTiles();
+        updateInterventionTypeTiles([]);
         document.getElementById('interventionTypeError').textContent = '';
         updateInterventionDeadlineSelect();
       }
