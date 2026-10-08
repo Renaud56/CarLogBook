@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -21,6 +21,7 @@
       --c-maint: #f59e0b;
       --c-insur: #10b981;
       --c-parts: #8b5cf6;
+      --c-misc: #ec4899;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -50,7 +51,22 @@
       background: #f8fafc;
       cursor: pointer;
     }
-    .vehicle-picker { display: flex; align-items: center; gap: 8px; }
+    .vehicle-picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .vehicle-select-stack { display: grid; gap: 4px; flex: 0 1 340px; min-width: 0; }
+    .vehicle-picker select { width: 100%; min-width: 0; }
+    .vehicle-ct-badge { justify-self: start; padding: 3px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .vehicle-ct-badge.ok { background: #dcfce7; color: #166534; }
+    .vehicle-ct-badge.soon { background: #ffedd5; color: #9a3412; }
+    .vehicle-ct-badge.overdue { background: #fee2e2; color: #991b1b; }
+    .vehicle-ct-badge.unknown { background: #f1f5f9; color: #475569; }
+    .vehicle-manage { flex: 0 0 auto; }
+    .vehicle-list { display: grid; gap: 8px; max-height: 45vh; overflow-y: auto; list-style: none; }
+    .vehicle-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .vehicle-list strong { min-width: 0; overflow-wrap: anywhere; }
+    .vehicle-list-actions { display: flex; flex: 0 0 auto; gap: 6px; }
+    .vehicle-list-actions button { min-height: 40px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+    .vehicle-list-actions .vehicle-remove { border-color: #fecaca; color: #b91c1c; }
+    .vehicle-list-actions .vehicle-remove:disabled { cursor: not-allowed; opacity: 0.65; }
 
     .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
 
@@ -114,12 +130,20 @@
     .mileage-value-row { display: flex; align-items: center; gap: 8px; }
     .mileage-value-row .value { min-width: 0; margin: 6px 0; }
     .deadline-list { display: grid; gap: 10px; margin-top: 12px; }
+    .deadline-upcoming-panel { border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; }
+    .deadline-upcoming-panel summary { min-height: 44px; padding: 12px; color: var(--text-main); font-size: 0.84rem; font-weight: 700; cursor: pointer; }
+    .deadline-upcoming-panel .deadline-list { margin: 0; padding: 0 12px 12px; }
     .deadline-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .deadline-item:last-child { border-bottom: 0; padding-bottom: 0; }
     .deadline-name { font-size: 0.85rem; font-weight: 600; }
     .deadline-value { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
     .deadline-details { display: grid; gap: 2px; min-width: 0; }
     .deadline-comment { color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+    .deadline-status { flex: 0 0 auto; padding: 3px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; white-space: nowrap; }
+    .deadline-status.soon { background: #ffedd5; color: #9a3412; }
+    .deadline-status.overdue { background: #fee2e2; color: #991b1b; }
+    .deadline-status.ok { background: #dcfce7; color: #166534; }
+    .deadline-status.unknown { background: #f1f5f9; color: #475569; }
     .deadline-actions { display: flex; align-items: center; gap: 8px; }
     .deadline-complete {
       flex: 0 0 36px;
@@ -363,6 +387,7 @@
     }
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
     .intervention-mobile-card { display: none; }
+    .table-mobile-card { display: none; }
     .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
     .history-intervention-tag {
       display: inline-block;
@@ -493,6 +518,10 @@
     .type-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
     .type-list button { display: grid; place-items: center; width: 40px; min-width: 40px; min-height: 40px; padding: 0; border: 1px solid #fecaca; border-radius: 8px; background: #fff7f7; color: #dc2626; font: inherit; font-size: 1rem; cursor: pointer; }
     .type-list button:disabled { border-color: #fecaca; background: #fff7f7; color: #dc2626; cursor: not-allowed; }
+    .misc-cost-type-row .field { flex: 1; min-width: 0; }
+    .type-list .misc-cost-type-actions { display: flex; flex: 0 0 auto; gap: 6px; }
+    .type-list .misc-cost-type-actions button { display: inline-flex; width: auto; min-width: 0; padding: 0 10px; border-color: var(--border); border-radius: 6px; background: #fff; color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+    .type-list .misc-cost-type-actions .vehicle-remove { border-color: #fecaca; color: #b91c1c; }
     .form-message { min-height: 1.2em; margin-top: 8px; color: var(--danger); font-size: 0.85rem; }
     dialog.maintenance-modal {
       width: min(1050px, calc(100% - 24px));
@@ -511,10 +540,17 @@
     .maintenance-table-wrap { overflow-x: auto; }
     .maintenance-table { min-width: 0; }
     .maintenance-table td { vertical-align: top; }
-    .maintenance-status { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .maintenance-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .maintenance-status-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; font-size: 0.8rem; line-height: 1; }
     .maintenance-status.ok { background: #dcfce7; color: #166534; }
-    .maintenance-status.due { background: #fee2e2; color: #991b1b; }
+    .maintenance-status.ok .maintenance-status-icon { background: #16a34a; color: #fff; }
+    .maintenance-status.soon { background: #ffedd5; color: #9a3412; }
+    .maintenance-status.soon .maintenance-status-icon { background: #f97316; color: #fff; }
+    .maintenance-status.overdue { background: #fee2e2; color: #991b1b; }
+    .maintenance-status.overdue .maintenance-status-icon { background: #dc2626; color: #fff; }
     .maintenance-status.unknown { background: #f1f5f9; color: #475569; }
+    .maintenance-status.unknown .maintenance-status-icon { background: #64748b; color: #fff; }
+    .maintenance-group th { padding: 10px 8px; background: #f1f5f9; color: var(--text-main); text-align: left; }
     .maintenance-record { display: grid; gap: 3px; min-width: 110px; }
     .maintenance-row-actions { display: grid; gap: 6px; min-width: 165px; }
     .maintenance-action { min-height: 40px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 7px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
@@ -526,9 +562,12 @@
     @media (max-width: 600px) {
       header { padding: 12px 14px; gap: 8px; flex-wrap: wrap; }
       .brand { font-size: 1rem; }
-      .vehicle-picker { gap: 5px; margin-left: auto; }
+      .vehicle-picker { width: 100%; gap: 6px; }
       .vehicle-picker label { display: none; }
-      .vehicle-picker select { max-width: min(180px, 52vw); min-width: 0; padding: 8px; }
+      .vehicle-select-stack { flex: 1 1 0; width: 0; }
+      .vehicle-picker select { max-width: none; padding: 6px 8px; font-size: 0.8rem; }
+      .vehicle-ct-badge { font-size: 0.68rem; }
+      .vehicle-manage { min-height: 38px; padding: 0 9px; font-size: 0.8rem; }
       .maintenance-open { padding: 8px; font-size: 0.78rem; }
       .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .backup-actions { grid-template-columns: 1fr; }
@@ -557,6 +596,25 @@
       #interventions td:first-child { display: block; }
       #interventions .intervention-desktop-date { display: none; }
       #interventions .intervention-mobile-card { display: block; }
+      #fuel table, #fuel tbody, #fuel tr, #fuel td,
+      #purchases table, #purchases tbody, #purchases tr, #purchases td,
+      #documents table, #documents tbody, #documents tr, #documents td,
+      #miscCosts table, #miscCosts tbody, #miscCosts tr, #miscCosts td { display: block; width: 100%; min-width: 0; }
+      #fuel thead, #purchases thead, #documents thead, #miscCosts thead { display: none; }
+      #fuel tr, #purchases tr, #documents tr, #miscCosts tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
+      #fuel tr:last-child, #purchases tr:last-child, #documents tr:last-child, #miscCosts tr:last-child { border-bottom: 0; }
+      #fuel td, #purchases td, #documents td, #miscCosts td { display: none; padding: 0; border: 0; }
+      #fuel td:first-child, #purchases td:first-child, #documents td:first-child, #miscCosts td:first-child { display: block; }
+      .table-desktop-date { display: none; }
+      .table-mobile-card { display: block; min-width: 0; }
+      .table-mobile-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; min-width: 0; }
+      .table-mobile-heading strong { min-width: 0; overflow-wrap: anywhere; }
+      .table-mobile-value { flex: 0 0 auto; font-size: 0.92rem; font-weight: 700; }
+      .table-mobile-meta, .table-mobile-link { margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+      .table-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+      .table-mobile-actions { display: flex; justify-content: flex-end; margin-top: 7px; }
+      .misc-cost-type-row { align-items: stretch; flex-wrap: wrap; }
+      .type-list .misc-cost-type-actions { width: 100%; justify-content: flex-end; }
       .intervention-mobile-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
       .intervention-mobile-title { min-width: 0; overflow-wrap: anywhere; font-size: 0.96rem; }
       .intervention-mobile-price { flex: 0 0 auto; font-size: 0.92rem; font-weight: 700; }
@@ -590,6 +648,8 @@
       }
       .maintenance-table td:last-child { display: flex; justify-content: flex-end; }
       .maintenance-table td:last-child::before { display: none; }
+      .maintenance-table tr.maintenance-group { padding: 0; border-bottom: 0; }
+      .maintenance-table tr.maintenance-group th { display: block; width: 100%; padding: 9px 4px; }
       .maintenance-row-actions { width: 100%; min-width: 0; grid-template-columns: 1fr; }
       .modal-fields { grid-template-columns: 1fr; gap: 12px; }
       .field.full-width { grid-column: auto; }
@@ -606,10 +666,11 @@
     <div class="brand">🚗 Suivi entretien</div>
     <div class="vehicle-picker">
       <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted);">Véhicule :</label>
-      <select id="vehicleSelect" onchange="switchVehicle(this.value)">
-        <option value="v2">Scénic III XMOD 1.5 dCi 115 ch (2015)</option>
-        <option value="v1">Peugeot 208 (AA-123-BB)</option>
-      </select>
+      <div class="vehicle-select-stack">
+        <select id="vehicleSelect" aria-label="Sélectionner un véhicule" onchange="switchVehicle(this.value)"></select>
+        <span id="vehicleInspectionBadge" class="vehicle-ct-badge" hidden></span>
+      </div>
+      <button class="btn-manage-types vehicle-manage" type="button" onclick="openVehicleManager()">Véhicules</button>
       <button id="maintenanceOpenButton" class="btn-manage-types maintenance-open" type="button" onclick="openMaintenanceSchedule()" hidden>Suivi</button>
     </div>
   </header>
@@ -621,6 +682,7 @@
       <button class="btn-action" onclick="openActionModal('fuelModal')">⛽ + Plein</button>
       <button class="btn-action" onclick="openActionModal('interventionModal')">🛠️ + Intervention</button>
       <button class="btn-action" onclick="openActionModal('purchaseModal')">🛒 + Achat</button>
+      <button class="btn-action" onclick="openActionModal('miscCostModal')">💸 + Coût divers</button>
       <button class="btn-action" onclick="openActionModal('documentModal')">📎 + Document</button>
       <button class="btn-action" type="button" onclick="openFixedCostsModal()">💶 Coûts fixes</button>
     </div>
@@ -665,6 +727,7 @@
         <button class="legend-toggle" data-series="maint" aria-pressed="true" onclick="toggleChartSeries('maint')"><span class="dot" style="background: var(--c-maint)"></span> Entretien / Réparations</button>
         <button class="legend-toggle" data-series="insur" aria-pressed="true" onclick="toggleChartSeries('insur')"><span class="dot" style="background: var(--c-insur)"></span> Coûts fixes</button>
         <button class="legend-toggle" data-series="parts" aria-pressed="true" onclick="toggleChartSeries('parts')"><span class="dot" style="background: var(--c-parts)"></span> Achats / Pièces</button>
+        <button class="legend-toggle" data-series="misc" aria-pressed="true" onclick="toggleChartSeries('misc')"><span class="dot" style="background: var(--c-misc)"></span> Coûts divers</button>
         <button class="legend-toggle" data-series="interventions" aria-pressed="true" onclick="toggleChartSeries('interventions')"><span style="font-size:0.9rem">🛠️</span> Interventions</button>
         <button class="legend-toggle" data-series="mileage" aria-pressed="true" onclick="toggleChartSeries('mileage')" hidden><span class="dot" style="background: var(--accent)"></span> Km parcourus</button>
         <button class="legend-toggle" id="interventionsOnlyToggle" aria-pressed="false" onclick="toggleInterventionsOnly()">Interventions uniquement</button>
@@ -677,6 +740,7 @@
       <button class="tab-btn" onclick="showTab('fuel', this)">⛽ Carburant</button>
       <button class="tab-btn" onclick="showTab('purchases', this)">🛒 Achats / Pièces</button>
       <button class="tab-btn" onclick="showTab('documents', this)">📎 Documents</button>
+      <button class="tab-btn" onclick="showTab('miscCosts', this)">💸 Coûts divers</button>
     </div>
 
     <!-- Contenu Onglets -->
@@ -760,6 +824,13 @@
       </div>
     </div>
 
+    <div id="miscCosts" class="tab-content">
+      <div class="content-card">
+        <div class="history-toolbar"><h3>Coûts divers</h3><button class="btn-manage-types" type="button" onclick="openMiscCostTypesModal()">Gérer les types</button></div>
+        <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Montant</th><th>Action</th></tr></thead><tbody id="miscCosts-table"></tbody></table>
+      </div>
+    </div>
+
     <section class="backup-panel" aria-labelledby="backupTitle">
       <h2 id="backupTitle">💾 Sauvegarde des données</h2>
       <div class="backup-actions">
@@ -773,6 +844,37 @@
     </section>
 
   </div>
+
+  <dialog class="action-modal" id="vehicleManagerModal" aria-labelledby="vehicleManagerTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="vehicleManagerTitle">Gérer les véhicules</h2><p>Ajoutez, modifiez ou supprimez un véhicule.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('vehicleManagerModal')">&times;</button></div>
+      <ul class="vehicle-list" id="vehicleList"></ul>
+      <p class="field-hint">Au moins un véhicule doit être conservé.</p>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('vehicleManagerModal')">Terminer</button><button class="btn-save" type="button" onclick="openVehicleForm()">Ajouter un véhicule</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="vehicleFormModal" aria-labelledby="vehicleFormTitle">
+    <form class="modal-form" id="vehicleForm" onsubmit="saveVehicle(event)">
+      <div class="modal-header"><div><h2 id="vehicleFormTitle">Ajouter un véhicule</h2><p>Indiquez un nom reconnaissable, par exemple la marque et le modèle.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeVehicleForm()">&times;</button></div>
+      <div class="field"><label for="vehicleName">Nom du véhicule</label><input id="vehicleName" name="name" type="text" maxlength="100" autocomplete="off" required></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeVehicleForm()">Annuler</button><button class="btn-save" type="submit">Enregistrer</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="action-modal" id="deleteVehicleWarningModal" aria-labelledby="deleteVehicleWarningTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="deleteVehicleWarningTitle">Suppression définitive</h2><p id="deleteVehicleWarningMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="cancelVehicleDeletion()">&times;</button></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="cancelVehicleDeletion()">Annuler</button><button class="delete-confirm-button" type="button" onclick="continueVehicleDeletion()">Continuer</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="deleteVehicleDataModal" aria-labelledby="deleteVehicleDataTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="deleteVehicleDataTitle">Perte des données associées</h2><p id="deleteVehicleDataMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="cancelVehicleDeletion()">&times;</button></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="cancelVehicleDeletion()">Annuler</button><button class="delete-confirm-button" type="button" onclick="confirmVehicleDeletion()">Supprimer définitivement</button></div>
+    </div>
+  </dialog>
 
   <dialog class="action-modal" id="fuelModal" aria-labelledby="fuelModalTitle">
     <form class="modal-form" id="fuelForm" onsubmit="saveFuel(event)">
@@ -920,6 +1022,29 @@
     </div>
   </dialog>
 
+  <dialog class="action-modal" id="miscCostTypesModal" aria-labelledby="miscCostTypesTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="miscCostTypesTitle">Types de coûts divers</h2><p>Ajoutez, modifiez ou supprimez les types proposés.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('miscCostTypesModal')">&times;</button></div>
+      <div class="field-with-action"><div class="field"><label for="newMiscCostType">Nouveau type</label><input id="newMiscCostType" type="text" maxlength="60" placeholder="Ex. Parking"></div><button class="btn-manage-types" type="button" onclick="addMiscCostType()">Ajouter</button></div>
+      <p class="form-message" id="miscCostTypeMessage" aria-live="polite"></p>
+      <ul class="type-list" id="miscCostTypesList"></ul>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('miscCostTypesModal')">Terminer</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="miscCostModal" aria-labelledby="miscCostModalTitle">
+    <form class="modal-form" id="miscCostForm" onsubmit="saveMiscCost(event)">
+      <div class="modal-header"><div><h2 id="miscCostModalTitle">Ajouter un coût divers</h2><p>Enregistrez un coût ponctuel pour ce véhicule.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('miscCostModal')">&times;</button></div>
+      <div class="modal-fields">
+        <div class="field"><label for="miscCostDateDisplay">Date (JJ/MM/AAAA)</label><input id="miscCostDate" name="date" type="hidden"><input id="miscCostDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du coût (jour, mois, année)" oninput="updateDateField(this)" required></div>
+        <div class="field"><label for="miscCostType">Type</label><select id="miscCostType" name="type" required></select></div>
+        <div class="field"><label for="miscCostPrice">Montant (€)</label><input id="miscCostPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+        <div class="field full-width"><label for="miscCostDescription">Description (facultative)</label><input id="miscCostDescription" name="description" type="text" maxlength="120" placeholder="Ex. Parking gare"></div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('miscCostModal')">Annuler</button><button class="btn-manage-types" type="button" onclick="openMiscCostTypesModal()">Gérer les types</button><button class="btn-save" type="submit">Enregistrer le coût</button></div>
+    </form>
+  </dialog>
+
   <dialog class="action-modal" id="purchaseModal" aria-labelledby="purchaseModalTitle">
     <form class="modal-form" id="purchaseForm" onsubmit="savePurchase(event)">
       <div class="modal-header"><div><h2 id="purchaseModalTitle">Ajouter un achat</h2><p>Ajoutez une pièce ou un équipement.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('purchaseModal')">&times;</button></div>
@@ -996,7 +1121,7 @@
         totalCost: "1 420 €",
         costMonth: "118 € / mois",
         deadlines: [
-          { id: "v1-deadline-inspection", name: "Contrôle technique", type: "Contrôle technique", value: "À renseigner" },
+          { id: "v1-deadline-inspection", name: "Contrôle technique", type: "Contrôle technique", date: "2027-04-20", value: "20/04/2027" },
           { id: "v1-deadline-belt", name: "Courroie", type: "Courroie", value: "À renseigner" },
           { id: "v1-deadline-oil", name: "Vidange + 4 filtres", type: "Vidange", value: "Avant 87 000 km" }
         ],
@@ -1026,17 +1151,20 @@
           { date: "20/08/2026", item: "Jeu d'essuie-glaces Bosch", store: "Amazon", price: "32 €" },
           { date: "10/02/2026", item: "Ampoule H7 LED", store: "Oscaro", price: "38 €" }
         ],
+        miscCosts: [],
         documents: []
       },
       v2: {
         km: "162 000 km",
         fixedCostsByYear: { "2026": { Assurance: 600, Leasing: 2400 } },
         fixedCostIdsByYear: {},
-        additionalCost: 3000,
+        additionalCost: 3013.6,
         kmYear: "14 500 km / an",
         totalCost: "2 350 €",
         costMonth: "195 € / mois",
-        deadlines: [],
+        deadlines: [
+          { id: "v2-demo-inspection", name: "Contrôle technique", type: "Contrôle technique", date: "2027-06-14", value: "14/06/2027", demo: true }
+        ],
         plannedInterventions: [],
         monthlyStats: [
           { month: "Nov 25", fuel: 90, maint: 0, insur: 50, parts: 0, event: null },
@@ -1048,9 +1176,9 @@
           { month: "Mai 26", fuel: 105, maint: 0, insur: 50, parts: 0, event: null },
           { month: "Juin 26", fuel: 115, maint: 0, insur: 50, parts: 0, event: null },
           { month: "Juil 26", fuel: 140, maint: 0, insur: 50, parts: 0, event: null },
-          { month: "Août 26", fuel: 130, maint: 0, insur: 50, parts: 0, event: null },
-          { month: "Sep 26", fuel: 89, maint: 0, insur: 50, parts: 0, event: null },
-          { month: "Oct 26", fuel: 93, maint: 0, insur: 50, parts: 0, event: null }
+          { month: "Août 26", fuel: 130, maint: 0, insur: 50, parts: 0, misc: 3.9, event: null },
+          { month: "Sep 26", fuel: 89, maint: 0, insur: 50, parts: 0, misc: 5.2, event: null },
+          { month: "Oct 26", fuel: 93, maint: 0, insur: 50, parts: 0, misc: 4.5, event: null }
         ],
         interventions: [
           { id: "v2-demo-multiple-types", date: "06/10/2026", type: "Vidange", types: ["Vidange", "Pneumatiques", "Courroie"], name: "Exemple : plusieurs opérations le même jour", km: "161 500 km", price: "650 €", doc: "", demo: true },
@@ -1073,12 +1201,37 @@
         purchases: [
           { date: "12/01/2026", item: "Batterie Varta 70Ah", store: "MisterAuto", price: "110 €" }
         ],
+        miscCosts: [
+          { id: "v2-demo-misc-parking-1", date: "18/08/2026", type: "Parking", description: "Parking en ville", price: "3,90 €", costTracked: true },
+          { id: "v2-demo-misc-parking-2", date: "12/09/2026", type: "Parking", description: "Stationnement gare", price: "5,20 €", costTracked: true },
+          { id: "v2-demo-misc-parking-3", date: "06/10/2026", type: "Parking", description: "Parking centre-ville", price: "4,50 €", costTracked: true }
+        ],
         documents: []
       }
     };
 
+    const testMaintenanceRecords = {
+      v2: {
+        'engine-oil': { date: '2026-10-06', km: 161500 },
+        'cabin-filter': { date: '2025-12-08', km: 152000 },
+        'air-filter': { date: '2022-06-14', km: 105000 },
+        'fuel-filter': { date: '2022-06-14', km: 105000 },
+        'timing-belt': { date: '2021-06-14', km: 90000 },
+        'brake-fluid': { date: '2023-06-15', km: 115000 },
+        'coolant': { date: '2021-06-15', km: 90000 },
+        'rear-brakes': { date: '2024-01-10', km: 125000 },
+        'xmod-tyres': { date: '2025-04-18', km: 139000 }
+      }
+    };
+
+    const defaultVehicleNames = {
+      v1: 'Peugeot 208 (AA-123-BB)',
+      v2: 'Scénic III XMOD 1.5 dCi 115 ch (2015)'
+    };
+
     function createEmptyVehiclesData() {
       return Object.fromEntries(Object.keys(testVehiclesData).map(vehicleId => [vehicleId, {
+        name: defaultVehicleNames[vehicleId],
         ...testVehiclesData[vehicleId],
         km: '0 km',
         fixedCostsByYear: {},
@@ -1093,19 +1246,46 @@
         interventions: [],
         fuel: [],
         purchases: [],
+        miscCosts: [],
         documents: []
       }]));
     }
 
+    function createEmptyVehicleData(name) {
+      return {
+        name,
+        km: '0 km',
+        fixedCostsByYear: {},
+        fixedCostIdsByYear: {},
+        additionalCost: 0,
+        kmYear: '—',
+        totalCost: '0 €',
+        costMonth: '0 € / mois',
+        deadlines: [],
+        plannedInterventions: [],
+        monthlyStats: [],
+        interventions: [],
+        fuel: [],
+        purchases: [],
+        miscCosts: [],
+        documents: []
+      };
+    }
+
     function isBackupData(data) {
       return Boolean(data && data.app === 'carlogbook' && data.version === 1 &&
-        data.vehicles && ['v1', 'v2'].every(vehicleId => {
-          const vehicle = data.vehicles[vehicleId];
+        data.vehicles && typeof data.vehicles === 'object' && !Array.isArray(data.vehicles) &&
+        Object.keys(data.vehicles).length > 0 && Object.entries(data.vehicles).every(([vehicleId, vehicle]) => {
+          if (!vehicleId || !vehicle || typeof vehicle !== 'object' || Array.isArray(vehicle)) return false;
           return vehicle && ['deadlines', 'plannedInterventions', 'monthlyStats', 'interventions', 'fuel', 'purchases', 'documents']
-            .every(key => Array.isArray(vehicle[key]));
+            .every(key => Array.isArray(vehicle[key])) &&
+            (vehicle.miscCosts === undefined || Array.isArray(vehicle.miscCosts)) &&
+            (vehicle.name === undefined || typeof vehicle.name === 'string');
         }) &&
         data.maintenanceRecords && typeof data.maintenanceRecords === 'object' &&
         Array.isArray(data.interventionTypes) && data.interventionTypes.every(type => typeof type === 'string') &&
+        (data.miscCostTypes === undefined || Array.isArray(data.miscCostTypes) &&
+          data.miscCostTypes.every(type => typeof type === 'string')) &&
         (data.deletedRecords === undefined || Array.isArray(data.deletedRecords) &&
           data.deletedRecords.every(key => typeof key === 'string')));
     }
@@ -1136,8 +1316,8 @@
 
     const initialBackup = TEST_MODE ? null : loadStoredBackup();
     let vehiclesData = TEST_MODE ? testVehiclesData : initialBackup ? initialBackup.vehicles : createEmptyVehiclesData();
-    let currentVehicleId = TEST_MODE ? 'v2' : initialBackup && ['v1', 'v2'].includes(initialBackup.currentVehicleId)
-      ? initialBackup.currentVehicleId : 'v2';
+    let currentVehicleId = TEST_MODE ? 'v2' : initialBackup && vehiclesData[initialBackup.currentVehicleId]
+      ? initialBackup.currentVehicleId : vehiclesData.v2 ? 'v2' : Object.keys(vehiclesData)[0];
     let recordSequence = 0;
     let completingDeadlineId = null;
     let confirmationDeadlines = [];
@@ -1147,7 +1327,9 @@
     let editingInterventionId = null;
     let detailsInterventionId = null;
     let editingFixedCost = null;
-    let maintenanceRecords = TEST_MODE ? {} : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
+    let editingVehicleId = null;
+    let pendingVehicleDeletionId = null;
+    let maintenanceRecords = TEST_MODE ? testMaintenanceRecords : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
     let deletedRecords = TEST_MODE ? [] : initialBackup && Array.isArray(initialBackup.deletedRecords)
       ? initialBackup.deletedRecords.slice() : [];
     const defaultInterventionTypes = [
@@ -1157,7 +1339,10 @@
     ];
     let interventionTypes = !TEST_MODE && initialBackup && initialBackup.interventionTypes.length
       ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
-    const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, interventions: true, mileage: true };
+    const defaultMiscCostTypes = ['Parking', 'Péage', 'Lavage', 'Amende', 'Autre'];
+    let miscCostTypes = !TEST_MODE && initialBackup && Array.isArray(initialBackup.miscCostTypes)
+      ? initialBackup.miscCostTypes.slice() : defaultMiscCostTypes.slice();
+    const chartVisibility = { fuel: true, maint: true, insur: true, parts: true, misc: true, interventions: true, mileage: true };
     let chartInterventionsOnly = false;
     let chartSelectedYear = null;
     let interventionTypeFilter = '';
@@ -1215,6 +1400,89 @@
         const isUsed = usedTypes.has(type);
         return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" aria-label="Supprimer le type ${escapeHtml(type)}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>🗑️</button></li>`;
       }).join('');
+    }
+
+    function renderMiscCostTypes() {
+      document.getElementById('miscCostTypesList').innerHTML = miscCostTypes.map((type, index) =>
+        `<li class="misc-cost-type-row"><div class="field"><label for="miscCostType-${index}">Type ${index + 1}</label><input id="miscCostType-${index}" type="text" maxlength="60" value="${escapeHtml(type)}" aria-label="Modifier le type ${escapeHtml(type)}"></div><div class="misc-cost-type-actions"><button type="button" onclick="saveMiscCostType(${index})">Modifier</button><button class="vehicle-remove" type="button" aria-label="Supprimer le type ${escapeHtml(type)}" onclick="requestDeleteMiscCostType(${index})">Supprimer</button></div></li>`
+      ).join('') || '<li><span class="field-hint">Aucun type. Ajoutez-en un ci-dessus.</span></li>';
+    }
+
+    function openMiscCostTypesModal() {
+      document.getElementById('miscCostTypeMessage').textContent = '';
+      document.getElementById('newMiscCostType').value = '';
+      renderMiscCostTypes();
+      updateMiscCostTypeSelect();
+      document.getElementById('miscCostTypesModal').showModal();
+    }
+
+    function updateMiscCostTypeSelect(selectedType = '') {
+      const select = document.getElementById('miscCostType');
+      if (!select) return;
+      select.innerHTML = miscCostTypes.map(type =>
+        `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`
+      ).join('');
+      if (miscCostTypes.includes(selectedType)) select.value = selectedType;
+    }
+
+    function addMiscCostType() {
+      const input = document.getElementById('newMiscCostType');
+      const type = input.value.trim();
+      const message = document.getElementById('miscCostTypeMessage');
+      if (!type) {
+        message.textContent = 'Saisissez un nom de type.';
+        input.focus();
+        return;
+      }
+      if (miscCostTypes.some(existing => existing.toLocaleLowerCase('fr') === type.toLocaleLowerCase('fr'))) {
+        message.textContent = 'Ce type existe déjà.';
+        input.focus();
+        return;
+      }
+      miscCostTypes.push(type);
+      updateMiscCostTypeSelect(type);
+      renderMiscCostTypes();
+      message.textContent = `« ${type} » a été ajouté.`;
+      input.value = '';
+      persistData();
+    }
+
+    function saveMiscCostType(index) {
+      const input = document.getElementById(`miscCostType-${index}`);
+      const previousType = miscCostTypes[index];
+      if (!input || previousType === undefined) return;
+      const type = input.value.trim();
+      const message = document.getElementById('miscCostTypeMessage');
+      if (!type) {
+        message.textContent = 'Saisissez un nom de type.';
+        input.focus();
+        return;
+      }
+      if (miscCostTypes.some((existing, existingIndex) =>
+        existingIndex !== index && existing.toLocaleLowerCase('fr') === type.toLocaleLowerCase('fr')
+      )) {
+        message.textContent = 'Ce type existe déjà.';
+        input.focus();
+        return;
+      }
+      if (type === previousType) {
+        message.textContent = 'Aucune modification à enregistrer.';
+        return;
+      }
+      miscCostTypes[index] = type;
+      Object.values(vehiclesData).forEach(vehicle => vehicle.miscCosts.forEach(cost => {
+        if (cost.type === previousType) cost.type = type;
+      }));
+      updateMiscCostTypeSelect(type);
+      renderMiscCostTypes();
+      persistData();
+      switchVehicle(currentVehicleId);
+      message.textContent = `Le type « ${previousType} » a été renommé « ${type} ».`;
+    }
+
+    function requestDeleteMiscCostType(index) {
+      const type = miscCostTypes[index];
+      if (type !== undefined) requestDeleteRecord('miscCostType', index, type);
     }
 
     function openInterventionTypesModal() {
@@ -1470,6 +1738,10 @@
     }
 
     function normalizeVehicleFixedCosts(data) {
+      data.miscCosts = Array.isArray(data.miscCosts) ? data.miscCosts : [];
+      data.monthlyStats.forEach(month => {
+        if (!Number.isFinite(month.misc)) month.misc = 0;
+      });
       const legacyByYear = data.insuranceByYear && typeof data.insuranceByYear === 'object'
         ? data.insuranceByYear : {};
       const years = [...new Set([
@@ -1612,6 +1884,7 @@
         maintenanceRecords,
         deletedRecords,
         interventionTypes,
+        miscCostTypes,
         currentVehicleId,
         ts
       };
@@ -1690,6 +1963,10 @@
       return JSON.stringify([vehicleId, type, record.id || JSON.stringify(record)]);
     }
 
+    function vehicleDeletionKey(vehicleId) {
+      return JSON.stringify(['vehicle', vehicleId]);
+    }
+
     function mergeBackupData(local, remote) {
       if (!isBackupData(remote)) throw new Error('Fichier de sauvegarde Google Drive invalide');
       const newer = (remote.ts || 0) > (local.ts || 0) ? remote : local;
@@ -1700,25 +1977,29 @@
       const mergeEntries = (vehicleId, type, latest, previous) =>
         mergeRecords(latest, previous).filter(record => !isDeleted(vehicleId, type, record));
       const vehicles = {};
-      ['v1', 'v2'].forEach(vehicleId => {
-        const latest = newer.vehicles[vehicleId];
-        const previous = older.vehicles[vehicleId];
-        const interventions = mergeEntries(vehicleId, 'intervention', latest.interventions, previous.interventions)
+      const vehicleIds = new Set([...Object.keys(local.vehicles), ...Object.keys(remote.vehicles)]);
+      vehicleIds.forEach(vehicleId => {
+        if (mergedDeletions.includes(vehicleDeletionKey(vehicleId))) return;
+        const latest = newer.vehicles[vehicleId] || older.vehicles[vehicleId];
+        const previous = older.vehicles[vehicleId] || latest;
+        const interventions = mergeEntries(vehicleId, 'intervention', latest.interventions || [], previous.interventions || [])
           .map(intervention => isDeleted(vehicleId, 'invoice', intervention)
             ? { ...intervention, docUrl: '', doc: '' } : intervention);
-        const fuel = mergeEntries(vehicleId, 'fuel', latest.fuel, previous.fuel);
-        const purchases = mergeEntries(vehicleId, 'purchase', latest.purchases, previous.purchases);
-        const documents = mergeEntries(vehicleId, 'document', latest.documents, previous.documents);
-        const deadlines = mergeEntries(vehicleId, 'deadline', latest.deadlines, previous.deadlines);
-        const plannedInterventions = mergeEntries(vehicleId, 'planned', latest.plannedInterventions, previous.plannedInterventions);
+        const fuel = mergeEntries(vehicleId, 'fuel', latest.fuel || [], previous.fuel || []);
+        const purchases = mergeEntries(vehicleId, 'purchase', latest.purchases || [], previous.purchases || []);
+        const miscCosts = mergeEntries(vehicleId, 'miscCost', latest.miscCosts || [], previous.miscCosts || []);
+        const documents = mergeEntries(vehicleId, 'document', latest.documents || [], previous.documents || []);
+        const deadlines = mergeEntries(vehicleId, 'deadline', latest.deadlines || [], previous.deadlines || []);
+        const plannedInterventions = mergeEntries(vehicleId, 'planned', latest.plannedInterventions || [], previous.plannedInterventions || []);
         const monthlyStats = mergeRecords(
-          latest.monthlyStats.map(month => ({ ...month, id: month.month })),
-          previous.monthlyStats.map(month => ({ ...month, id: month.month }))
+          (latest.monthlyStats || []).map(month => ({ ...month, id: month.month })),
+          (previous.monthlyStats || []).map(month => ({ ...month, id: month.month }))
         ).map(({ id, ...month }) => month);
         monthlyStats.forEach(month => {
           month.fuel = recordMonthTotal(fuel, 'total', month.month);
           month.maint = recordMonthTotal(interventions, 'price', month.month);
           month.parts = recordMonthTotal(purchases, 'price', month.month);
+          month.misc = recordMonthTotal(miscCosts, 'price', month.month);
         });
         const costYears = new Set([
           ...Object.keys(previous.fixedCostsByYear || {}),
@@ -1754,17 +2035,19 @@
           interventions,
           fuel,
           purchases,
+          miscCosts,
           documents,
           additionalCost: interventions.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
             fuel.reduce((sum, item) => sum + parseEuroAmount(item.total), 0) +
             purchases.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
+            miscCosts.reduce((sum, item) => sum + parseEuroAmount(item.price), 0) +
             Object.values(fixedCostsByYear).reduce((sum, costs) => sum + fixedCostAnnualTotal(costs), 0)
         };
       });
       const mergedMaintenanceRecords = Object.fromEntries([...new Set([
         ...Object.keys(older.maintenanceRecords),
         ...Object.keys(newer.maintenanceRecords)
-      ])].map(vehicleId => [vehicleId, {
+      ])].filter(vehicleId => vehicles[vehicleId]).map(vehicleId => [vehicleId, {
         ...(older.maintenanceRecords[vehicleId] || {}),
         ...(newer.maintenanceRecords[vehicleId] || {})
       }]));
@@ -1783,7 +2066,9 @@
         maintenanceRecords: mergedMaintenanceRecords,
         deletedRecords: mergedDeletions,
         interventionTypes: [...new Set([...newer.interventionTypes, ...older.interventionTypes])],
-        currentVehicleId: newer.currentVehicleId || 'v2',
+        miscCostTypes: (newer.miscCostTypes || older.miscCostTypes || defaultMiscCostTypes).slice(),
+        currentVehicleId: vehicles[newer.currentVehicleId] ? newer.currentVehicleId
+          : vehicles[older.currentVehicleId] ? older.currentVehicleId : Object.keys(vehicles)[0],
         ts: Math.max(local.ts || 0, remote.ts || 0)
       };
     }
@@ -1812,6 +2097,7 @@
       maintenanceRecords = data.maintenanceRecords;
       deletedRecords = data.deletedRecords || [];
       interventionTypes = data.interventionTypes.slice();
+      miscCostTypes = Array.isArray(data.miscCostTypes) ? data.miscCostTypes.slice() : defaultMiscCostTypes.slice();
       currentVehicleId = ['v1', 'v2'].includes(data.currentVehicleId) ? data.currentVehicleId : 'v2';
       document.getElementById('vehicleSelect').value = currentVehicleId;
       updateInterventionTypeTiles();
@@ -1978,6 +2264,17 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     }
 
+    let maintenanceStatusDate = localDateValue();
+    window.setInterval(() => {
+      const today = localDateValue();
+      if (today !== maintenanceStatusDate) {
+        maintenanceStatusDate = today;
+        renderDashboardDeadlines(vehiclesData[currentVehicleId]);
+        renderVehicleInspectionBadge(vehiclesData[currentVehicleId]);
+        if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
+      }
+    }, 60000);
+
     function addMonths(dateValue, months) {
       const [year, month, day] = dateValue.split('-').map(Number);
       const result = new Date(year, month - 1, 1);
@@ -1991,19 +2288,41 @@
       return `${Number(value).toLocaleString('fr-FR')} km`;
     }
 
-    function maintenanceItemStatus(item, record, currentKm, today) {
-      if (!record) return { label: 'À renseigner', className: 'unknown', next: 'Historique à renseigner' };
+    function maintenanceItemStatus(item, record, currentKm, today, annualMileage) {
+      if (!record) return {
+        label: 'À renseigner',
+        className: 'unknown',
+        next: 'Historique à renseigner',
+        priority: 'unknown',
+        sortDate: '9999-12-31'
+      };
       const nextDate = item.intervalMonths ? addMonths(record.date, item.intervalMonths) : '';
       const nextKm = item.intervalKm ? record.km + item.intervalKm : null;
+      const projectedKmDate = nextKm === null || !annualMileage
+        ? ''
+        : (() => {
+            const daysUntilKm = Math.max(0, Math.ceil((nextKm - currentKm) / annualMileage * 365.25));
+            const projectedDate = new Date(`${today}T12:00:00`);
+            projectedDate.setDate(projectedDate.getDate() + daysUntilKm);
+            return localDateValue(projectedDate);
+          })();
+      const firstDeadline = nextDate && projectedKmDate
+        ? (nextDate <= projectedKmDate ? { type: 'date', date: nextDate } : { type: 'km', date: projectedKmDate })
+        : nextDate ? { type: 'date', date: nextDate }
+          : projectedKmDate ? { type: 'km', date: projectedKmDate }
+            : { type: nextKm !== null ? 'km' : 'unknown', date: '' };
       const isDue = (nextDate && today >= nextDate) || (nextKm !== null && currentKm >= nextKm);
+      const isSoon = firstDeadline.date && firstDeadline.date < addMonths(today, 6);
       const dueDate = nextDate ? formatDate(nextDate) : '—';
       const dueKm = nextKm !== null ? formatKilometers(nextKm) : '—';
       return {
-        label: isDue ? 'À faire' : 'OK',
-        className: isDue ? 'due' : 'ok',
+        label: isDue ? 'En retard' : isSoon ? 'À prévoir' : firstDeadline.date ? 'OK' : 'À renseigner',
+        className: isDue ? 'overdue' : isSoon ? 'soon' : firstDeadline.date ? 'ok' : 'unknown',
         next: `${dueDate} · ${dueKm}`,
         nextDate,
-        nextKm
+        nextKm,
+        priority: firstDeadline.type,
+        sortDate: firstDeadline.date || '9999-12-31'
       };
     }
 
@@ -2011,12 +2330,13 @@
       if (currentVehicleId !== maintenanceSchedule.vehicleId) return [];
       const records = maintenanceRecords[currentVehicleId] || {};
       const currentKm = Number(data.km.replace(/\D/g, ''));
+      const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
       const today = localDateValue();
       const manualTypes = new Set(data.plannedInterventions.map(intervention => intervention.type));
       return maintenanceSchedule.items.flatMap(item => {
         const record = records[item.id];
         if (!record || manualTypes.has(item.type)) return [];
-        const status = maintenanceItemStatus(item, record, currentKm, today);
+        const status = maintenanceItemStatus(item, record, currentKm, today, annualMileage);
         return [{
           id: `maintenance-${item.id}`,
           maintenanceItemId: item.id,
@@ -2036,30 +2356,147 @@
       ];
     }
 
+    function deadlineDateValue(deadline) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(deadline.date || '')) return deadline.date;
+      const frenchDate = String(deadline.value || '').match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+      return frenchDate ? `${frenchDate[3]}-${frenchDate[2]}-${frenchDate[1]}` : '';
+    }
+
+    function deadlineKilometerValue(deadline) {
+      const match = String(deadline.value || '').match(/(\d[\d\s\u202f.,]*)\s*km/i);
+      return match ? Number(match[1].replace(/\D/g, '')) : null;
+    }
+
+    function dashboardDeadlineStatus(deadline, data, today) {
+      const currentKm = currentMileageValue(data);
+      const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
+      const date = deadlineDateValue(deadline);
+      const targetKm = deadlineKilometerValue(deadline);
+      const overdue = Boolean(date && date <= today) || (targetKm !== null && targetKm <= currentKm);
+      const withinDateWindow = Boolean(date && date < addMonths(today, 6));
+      const withinMileageWindow = targetKm !== null && targetKm - currentKm <= 1500;
+      const className = overdue ? 'overdue'
+        : withinDateWindow || withinMileageWindow ? 'soon'
+          : date || targetKm !== null ? 'ok' : 'unknown';
+      let projectedKmDate = '';
+      if (targetKm !== null && annualMileage > 0) {
+        const daysUntilKm = Math.max(0, Math.ceil((targetKm - currentKm) / annualMileage * 365.25));
+        const projectedDate = new Date(`${today}T12:00:00`);
+        projectedDate.setDate(projectedDate.getDate() + daysUntilKm);
+        projectedKmDate = localDateValue(projectedDate);
+      }
+      const sortDate = date && projectedKmDate
+        ? (date <= projectedKmDate ? date : projectedKmDate)
+        : date || projectedKmDate || '9999-12-31';
+      return {
+        className,
+        label: className === 'overdue' ? 'En retard'
+          : className === 'soon' ? 'À prévoir'
+            : className === 'ok' ? 'OK' : 'À renseigner',
+        sortDate
+      };
+    }
+
+    function renderDashboardDeadlines(data) {
+      const today = localDateValue();
+      const deadlines = upcomingInterventions(data).map((deadline, index) => ({
+        deadline,
+        index,
+        status: dashboardDeadlineStatus(deadline, data, today)
+      })).sort((first, second) => first.status.sortDate.localeCompare(second.status.sortDate));
+      const renderDeadline = ({ deadline, status }) => {
+        const label = deadline.name || deadline.type || 'Échéance';
+        const date = deadlineDateValue(deadline);
+        const kilometer = deadline.value && /km/i.test(deadline.value) ? deadline.value : '';
+        const value = [date ? formatDate(date) : '', kilometer].filter(Boolean).join(' · ') ||
+          deadline.value || 'À renseigner';
+        const clickAction = deadline.maintenanceItemId
+          ? `startMaintenanceIntervention('${escapeHtml(deadline.maintenanceItemId)}', '${escapeHtml(deadline.id)}')`
+          : `startDeadlineIntervention('${escapeHtml(deadline.id)}')`;
+        const deleteAction = deadline.maintenanceItemId
+          ? ''
+          : deleteButton(data.deadlines.includes(deadline) ? 'deadline' : 'planned',
+            data.deadlines.includes(deadline) ? data.deadlines.indexOf(deadline) : data.plannedInterventions.indexOf(deadline),
+            label);
+        return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${deadline.comment ? `<span class="deadline-comment">${escapeHtml(deadline.comment)}</span>` : ''}<span class="deadline-status ${status.className}">${status.label}</span></div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
+      };
+      const urgent = deadlines.filter(entry => ['soon', 'overdue'].includes(entry.status.className));
+      const collapsed = deadlines.filter(entry => !['soon', 'overdue'].includes(entry.status.className));
+      const upcomingPanel = collapsed.length
+        ? `<details class="deadline-upcoming-panel"><summary>Prochaines échéances (${collapsed.length})</summary><div class="deadline-list">${collapsed.map(renderDeadline).join('')}</div></details>`
+        : '';
+      document.getElementById('deadlinesList').innerHTML = urgent.map(renderDeadline).join('') + upcomingPanel ||
+        '<p class="field-hint">Aucune échéance enregistrée.</p>';
+    }
+
+    function renderVehicleInspectionBadge(data) {
+      const badge = document.getElementById('vehicleInspectionBadge');
+      const inspection = [...data.deadlines, ...data.plannedInterventions].find(deadline =>
+        /contr[oô]le technique/i.test(`${deadline.name || ''} ${deadline.type || ''}`)
+      );
+      if (!inspection) {
+        badge.hidden = true;
+        return;
+      }
+      const date = deadlineDateValue(inspection);
+      if (!date) {
+        badge.className = 'vehicle-ct-badge unknown';
+        badge.textContent = 'Contrôle technique : date à renseigner';
+        badge.hidden = false;
+        return;
+      }
+      const status = dashboardDeadlineStatus(inspection, data, localDateValue());
+      badge.className = `vehicle-ct-badge ${status.className}`;
+      badge.textContent = `CT - ${formatDate(date)}`;
+      badge.hidden = false;
+    }
+
     function renderMaintenanceSchedule() {
       const schedule = maintenanceSchedule;
       const data = vehiclesData[currentVehicleId];
       const currentKm = Number(data.km.replace(/\D/g, ''));
+      const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
       const today = localDateValue();
       const records = maintenanceRecords[currentVehicleId] || {};
       document.getElementById('maintenanceVehicleLabel').textContent = schedule.vehicleLabel;
-      document.getElementById('maintenanceNotice').textContent = schedule.notice;
-      document.getElementById('maintenanceTable').innerHTML = schedule.items.map(item => {
+      document.getElementById('maintenanceNotice').textContent =
+        `${schedule.notice} Les éléments sont classés selon la première échéance estimée ; le kilométrage est projeté à partir de la moyenne annuelle saisie.`;
+      const entries = schedule.items.map(item => {
         const record = records[item.id];
-        const status = maintenanceItemStatus(item, record, currentKm, today);
+        const status = maintenanceItemStatus(item, record, currentKm, today, annualMileage);
         const lastService = record
           ? `<span>${escapeHtml(formatDate(record.date))}</span><span>${escapeHtml(formatKilometers(record.km))}</span>`
           : '<span>À renseigner</span>';
         const interval = formatMaintenanceInterval(item);
-        return `<tr>
+        return { item, status, row: `<tr>
           <td data-label="Entretien"><strong>${escapeHtml(item.name)}</strong><br><small>${escapeHtml(item.details)}</small></td>
           <td data-label="Fréquence">${escapeHtml(interval)}</td>
           <td data-label="Dernière réalisation"><div class="maintenance-record">${lastService}</div></td>
           <td data-label="Prochaine échéance">${escapeHtml(status.next)}</td>
-          <td data-label="État"><span class="maintenance-status ${status.className}">${escapeHtml(status.label)}</span></td>
+          <td data-label="État"><span class="maintenance-status ${status.className}"><span class="maintenance-status-icon" aria-hidden="true">${status.className === 'ok' ? '✓' : status.className === 'unknown' ? '?' : '!'}</span>${escapeHtml(status.label)}</span></td>
           <td><div class="maintenance-row-actions"><button class="maintenance-action" type="button" onclick="openMaintenanceEntryOptions('${escapeHtml(item.id)}')">Ajouter / associer une intervention</button></div></td>
-        </tr>`;
-      }).join('');
+        </tr>` };
+      });
+      const groupLabels = {
+        date: 'Échéances atteintes d’abord par la date',
+        km: 'Échéances atteintes d’abord par le kilométrage',
+        unknown: 'Historique à renseigner'
+      };
+      const groups = ['date', 'km', 'unknown'].map(key => ({
+        key,
+        entries: entries.filter(entry => entry.status.priority === key).sort((first, second) =>
+          first.status.sortDate.localeCompare(second.status.sortDate)
+        )
+      })).filter(group => group.entries.length);
+      groups.sort((first, second) => {
+        if (first.key === 'unknown') return 1;
+        if (second.key === 'unknown') return -1;
+        return first.entries[0].status.sortDate.localeCompare(second.entries[0].status.sortDate);
+      });
+      document.getElementById('maintenanceTable').innerHTML = groups.map(group =>
+        `<tr class="maintenance-group"><th colspan="6">${groupLabels[group.key]}</th></tr>${group.entries.map(entry => entry.row).join('')}`
+      ).join('');
+      maintenanceStatusDate = today;
       document.getElementById('maintenanceAdvice').innerHTML = schedule.additionalAdvice
         .map(advice => `<li>${escapeHtml(advice)}</li>`).join('');
       document.getElementById('maintenanceSources').textContent = schedule.sourceLabel;
@@ -2206,6 +2643,7 @@
         setDateField(form.elements.date, today);
       }
       if (modalId === 'documentModal') updateDocumentInterventionSelect();
+      if (modalId === 'miscCostModal') updateMiscCostTypeSelect();
       if (form.elements.km) {
         form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
       }
@@ -2219,6 +2657,129 @@
         pendingMaintenanceItemId = null;
         editingInterventionId = null;
       }
+    }
+
+    function getVehicleName(vehicleId) {
+      return vehiclesData[vehicleId].name || defaultVehicleNames[vehicleId] || 'Véhicule sans nom';
+    }
+
+    function renderVehicleSelect() {
+      const select = document.getElementById('vehicleSelect');
+      select.innerHTML = Object.entries(vehiclesData).map(([vehicleId, vehicle]) => {
+        const name = vehicle.name || defaultVehicleNames[vehicleId] || 'Véhicule sans nom';
+        return `<option value="${escapeHtml(vehicleId)}">${escapeHtml(name)}</option>`;
+      }).join('');
+      select.value = currentVehicleId;
+      select.title = getVehicleName(currentVehicleId);
+    }
+
+    function renderVehicleList() {
+      const vehicleEntries = Object.entries(vehiclesData);
+      document.getElementById('vehicleList').innerHTML = vehicleEntries.map(([vehicleId]) => {
+        const canDelete = vehicleEntries.length > 1;
+        return `<li><strong>${escapeHtml(getVehicleName(vehicleId))}</strong><div class="vehicle-list-actions"><button type="button" data-vehicle-id="${escapeHtml(vehicleId)}" onclick="openVehicleForm(this.dataset.vehicleId)">Modifier</button><button class="vehicle-remove" type="button" data-vehicle-id="${escapeHtml(vehicleId)}" aria-label="Supprimer ${escapeHtml(getVehicleName(vehicleId))}" title="${canDelete ? 'Supprimer ce véhicule' : 'Au moins un véhicule doit être conservé'}" ${canDelete ? '' : 'disabled'} onclick="requestDeleteVehicle(this.dataset.vehicleId)">Supprimer</button></div></li>`;
+      }).join('');
+    }
+
+    function openVehicleManager() {
+      renderVehicleList();
+      document.getElementById('vehicleManagerModal').showModal();
+    }
+
+    function openVehicleForm(vehicleId = null) {
+      editingVehicleId = vehicleId;
+      const form = document.getElementById('vehicleForm');
+      form.reset();
+      document.getElementById('vehicleFormTitle').textContent = vehicleId ? 'Modifier un véhicule' : 'Ajouter un véhicule';
+      form.querySelector('button[type="submit"]').textContent = vehicleId ? 'Enregistrer les modifications' : 'Enregistrer le véhicule';
+      document.getElementById('vehicleName').value = vehicleId ? getVehicleName(vehicleId) : '';
+      document.getElementById('vehicleFormModal').showModal();
+      document.getElementById('vehicleName').focus();
+    }
+
+    function closeVehicleForm() {
+      document.getElementById('vehicleFormModal').close();
+      editingVehicleId = null;
+    }
+
+    function saveVehicle(event) {
+      event.preventDefault();
+      const name = document.getElementById('vehicleName').value.trim();
+      const nameInput = document.getElementById('vehicleName');
+      nameInput.setCustomValidity(name ? '' : 'Saisissez le nom du véhicule.');
+      if (!name) {
+        nameInput.reportValidity();
+        return;
+      }
+      if (editingVehicleId && vehiclesData[editingVehicleId]) {
+        vehiclesData[editingVehicleId].name = name;
+      } else {
+        let vehicleId;
+        do {
+          vehicleId = `vehicle-${Date.now()}-${++recordSequence}`;
+        } while (vehiclesData[vehicleId] || deletedRecords.includes(vehicleDeletionKey(vehicleId)));
+        vehiclesData[vehicleId] = createEmptyVehicleData(name);
+        currentVehicleId = vehicleId;
+      }
+      closeVehicleForm();
+      renderVehicleList();
+      persistData();
+      switchVehicle(currentVehicleId);
+      setSyncStatus('Véhicule enregistré.');
+    }
+
+    function requestDeleteVehicle(vehicleId) {
+      if (!vehiclesData[vehicleId] || Object.keys(vehiclesData).length <= 1) return;
+      pendingVehicleDeletionId = vehicleId;
+      document.getElementById('deleteVehicleWarningMessage').textContent =
+        `La suppression de « ${getVehicleName(vehicleId)} » est définitive. Voulez-vous continuer ?`;
+      document.getElementById('deleteVehicleWarningModal').showModal();
+    }
+
+    function continueVehicleDeletion() {
+      if (!pendingVehicleDeletionId || !vehiclesData[pendingVehicleDeletionId]) {
+        cancelVehicleDeletion();
+        setSyncStatus('Suppression impossible : ce véhicule n’existe plus.');
+        return;
+      }
+      document.getElementById('deleteVehicleWarningModal').close();
+      document.getElementById('deleteVehicleDataMessage').textContent =
+        `Toutes les données associées à « ${getVehicleName(pendingVehicleDeletionId)} » seront perdues : entretiens, pleins, achats, liens, échéances et coûts. Cette action est définitive.`;
+      document.getElementById('deleteVehicleDataModal').showModal();
+    }
+
+    function cancelVehicleDeletion() {
+      pendingVehicleDeletionId = null;
+      document.getElementById('deleteVehicleWarningModal').close();
+      document.getElementById('deleteVehicleDataModal').close();
+    }
+
+    function confirmVehicleDeletion() {
+      const vehicleId = pendingVehicleDeletionId;
+      if (!vehicleId || !vehiclesData[vehicleId] || Object.keys(vehiclesData).length <= 1) {
+        cancelVehicleDeletion();
+        setSyncStatus('Suppression impossible : ce véhicule ne peut plus être supprimé.');
+        return;
+      }
+      delete vehiclesData[vehicleId];
+      delete maintenanceRecords[vehicleId];
+      deletedRecords = deletedRecords.filter(key => {
+        try {
+          const parsed = JSON.parse(key);
+          return !Array.isArray(parsed) || parsed[0] !== vehicleId;
+        } catch {
+          return true;
+        }
+      });
+      deletedRecords = [...new Set([...deletedRecords, vehicleDeletionKey(vehicleId)])];
+      if (currentVehicleId === vehicleId) currentVehicleId = Object.keys(vehiclesData)[0];
+      pendingVehicleDeletionId = null;
+      document.getElementById('deleteVehicleDataModal').close();
+      renderVehicleList();
+      persistData();
+      switchVehicle(currentVehicleId);
+      if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
+      setSyncStatus('Véhicule et données associées supprimés définitivement.');
     }
 
     function deadlineLabel(deadline) {
@@ -2314,9 +2875,10 @@
       const monthLabel = `${monthNames[dateValue.getMonth()]} ${String(dateValue.getFullYear()).slice(-2)}`;
       let month = data.monthlyStats.find(item => item.month === monthLabel);
       if (!month) {
-        month = { month: monthLabel, fuel: 0, maint: 0, insur: 0, parts: 0, event: null };
+        month = { month: monthLabel, fuel: 0, maint: 0, insur: 0, parts: 0, misc: 0, event: null };
         data.monthlyStats.push(month);
       }
+      if (!Number.isFinite(month.misc)) month.misc = 0;
       month[category] += amount;
       if (eventName) month.event = eventName;
       data.additionalCost += amount;
@@ -2493,6 +3055,24 @@
       closeActionModal('purchaseModal');
     }
 
+    function saveMiscCost(event) {
+      event.preventDefault();
+      const values = formData(event.currentTarget);
+      const amount = Number(values.price);
+      vehiclesData[currentVehicleId].miscCosts.unshift({
+        id: createDataId('misc-cost'),
+        costTracked: true,
+        date: formatDate(values.date),
+        type: values.type,
+        description: values.description.trim(),
+        price: formatEuro(amount)
+      });
+      addCostToCurrentMonth('misc', amount, values.date, values.type);
+      persistData();
+      switchVehicle(currentVehicleId);
+      closeActionModal('miscCostModal');
+    }
+
     function saveDocument(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
@@ -2601,7 +3181,7 @@
       const showAnnualMileage = !chartSelectedYear && chartVisibility.mileage;
       mileageLegendToggle.hidden = Boolean(chartSelectedYear);
       mileageLegendToggle.setAttribute('aria-pressed', String(chartVisibility.mileage));
-      const visibleCategories = ['fuel', 'maint', 'insur', 'parts'].filter(category => chartVisibility[category]);
+      const visibleCategories = ['fuel', 'maint', 'insur', 'parts', 'misc'].filter(category => chartVisibility[category]);
       const monthlyDataByLabel = new Map();
       data.monthlyStats.forEach(month => {
         const period = chartPeriodFromMonthLabel(month.month);
@@ -2613,7 +3193,7 @@
         if (period) {
           monthlyDataByLabel.set(label, {
             month: label, year: period.year, monthIndex: period.monthIndex,
-            fuel: 0, maint: 0, insur: 0, parts: 0
+            fuel: 0, maint: 0, insur: 0, parts: 0, misc: 0
           });
         }
       });
@@ -2628,9 +3208,10 @@
           fuel: 0,
           maint: 0,
           insur: 0,
-          parts: 0
+          parts: 0,
+          misc: 0
         };
-        ['fuel', 'maint', 'insur', 'parts'].forEach(category => {
+        ['fuel', 'maint', 'insur', 'parts', 'misc'].forEach(category => {
           yearlyStats[category] += Number(month[category]) || 0;
         });
         statsByYear.set(month.year, yearlyStats);
@@ -2646,14 +3227,14 @@
       annualEvents.forEach((events, year) => {
         if (!statsByYear.has(year)) {
           statsByYear.set(year, {
-            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0
+            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0, misc: 0
           });
         }
       });
       mileageByYear.forEach((distance, year) => {
         if (!statsByYear.has(year)) {
           statsByYear.set(year, {
-            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0
+            month: year, year, monthIndex: -1, fuel: 0, maint: 0, insur: 0, parts: 0, misc: 0
           });
         }
         statsByYear.get(year).mileage = distance;
@@ -2705,7 +3286,7 @@
           ? `<button class="chart-month-interventions" type="button" aria-label="Afficher ${monthInterventions.length} intervention${monthInterventions.length === 1 ? '' : 's'} de ${escapeHtml(period.month)}" title="Afficher les interventions de ${escapeHtml(period.month)}" onclick="showInterventionsForMonth('${escapeHtml(period.year)}', ${period.monthIndex})">🛠️</button>`
           : '';
         const segments = [
-          ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts']
+          ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts'], ['misc', 'c-misc']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
           `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${Number(period[category]) || 0}€"></div>`
         ).join('');
@@ -2750,6 +3331,7 @@
         interventionMonthFilter = null;
       }
       currentVehicleId = vId;
+      renderVehicleSelect();
       const data = vehiclesData[vId];
 
       document.getElementById('kpi-km').innerText = data.km;
@@ -2758,42 +3340,31 @@
       document.getElementById('kpi-cost-month').innerText = data.additionalCost ? `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois` : "Moyenne : " + data.costMonth;
 
       renderChart(data);
-      const fixedDeadlines = data.deadlines.map(deadline =>
-        `<div class="deadline-item"><span class="deadline-name">${escapeHtml(deadline.name)}</span><div class="deadline-actions"><span class="deadline-value">${escapeHtml(deadline.value)}</span>${deleteButton('deadline', data.deadlines.indexOf(deadline), deadline.name)}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(deadline.name)} comme effectuée" onclick="startDeadlineIntervention('${escapeHtml(deadline.id)}')">+</button></div></div>`
-      ).join('');
-      const plannedInterventions = [...data.plannedInterventions, ...calculatedMaintenanceDeadlines(data)]
-        .slice()
-        .sort((first, second) => first.date.localeCompare(second.date))
-        .map(intervention => {
-          const label = intervention.name || intervention.type;
-          const date = intervention.date ? formatDate(intervention.date) : intervention.value;
-          const value = [date, intervention.value && intervention.date ? intervention.value : ''].filter(Boolean).join(' · ');
-          const clickAction = intervention.maintenanceItemId
-            ? `startMaintenanceIntervention('${escapeHtml(intervention.maintenanceItemId)}', '${escapeHtml(intervention.id)}')`
-            : `startDeadlineIntervention('${escapeHtml(intervention.id)}')`;
-          const deleteAction = !intervention.maintenanceItemId
-            ? deleteButton('planned', data.plannedInterventions.indexOf(intervention), label)
-            : '';
-          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
-        }
-        ).join('');
-      document.getElementById('deadlinesList').innerHTML = fixedDeadlines + plannedInterventions;
+      renderDashboardDeadlines(data);
+      renderVehicleInspectionBadge(data);
 
       // Remplissage des tables
       renderInterventionHistory(data);
 
       document.getElementById('fuel-table').innerHTML = data.fuel.map((fuel, index) =>
-        `<tr><td>${escapeHtml(fuel.date)}</td><td>${escapeHtml(fuel.volume)}</td><td>${escapeHtml(fuel.priceL)}</td><td><strong>${escapeHtml(fuel.total)}</strong></td><td>${escapeHtml(fuel.km)}</td><td>${deleteButton('fuel', index, fuel.date)}</td></tr>`
+        `<tr><td><span class="table-desktop-date">${escapeHtml(fuel.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>Plein de carburant</strong><span class="table-mobile-value">${escapeHtml(fuel.total)}</span></div><div class="table-mobile-meta"><span>${escapeHtml(fuel.date)}</span><span>${escapeHtml(fuel.volume)}</span><span>${escapeHtml(fuel.priceL)} / L</span><span>${escapeHtml(fuel.km)}</span></div><div class="table-mobile-actions">${deleteButton('fuel', index, fuel.date)}</div></div></td><td>${escapeHtml(fuel.volume)}</td><td>${escapeHtml(fuel.priceL)}</td><td><strong>${escapeHtml(fuel.total)}</strong></td><td>${escapeHtml(fuel.km)}</td><td>${deleteButton('fuel', index, fuel.date)}</td></tr>`
       ).join('');
 
       document.getElementById('purchases-table').innerHTML = data.purchases.map((purchase, index) =>
-        `<tr><td>${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${deleteButton('purchase', index, purchase.item)}</td></tr>`
+        `<tr><td><span class="table-desktop-date">${escapeHtml(purchase.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>${escapeHtml(purchase.item)}</strong><span class="table-mobile-value">${escapeHtml(purchase.price)}</span></div><div class="table-mobile-meta"><span>${escapeHtml(purchase.date)}</span><span>${escapeHtml(purchase.store || '—')}</span></div><div class="table-mobile-actions">${deleteButton('purchase', index, purchase.item)}</div></div></td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${deleteButton('purchase', index, purchase.item)}</td></tr>`
       ).join('');
 
       document.getElementById('documents-table').innerHTML = data.documents.map((documentRecord, index) =>
-        `<tr><td>${escapeHtml(documentRecord.date)}</td><td><strong>${escapeHtml(documentRecord.name)}</strong></td><td>${escapeHtml(documentRecord.category)}</td><td>${escapeHtml(interventionLabel(data, documentRecord.interventionId))}</td><td>${documentLink(documentRecord.url, 'Ouvrir le lien')}</td><td>${deleteButton('document', index, documentRecord.name)}</td></tr>`
+        `<tr><td><span class="table-desktop-date">${escapeHtml(documentRecord.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>${escapeHtml(documentRecord.name)}</strong></div><div class="table-mobile-meta"><span>${escapeHtml(documentRecord.date)}</span><span>${escapeHtml(documentRecord.category)}</span><span>${escapeHtml(interventionLabel(data, documentRecord.interventionId))}</span></div><div class="table-mobile-link">${documentLink(documentRecord.url, 'Ouvrir le lien')}</div><div class="table-mobile-actions">${deleteButton('document', index, documentRecord.name)}</div></div></td><td><strong>${escapeHtml(documentRecord.name)}</strong></td><td>${escapeHtml(documentRecord.category)}</td><td>${escapeHtml(interventionLabel(data, documentRecord.interventionId))}</td><td>${documentLink(documentRecord.url, 'Ouvrir le lien')}</td><td>${deleteButton('document', index, documentRecord.name)}</td></tr>`
+      ).join('');
+
+      document.getElementById('miscCosts-table').innerHTML = data.miscCosts.map((cost, index) =>
+        `<tr><td><span class="table-desktop-date">${escapeHtml(cost.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>${escapeHtml(cost.type)}</strong><span class="table-mobile-value">${escapeHtml(cost.price)}</span></div>${cost.description ? `<div class="table-mobile-meta">${escapeHtml(cost.description)}</div>` : ''}<div class="table-mobile-meta"><span>${escapeHtml(cost.date)}</span></div><div class="table-mobile-actions">${deleteButton('miscCost', index, cost.type)}</div></div></td><td>${escapeHtml(cost.type)}</td><td>${escapeHtml(cost.description || '—')}</td><td><strong>${escapeHtml(cost.price)}</strong></td><td>${deleteButton('miscCost', index, cost.type)}</td></tr>`
       ).join('');
       document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+      if (document.getElementById('maintenanceModal').open && currentVehicleId === maintenanceSchedule.vehicleId) {
+        renderMaintenanceSchedule();
+      }
     }
 
     function renderInterventionHistory(data) {
@@ -2927,6 +3498,7 @@
         invoice: 'la facture liée à l’intervention',
         fuel: 'le plein',
         purchase: 'l’achat',
+        miscCost: 'le coût divers',
         document: 'le document',
         deadline: 'l’échéance',
         planned: 'l’échéance planifiée'
@@ -2938,12 +3510,12 @@
     let pendingDelete = null;
 
     function requestDeleteRecord(type, index, label) {
-      if (!['intervention', 'fuel', 'purchase', 'document', 'invoice', 'deadline', 'planned'].includes(type)) return;
+      if (!['intervention', 'fuel', 'purchase', 'document', 'invoice', 'deadline', 'planned', 'miscCost', 'miscCostType'].includes(type)) return;
       pendingDelete = { type, index };
       const typeLabels = {
         intervention: 'l’intervention', fuel: 'le plein', purchase: 'l’achat',
         document: 'le document', invoice: 'la facture liée à l’intervention',
-        deadline: 'l’échéance',
+        deadline: 'l’échéance', miscCost: 'le coût divers', miscCostType: 'le type de coût divers',
         planned: 'l’échéance planifiée'
       };
       const linkedDocumentCount = type === 'intervention'
@@ -2956,7 +3528,9 @@
         ? ` ${linkedDocumentCount} lien${linkedDocumentCount > 1 ? 's' : ''} de document associé${linkedDocumentCount > 1 ? 's seront également supprimés.' : ' sera également supprimé.'}`
         : '';
       document.getElementById('deleteRecordMessage').textContent =
-        `Voulez-vous vraiment supprimer ${typeLabels[type]} « ${label} » ?${linkedNotice} Cette action est définitive.`;
+        type === 'miscCostType'
+          ? `Voulez-vous supprimer le type « ${label} » ? Les coûts déjà enregistrés avec ce type seront conservés.`
+          : `Voulez-vous vraiment supprimer ${typeLabels[type]} « ${label} » ?${linkedNotice} Cette action est définitive.`;
       document.getElementById('deleteRecordModal').showModal();
     }
 
@@ -2980,6 +3554,21 @@
       if (!pendingDelete) return;
       const { type, index } = pendingDelete;
       const data = vehiclesData[currentVehicleId];
+      if (type === 'miscCostType') {
+        if (miscCostTypes[index] === undefined) {
+          cancelDeleteRecord();
+          setSyncStatus('Suppression impossible : ce type de coût n’existe plus.');
+          return;
+        }
+        miscCostTypes.splice(index, 1);
+        pendingDelete = null;
+        document.getElementById('deleteRecordModal').close();
+        renderMiscCostTypes();
+        updateMiscCostTypeSelect();
+        persistData();
+        setSyncStatus('Type supprimé. Les coûts déjà enregistrés sont conservés.');
+        return;
+      }
       if (type === 'fixedCost') {
         const year = String(pendingDelete.year);
         const costs = fixedCostsForYear(data, year);
@@ -3013,6 +3602,7 @@
         invoice: data.interventions,
         fuel: data.fuel,
         purchase: data.purchases,
+        miscCost: data.miscCosts,
         document: data.documents,
         deadline: data.deadlines,
         planned: data.plannedInterventions
@@ -3051,6 +3641,8 @@
         }
       } else if (type === 'purchase') {
         removeTrackedCost(data, record, 'parts', 'price');
+      } else if (type === 'miscCost') {
+        removeTrackedCost(data, record, 'misc', 'price');
       }
       if (type !== 'invoice') recordLists[type].splice(index, 1);
       pendingDelete = null;
