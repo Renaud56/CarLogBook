@@ -517,7 +517,7 @@
     .field textarea { min-height: 88px; resize: vertical; }
     .field-heading { display: grid; gap: 3px; }
     .field-hint { color: var(--text-muted); font-size: 0.78rem; font-weight: 400; }
-    .intervention-type-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 5px; }
+    .intervention-type-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 5px; }
     .intervention-type-tile {
       display: flex;
       align-items: center;
@@ -534,7 +534,7 @@
     }
     .intervention-type-tile.selected { border-color: var(--accent); background: #eff6ff; color: #1d4ed8; }
     .intervention-type-tile input { width: 16px; height: 16px; min-height: 16px; flex: 0 0 16px; margin: 0; padding: 0; border: 0; accent-color: var(--accent); }
-    .intervention-type-tile span { min-width: 0; overflow-wrap: anywhere; }
+    .intervention-type-tile span { min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
     .intervention-type-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .intervention-type-header .btn-manage-types { min-height: 36px; padding: 0 10px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
@@ -1278,7 +1278,8 @@
         : Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
       const tiles = document.getElementById('interventionTypeTiles');
       if (!tiles) return;
-      tiles.innerHTML = interventionTypes.map((type, index) => {
+      const sortedTypes = interventionTypes.slice().sort((first, second) => first.localeCompare(second, 'fr', { sensitivity: 'base' }));
+      tiles.innerHTML = sortedTypes.map(type => {
         const selected = selectedTypes.includes(type);
         return `<label class="intervention-type-tile${selected ? ' selected' : ''}"><input type="checkbox" name="types" value="${escapeHtml(type)}" onchange="toggleInterventionTypeTile(this)"${selected ? ' checked' : ''}><span>${escapeHtml(type)}</span></label>`;
       }).join('');
