@@ -22,6 +22,8 @@ Hors mode de test, les données de démonstration ne sont pas préchargées ; le
 
 Une intervention peut être associée à plusieurs types à la fois, par exemple une vidange, des pneus et une courroie réalisés le même jour. Sélectionnez les tuiles correspondantes ; les types apparaissent dans l’historique, sont filtrables individuellement et sont affichés de façon compacte sur le graphique. Touchez une ligne de l’historique pour consulter les détails et corriger les types, la description, le montant ou le lien de facture. Le bouton **Gérer** permet d’ajouter des types personnalisés.
 
+Depuis le détail d’une intervention, vous pouvez associer plusieurs liens de documents. La recherche globale au-dessus des onglets accepte plusieurs mots-clés et parcourt les interventions, documents, pleins, achats, coûts fixes, échéances et suivis des deux véhicules. Le panneau de sauvegarde est affiché uniquement dans l’onglet **Entretiens & Factures**.
+
 Le kilométrage actuel se modifie depuis la carte de synthèse. L’ajout d’une intervention avec un kilométrage supérieur le met automatiquement à jour. Le bouton **Coûts fixes** permet de saisir les dépenses récurrentes (assurance, leasing, parking, etc.) avec un montant par année civile, modifiable ou supprimable séparément pour chaque année. Chaque montant annuel est réparti de janvier à décembre sur le graphique. Le graphique affiche une vue annuelle ; touchez une année pour consulter les montants et interventions mois par mois. Les boutons de légende permettent d’afficher ou de masquer les catégories dans les deux vues.
 
 Le mode de test (`index.html?test=1`) contient des coûts fixes annuels pour les deux véhicules. Ils sont automatiquement répartis sur les mois et intégrés aux graphiques de démonstration.

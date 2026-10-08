@@ -91,6 +91,21 @@
     .backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .backup-status { margin-top: 8px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
     .backup-note { margin-top: 4px; color: var(--text-muted); font-size: 0.75rem; }
+    .global-search { margin-bottom: 18px; }
+    .global-search-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 420px); align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .global-search-toolbar h2 { font-size: 1rem; }
+    .global-search-input { width: 100%; min-height: 42px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text-main); font: inherit; }
+    .global-search-count { min-height: 1.2em; margin: 8px 0; color: var(--text-muted); font-size: 0.82rem; }
+    .global-search-table-wrap { overflow-x: auto; }
+    .global-search-table { min-width: 680px; }
+    .global-search-table td { vertical-align: top; }
+    .global-search-links { display: grid; gap: 4px; }
+    @media (max-width: 600px) {
+      .global-search-toolbar { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    }
+    .document-links-list { display: grid; gap: 12px; }
+    .document-link-entry { display: grid; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .document-link-remove { justify-self: start; min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text-main); font: inherit; cursor: pointer; }
 
     /* KPI Cards Grid */
     .kpi-grid {
@@ -113,6 +128,14 @@
     .kpi-card .sub { font-size: 0.8rem; color: var(--text-muted); }
     .mileage-value-row { display: flex; align-items: center; gap: 8px; }
     .mileage-value-row .value { min-width: 0; margin: 6px 0; }
+    .deadline-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .deadline-heading .label { min-width: 0; }
+    .deadline-refresh, .deadline-auto-action { display: inline-grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--accent); cursor: pointer; }
+    .deadline-refresh:hover, .deadline-auto-action:hover { border-color: var(--accent); background: #eff6ff; }
+    .deadline-refresh svg, .deadline-auto-action svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .deadline-auto-label { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.75rem; font-weight: 500; }
+    .deadline-auto-label svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .deadline-auto-controls { display: flex; align-items: center; gap: 4px; }
     .deadline-list { display: grid; gap: 10px; margin-top: 12px; }
     .deadline-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .deadline-item:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -641,7 +664,7 @@
         <div class="sub" id="kpi-cost-month">Moyenne : 118 € / mois</div>
       </div>
       <div class="kpi-card">
-        <div class="label">Prochaines Échéances</div>
+        <div class="deadline-heading"><div class="label">Prochaines Échéances</div><button class="deadline-refresh" type="button" aria-label="Recréer les échéances calculées automatiquement" title="Recréer les échéances calculées automatiquement" onclick="openRefreshDeadlinesModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"></path><path d="M4 17v-5h5"></path><path d="M5.6 9a7 7 0 0 1 11.5-2L20 12M4 12l2.9 5a7 7 0 0 0 11.5-2"></path></svg></button></div>
         <div class="deadline-list" id="deadlinesList"></div>
         <button class="btn-action deadline-add" onclick="openActionModal('plannedInterventionModal')">📅 + Prochaine intervention</button>
       </div>
@@ -670,6 +693,20 @@
         <button class="legend-toggle" id="interventionsOnlyToggle" aria-pressed="false" onclick="toggleInterventionsOnly()">Interventions uniquement</button>
       </div>
     </div>
+
+    <section class="global-search" aria-labelledby="globalSearchTitle">
+      <div class="global-search-toolbar">
+        <h2 id="globalSearchTitle">Recherche globale</h2>
+        <input class="global-search-input" id="globalSearchInput" type="search" placeholder="Rechercher dans les fiches…" aria-label="Recherche globale par mots-clés" oninput="renderGlobalSearch(this.value)">
+      </div>
+      <p class="global-search-count" id="globalSearchCount" aria-live="polite"></p>
+      <div class="global-search-table-wrap">
+        <table class="global-search-table">
+          <thead><tr><th>Véhicule</th><th>Fiche</th><th>Élément</th><th>Date / période</th><th>Détails</th><th>Liens</th></tr></thead>
+          <tbody id="globalSearchResults"></tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Navigation Onglets -->
     <div class="nav-tabs">
@@ -869,6 +906,7 @@
       <div class="intervention-detail-list" id="interventionDetailsContent"></div>
       <div class="intervention-detail-actions">
         <button class="intervention-detail-close" type="button" onclick="closeInterventionDetails()">Fermer</button>
+        <button class="intervention-detail-edit" type="button" onclick="addInterventionDocument()">Ajouter des documents</button>
         <button class="intervention-detail-edit" type="button" onclick="editIntervention()">Modifier</button>
       </div>
     </div>
@@ -891,6 +929,13 @@
       <div class="modal-header"><div><h2 id="completeDeadlineTitle">Confirmer l'échéance</h2><p id="completeDeadlineMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="answerDeadlineCompletion(false)">&times;</button></div>
       <div class="field"><label for="completeDeadlineSelect">Échéance</label><select id="completeDeadlineSelect"></select></div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="answerDeadlineCompletion(false)">Non, conserver</button><button class="btn-save" type="button" onclick="answerDeadlineCompletion(true)">Oui, retirer l'échéance</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="refreshDeadlinesModal" aria-labelledby="refreshDeadlinesTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="refreshDeadlinesTitle">Recréer les échéances automatiques ?</h2><p>Les échéances automatiques supprimées seront recréées à partir du suivi d’entretien. Vos échéances manuelles et celles déjà modifiées seront conservées.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('refreshDeadlinesModal')">&times;</button></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('refreshDeadlinesModal')">Annuler</button><button class="btn-save" type="button" onclick="refreshAutomaticDeadlines()">Recréer</button></div>
     </div>
   </dialog>
 
@@ -939,9 +984,8 @@
       <div class="modal-fields">
         <div class="field"><label for="documentDateDisplay">Date (JJ/MM/AAAA)</label><input id="documentDate" name="date" type="hidden"><input id="documentDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du document (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Contrôle technique">Contrôle technique</option><option value="Autre">Autre</option></select></div>
-        <div class="field full-width"><label for="documentName">Nom du document</label><input id="documentName" name="name" type="text" maxlength="120" required></div>
+        <div class="field full-width"><span class="field-label">Documents et liens</span><div class="document-links-list" id="documentLinksList"><div class="document-link-entry"><div class="field"><label for="documentName-1">Nom du document</label><input id="documentName-1" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-1">URL du document</label><input id="documentUrl-1" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div></div></div><button class="btn-manage-types" type="button" onclick="addDocumentLinkField()">+ Ajouter un autre lien</button></div>
         <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
-        <div class="field full-width"><label for="documentUrl">URL du document</label><input id="documentUrl" name="url" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('documentModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le lien</button></div>
     </form>
@@ -1016,8 +1060,8 @@
           { month: "Oct 26", fuel: 75, maint: 105, insur: 40, parts: 0, event: "Vidange" }
         ],
         interventions: [
-          { id: "v1-intervention-1", date: "05/10/2026", name: "Vidange + Filtre à Huile", km: "84 000 km", price: "105 €", doc: "Facture_Peugeot.pdf" },
-          { id: "v1-intervention-2", date: "12/03/2026", name: "Filtre à Air & Habitacle", km: "81 200 km", price: "45 €", doc: "Facture_Norauto.pdf" }
+          { id: "v1-intervention-1", date: "05/10/2026", name: "Vidange + Filtre à Huile", km: "84 000 km", price: "105 €", doc: "Facture_Peugeot.pdf", docUrl: "https://google.com/?demo=vidange-208" },
+          { id: "v1-intervention-2", date: "12/03/2026", name: "Filtre à Air & Habitacle", km: "81 200 km", price: "45 €", doc: "Facture_Norauto.pdf", docUrl: "https://google.com/?demo=filtre-208" }
         ],
         fuel: [
           { date: "01/10/2026", volume: "42 L", priceL: "1.78 €", total: "74.76 €", km: "84 500 km" }
@@ -1026,7 +1070,9 @@
           { date: "20/08/2026", item: "Jeu d'essuie-glaces Bosch", store: "Amazon", price: "32 €" },
           { date: "10/02/2026", item: "Ampoule H7 LED", store: "Oscaro", price: "38 €" }
         ],
-        documents: []
+        documents: [
+          { id: "v1-demo-assurance-document", date: "01/01/2026", name: "Attestation assurance", category: "Assurance", url: "https://google.com/?demo=assurance-208", interventionId: "" }
+        ]
       },
       v2: {
         km: "162 000 km",
@@ -1054,9 +1100,9 @@
         ],
         interventions: [
           { id: "v2-demo-multiple-types", date: "06/10/2026", type: "Vidange", types: ["Vidange", "Pneumatiques", "Courroie"], name: "Exemple : plusieurs opérations le même jour", km: "161 500 km", price: "650 €", doc: "", demo: true },
-          { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", demo: true },
+          { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", docUrl: "https://google.com/?demo=vidange-scenic", demo: true },
           { id: "v2-demo-cabin-filter", date: "07/10/2024", type: "Filtre d’habitacle", name: "Filtre d’habitacle (pollen)", km: "132 000 km", price: "35 €", doc: "", demo: true },
-          { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", demo: true },
+          { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", docUrl: "https://google.com/?demo=filtre-air-scenic", demo: true },
           { id: "v2-demo-fuel-filter", date: "14/06/2022", type: "Filtre à gazole", name: "Remplacement filtre à gazole", km: "105 000 km", price: "85 €", doc: "", demo: true },
           { id: "v2-demo-timing-belt", date: "14/06/2021", type: "Distribution", name: "Distribution + pompe à eau", km: "90 000 km", price: "780 €", doc: "", demo: true },
           { id: "v2-demo-accessory-belt", date: "14/06/2021", type: "Courroie d’accessoires", name: "Courroie d’accessoires + galets", km: "90 000 km", price: "220 €", doc: "", demo: true },
@@ -1064,7 +1110,7 @@
           { id: "v2-demo-coolant", date: "15/06/2021", type: "Liquide de refroidissement", name: "Remplacement liquide de refroidissement", km: "90 000 km", price: "110 €", doc: "", demo: true },
           { id: "v2-demo-rear-brakes", date: "10/01/2024", type: "Freinage", name: "Contrôle freins et plaquettes arrière", km: "125 000 km", price: "0 €", doc: "", demo: true },
           { id: "v2-demo-tyres", date: "18/02/2024", type: "Pneumatiques", name: "Contrôle et permutation des pneumatiques", km: "127 000 km", price: "25 €", doc: "", demo: true },
-          { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf" },
+          { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf", docUrl: "https://google.com/?demo=pneus-scenic" },
           { id: "v2-intervention-2", date: "10/01/2026", name: "Plaquettes de frein", km: "156 500 km", price: "160 €", doc: "Facture_Garage.pdf" }
         ],
         fuel: [
@@ -1073,7 +1119,11 @@
         purchases: [
           { date: "12/01/2026", item: "Batterie Varta 70Ah", store: "MisterAuto", price: "110 €" }
         ],
-        documents: []
+        documents: [
+          { id: "v2-demo-oil-receipt", date: "07/10/2024", name: "Facture vidange", category: "Facture", url: "https://google.com/?demo=facture-vidange", interventionId: "v2-demo-oil" },
+          { id: "v2-demo-oil-parts", date: "07/10/2024", name: "Référence du filtre à huile", category: "Autre", url: "https://google.com/?demo=reference-filtre", interventionId: "v2-demo-oil" },
+          { id: "v2-demo-oil-checklist", date: "07/10/2024", name: "Contrôle après vidange", category: "Autre", url: "https://google.com/?demo=controle-vidange", interventionId: "v2-demo-oil" }
+        ]
       }
     };
 
@@ -1139,7 +1189,10 @@
     let currentVehicleId = TEST_MODE ? 'v2' : initialBackup && ['v1', 'v2'].includes(initialBackup.currentVehicleId)
       ? initialBackup.currentVehicleId : 'v2';
     let recordSequence = 0;
+    let documentLinkFieldSequence = 1;
     let completingDeadlineId = null;
+    let editingAutomaticDeadlineId = null;
+    let editingAutomaticDeadlineValue = '';
     let confirmationDeadlines = [];
     let confirmationIntervention = null;
     let pendingMaintenanceItemId = null;
@@ -2013,9 +2066,10 @@
       const currentKm = Number(data.km.replace(/\D/g, ''));
       const today = localDateValue();
       const manualTypes = new Set(data.plannedInterventions.map(intervention => intervention.type));
+      const excludedItems = new Set(data.automaticDeadlineExclusions || []);
       return maintenanceSchedule.items.flatMap(item => {
         const record = records[item.id];
-        if (!record || manualTypes.has(item.type)) return [];
+        if (!record || manualTypes.has(item.type) || excludedItems.has(item.id)) return [];
         const status = maintenanceItemStatus(item, record, currentKm, today);
         return [{
           id: `maintenance-${item.id}`,
@@ -2200,25 +2254,88 @@
         updateInterventionDeadlineSelect();
       }
       if (modalId === 'plannedInterventionModal') {
+        editingAutomaticDeadlineId = null;
+        editingAutomaticDeadlineValue = '';
+        document.getElementById('plannedInterventionModalTitle').textContent = 'Planifier une intervention';
+        document.querySelector('#plannedInterventionForm button[type="submit"]').textContent = 'Enregistrer l’échéance';
         updatePlannedInterventionTypeSelect();
         form.elements.date.dataset.minDate = today;
         form.elements.date.nextElementSibling.dataset.minDate = today;
         setDateField(form.elements.date, today);
       }
       if (modalId === 'documentModal') updateDocumentInterventionSelect();
+      if (modalId === 'documentModal') {
+        documentLinkFieldSequence = 1;
+        document.querySelectorAll('#documentLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
+      }
       if (form.elements.km) {
         form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
       }
       dialog.showModal();
     }
 
+    function addDocumentLinkField() {
+      const entry = document.createElement('div');
+      const fieldId = ++documentLinkFieldSequence;
+      entry.className = 'document-link-entry';
+      entry.innerHTML = `<div class="field"><label for="documentName-${fieldId}">Nom du document</label><input id="documentName-${fieldId}" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-${fieldId}">URL du document</label><input id="documentUrl-${fieldId}" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
+      document.getElementById('documentLinksList').appendChild(entry);
+    }
+
+    function addInterventionDocument() {
+      const interventionId = detailsInterventionId;
+      closeInterventionDetails();
+      openActionModal('documentModal');
+      document.getElementById('documentIntervention').value = interventionId;
+    }
+
     function closeActionModal(modalId) {
       document.getElementById(modalId).close();
+      if (modalId === 'plannedInterventionModal') {
+        editingAutomaticDeadlineId = null;
+        editingAutomaticDeadlineValue = '';
+      }
       if (modalId === 'interventionModal') {
         completingDeadlineId = null;
         pendingMaintenanceItemId = null;
         editingInterventionId = null;
       }
+    }
+
+    function openRefreshDeadlinesModal() {
+      document.getElementById('refreshDeadlinesModal').showModal();
+    }
+
+    function refreshAutomaticDeadlines() {
+      const data = vehiclesData[currentVehicleId];
+      data.automaticDeadlineExclusions = [];
+      persistData();
+      closeActionModal('refreshDeadlinesModal');
+      switchVehicle(currentVehicleId);
+    }
+
+    function editAutomaticDeadline(itemId) {
+      const deadline = calculatedMaintenanceDeadlines(vehiclesData[currentVehicleId])
+        .find(item => item.maintenanceItemId === itemId);
+      if (!deadline) return;
+      openActionModal('plannedInterventionModal');
+      editingAutomaticDeadlineId = deadline.id;
+      editingAutomaticDeadlineValue = deadline.value;
+      const form = document.getElementById('plannedInterventionForm');
+      document.getElementById('plannedInterventionModalTitle').textContent = 'Modifier l’échéance automatique';
+      form.querySelector('button[type="submit"]').textContent = 'Enregistrer les modifications';
+      form.elements.date.dataset.minDate = '';
+      form.elements.date.nextElementSibling.dataset.minDate = '';
+      form.elements.type.value = deadline.type;
+      setDateField(form.elements.date, deadline.date);
+      form.elements.comment.value = '';
+    }
+
+    function requestDeleteAutomaticDeadline(itemId, label) {
+      pendingDelete = { type: 'automaticDeadline', itemId };
+      document.getElementById('deleteRecordMessage').textContent =
+        `Voulez-vous vraiment supprimer l’échéance automatique « ${label} » ? Elle pourra être recréée avec le bouton d’actualisation.`;
+      document.getElementById('deleteRecordModal').showModal();
     }
 
     function deadlineLabel(deadline) {
@@ -2467,12 +2584,19 @@
     function savePlannedIntervention(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
-      vehiclesData[currentVehicleId].plannedInterventions.push({
-        id: createDeadlineId(),
+      const data = vehiclesData[currentVehicleId];
+      data.plannedInterventions.push({
+        id: editingAutomaticDeadlineId || createDeadlineId(),
         type: values.type,
         date: values.date,
-        comment: values.comment.trim()
+        comment: values.comment.trim(),
+        value: editingAutomaticDeadlineValue,
+        ...(editingAutomaticDeadlineId ? { sourceMaintenanceItemId: editingAutomaticDeadlineId.replace('maintenance-', '') } : {})
       });
+      if (editingAutomaticDeadlineId) {
+        const itemId = editingAutomaticDeadlineId.replace('maintenance-', '');
+        data.automaticDeadlineExclusions = [...new Set([...(data.automaticDeadlineExclusions || []), itemId])];
+      }
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('plannedInterventionModal');
@@ -2496,17 +2620,21 @@
     function saveDocument(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
-      const safeUrl = normalizeDocumentUrl(values.url);
-      if (!safeUrl) {
-        event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
-        event.currentTarget.elements.url.reportValidity();
+      const names = new FormData(event.currentTarget).getAll('documentNames[]');
+      const urlInputs = [...event.currentTarget.querySelectorAll('[name="documentUrls[]"]')];
+      const safeUrls = urlInputs.map(input => normalizeDocumentUrl(input.value));
+      const invalidUrlIndex = safeUrls.findIndex(url => !url);
+      if (invalidUrlIndex !== -1) {
+        urlInputs[invalidUrlIndex].setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        urlInputs[invalidUrlIndex].reportValidity();
         return;
       }
-      vehiclesData[currentVehicleId].documents.unshift({
+      const data = vehiclesData[currentVehicleId];
+      data.documents.unshift(...safeUrls.map((url, index) => ({
         id: createDataId('document'),
-        date: formatDate(values.date), name: values.name, category: values.category, url: safeUrl,
+        date: formatDate(values.date), name: names[index].trim(), category: values.category, url,
         interventionId: values.interventionId || ''
-      });
+      })));
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('documentModal');
@@ -2774,7 +2902,10 @@
           const deleteAction = !intervention.maintenanceItemId
             ? deleteButton('planned', data.plannedInterventions.indexOf(intervention), label)
             : '';
-          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
+          const automaticActions = intervention.maintenanceItemId
+            ? `<div class="deadline-auto-controls"><span class="deadline-auto-label" title="Calculée automatiquement depuis le suivi d’entretien"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 7v4M8 4.5h.01"></path></svg>Auto</span><button class="deadline-auto-action" type="button" aria-label="Modifier ${escapeHtml(label)}" title="Modifier cette échéance" onclick="editAutomaticDeadline('${escapeHtml(intervention.maintenanceItemId)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></button><button class="deadline-auto-action" type="button" aria-label="Supprimer ${escapeHtml(label)}" title="Supprimer cette échéance" onclick="requestDeleteAutomaticDeadline('${escapeHtml(intervention.maintenanceItemId)}', ${escapeHtml(JSON.stringify(label))})"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"></path></svg></button></div>`
+            : '';
+          return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${automaticActions}${intervention.comment ? `<span class="deadline-comment">${escapeHtml(intervention.comment)}</span>` : ''}</div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
         }
         ).join('');
       document.getElementById('deadlinesList').innerHTML = fixedDeadlines + plannedInterventions;
@@ -2794,6 +2925,8 @@
         `<tr><td>${escapeHtml(documentRecord.date)}</td><td><strong>${escapeHtml(documentRecord.name)}</strong></td><td>${escapeHtml(documentRecord.category)}</td><td>${escapeHtml(interventionLabel(data, documentRecord.interventionId))}</td><td>${documentLink(documentRecord.url, 'Ouvrir le lien')}</td><td>${deleteButton('document', index, documentRecord.name)}</td></tr>`
       ).join('');
       document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+      document.querySelector('.deadline-refresh').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+      renderGlobalSearch(document.getElementById('globalSearchInput').value);
     }
 
     function renderInterventionHistory(data) {
@@ -2980,6 +3113,16 @@
       if (!pendingDelete) return;
       const { type, index } = pendingDelete;
       const data = vehiclesData[currentVehicleId];
+      if (type === 'automaticDeadline') {
+        data.automaticDeadlineExclusions = [...new Set([
+          ...(data.automaticDeadlineExclusions || []), pendingDelete.itemId
+        ])];
+        pendingDelete = null;
+        document.getElementById('deleteRecordModal').close();
+        persistData();
+        switchVehicle(currentVehicleId);
+        return;
+      }
       if (type === 'fixedCost') {
         const year = String(pendingDelete.year);
         const costs = fixedCostsForYear(data, year);
@@ -3022,6 +3165,11 @@
         cancelDeleteRecord();
         setSyncStatus('Suppression impossible : cet élément n’existe plus.');
         return;
+      }
+      if (type === 'planned' && record.sourceMaintenanceItemId) {
+        data.automaticDeadlineExclusions = [...new Set([
+          ...(data.automaticDeadlineExclusions || []), record.sourceMaintenanceItemId
+        ])];
       }
       deletedRecords = [...new Set([...deletedRecords, deletionKey(currentVehicleId, type, record)])];
       if (type === 'invoice') {
@@ -3102,6 +3250,97 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
+      document.querySelector('.backup-panel').hidden = tabId !== 'interventions';
+    }
+
+    function normalizeSearchText(value) {
+      return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+    }
+
+    function globalSearchRecords() {
+      const records = [];
+      const vehicleLabels = Object.fromEntries([...document.querySelectorAll('#vehicleSelect option')]
+        .map(option => [option.value, option.textContent.trim()]));
+      const addRecord = (vehicleId, type, title, period, details, searchValues = [], links = []) => {
+        const vehicle = vehicleLabels[vehicleId] || vehicleId;
+        const detailText = (Array.isArray(details) ? details : [details]).filter(Boolean).join(' · ');
+        const validLinks = links.filter(link => normalizeDocumentUrl(link.url));
+        records.push({
+          vehicle,
+          type,
+          title: title || type,
+          period: period || '—',
+          details: detailText || '—',
+          links: validLinks,
+          searchText: normalizeSearchText([
+            vehicle, type, title, period, detailText,
+            ...searchValues,
+            ...validLinks.flatMap(link => [link.label, link.url])
+          ].join(' '))
+        });
+      };
+
+      Object.entries(vehiclesData).forEach(([vehicleId, data]) => {
+        addRecord(vehicleId, 'Véhicule', vehicleLabels[vehicleId], '', [data.km, data.kmYear].filter(Boolean).join(' · '), [data.km, data.kmYear]);
+        data.interventions.forEach(intervention => {
+          const linkedDocuments = data.documents.filter(item => item.interventionId === intervention.id);
+          const tags = interventionTags(intervention);
+          const links = [
+            ...(intervention.docUrl ? [{ label: 'Facture', url: intervention.docUrl }] : []),
+            ...linkedDocuments.map(item => ({ label: item.name, url: item.url }))
+          ];
+          addRecord(vehicleId, 'Intervention', tags.join(' · ') || intervention.name, intervention.date,
+            [intervention.name, intervention.km, intervention.price, intervention.garage, intervention.doc],
+            [...tags, ...linkedDocuments.flatMap(item => [item.name, item.category, item.url])], links);
+        });
+        data.fuel.forEach(fuel => addRecord(vehicleId, 'Carburant', `Plein ${fuel.volume || ''}`, fuel.date,
+          [fuel.volume, fuel.priceL, fuel.total, fuel.km], Object.values(fuel)));
+        data.purchases.forEach(purchase => addRecord(vehicleId, 'Achat / pièce', purchase.item, purchase.date,
+          [purchase.store, purchase.price], Object.values(purchase)));
+        data.documents.forEach(item => addRecord(vehicleId, 'Document', item.name, item.date,
+          [item.category, interventionLabel(data, item.interventionId)], Object.values(item), [{ label: 'Ouvrir', url: item.url }]));
+        fixedCostRecordsFromVehicle(data).forEach(item => addRecord(vehicleId, 'Coût fixe', item.name, item.year,
+          [formatEuro(item.amount)], [item.year, item.name, item.amount, item.id]));
+        data.deadlines.forEach(item => addRecord(vehicleId, 'Échéance', item.name || item.type, item.date || '',
+          [item.value, item.comment], Object.values(item)));
+        data.plannedInterventions.forEach(item => addRecord(vehicleId, 'Échéance planifiée', item.name || item.type,
+          item.date ? formatDate(item.date) : '', [item.value, item.comment], Object.values(item)));
+        data.monthlyStats.filter(item => item.event).forEach(item => addRecord(vehicleId, 'Note mensuelle', item.event, item.month,
+          [item.event], Object.values(item)));
+        if (vehicleId === maintenanceSchedule.vehicleId) {
+          const maintenanceKm = Number(data.km.replace(/\D/g, ''));
+          const maintenanceRecordsForVehicle = maintenanceRecords[vehicleId] || {};
+          const excludedItems = new Set(data.automaticDeadlineExclusions || []);
+          const manualTypes = new Set(data.plannedInterventions.map(item => item.type));
+          maintenanceSchedule.items.forEach(item => {
+            const record = maintenanceRecordsForVehicle[item.id];
+            if (!record) return;
+            addRecord(vehicleId, 'Suivi entretien', item.name, formatDate(record.date),
+              [formatKilometers(record.km), item.type], [item.name, item.type, record.date, record.km]);
+            if (excludedItems.has(item.id) || manualTypes.has(item.type)) return;
+            const status = maintenanceItemStatus(item, record, maintenanceKm, localDateValue());
+            addRecord(vehicleId, 'Échéance automatique', item.name, status.nextDate ? formatDate(status.nextDate) : '',
+              [status.nextKm === null ? '' : formatKilometers(status.nextKm)], [item.type, status.nextDate, status.nextKm]);
+          });
+        }
+      });
+      return records;
+    }
+
+    function renderGlobalSearch(query) {
+      const tokens = normalizeSearchText(query).trim().split(/\s+/).filter(Boolean);
+      const results = document.getElementById('globalSearchResults');
+      const count = document.getElementById('globalSearchCount');
+      if (!tokens.length) {
+        results.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      const matches = globalSearchRecords().filter(record => tokens.every(token => record.searchText.includes(token)));
+      count.textContent = `${matches.length} résultat${matches.length === 1 ? '' : 's'}`;
+      results.innerHTML = matches.length
+        ? matches.map(record => `<tr><td>${escapeHtml(record.vehicle)}</td><td>${escapeHtml(record.type)}</td><td><strong>${escapeHtml(record.title)}</strong></td><td>${escapeHtml(record.period)}</td><td>${escapeHtml(record.details)}</td><td><div class="global-search-links">${record.links.map(link => documentLink(link.url, link.label)).join('') || '—'}</div></td></tr>`).join('')
+        : '<tr><td colspan="6">Aucun résultat</td></tr>';
     }
 
     const interventionHistoryBody = document.getElementById('interventions-table');
