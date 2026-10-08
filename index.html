@@ -396,7 +396,8 @@
     }
     .history-sort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
-    .intervention-mobile-card { display: none; }
+    .intervention-history-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .intervention-history-table { min-width: 680px; }
     .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
     .history-intervention-tag {
       display: inline-block;
@@ -578,34 +579,6 @@
       .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
       .history-filter select { width: 100%; max-width: none; }
       .history-count { text-align: right; }
-      #interventions thead { display: block; }
-      #interventions thead tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0 8px; }
-      #interventions thead th { display: none; padding: 0; border: 0; }
-      #interventions thead th:nth-child(1),
-      #interventions thead th:nth-child(3),
-      #interventions thead th:nth-child(4) { display: block; }
-      #interventions .history-sort { width: 100%; min-height: 40px; padding: 7px 5px; border: 1px solid var(--border); border-radius: 6px; background: #fff; font-size: 0.78rem; text-align: center; }
-      #interventions table,
-      #interventions tbody,
-      #interventions tr,
-      #interventions td { display: block; width: 100%; }
-      #interventions thead { display: block; }
-      #interventions tr {
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      #interventions tr:last-child { border-bottom: 0; }
-      #interventions td { display: none; padding: 0; border: 0; }
-      #interventions td:first-child { display: block; }
-      #interventions .intervention-desktop-date { display: none; }
-      #interventions .intervention-mobile-card { display: block; }
-      .intervention-mobile-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-      .intervention-mobile-title { min-width: 0; overflow-wrap: anywhere; font-size: 0.96rem; }
-      .intervention-mobile-price { flex: 0 0 auto; font-size: 0.92rem; font-weight: 700; }
-      .intervention-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; }
-      .intervention-mobile-detail { margin-top: 3px; color: var(--text-muted); font-size: 0.82rem; overflow-wrap: anywhere; }
-      .intervention-mobile-links { margin-top: 3px; font-size: 0.8rem; }
-      .intervention-mobile-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 7px; }
       .delete-button { width: 40px; min-width: 40px; min-height: 40px; }
       .modal-form { padding: 18px 16px; }
       .maintenance-content { padding: 16px 12px; }
@@ -751,7 +724,8 @@
           <button class="btn-cancel" id="clearInterventionMonthFilter" type="button" onclick="clearInterventionMonthFilter()" hidden>Effacer le filtre du mois</button>
           <span class="history-count" id="interventionHistoryCount" aria-live="polite"></span>
         </div>
-        <table>
+        <div class="intervention-history-table-wrap">
+        <table class="intervention-history-table">
           <thead>
             <tr>
               <th aria-sort="descending"><button id="interventionSortDateButton" class="history-sort" type="button" aria-pressed="true" onclick="sortInterventions('date')">Date <span id="interventionSortDateIndicator" aria-hidden="true">↓</span></button></th>
@@ -764,6 +738,7 @@
           </thead>
           <tbody id="interventions-table"></tbody>
         </table>
+        </div>
       </div>
     </div>
 
@@ -3021,21 +2996,7 @@
         const links = renderInterventionDocuments(data, intervention);
         const rowLabel = `${tags.join(', ') || title}, ${intervention.date}, ${intervention.km}`;
         return `<tr data-intervention-id="${escapeHtml(intervention.id)}" tabindex="0" aria-label="Afficher le détail : ${escapeHtml(rowLabel)}" aria-haspopup="dialog">
-          <td data-label="Date">
-            <span class="intervention-desktop-date">${escapeHtml(intervention.date)}</span>
-            <div class="intervention-mobile-card">
-              <div class="intervention-mobile-heading">
-                ${typeMarkup}
-                <span class="intervention-mobile-price">${escapeHtml(intervention.price)}</span>
-              </div>
-              <div class="intervention-mobile-meta"><span>${escapeHtml(intervention.date)}</span><span>${escapeHtml(intervention.km)}</span></div>
-              ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
-              ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
-              <div class="intervention-mobile-actions">
-                ${deleteButton('intervention', index, actionLabel)}
-              </div>
-            </div>
-          </td>
+          <td data-label="Date">${escapeHtml(intervention.date)}</td>
           <td data-label="Intervention">${typeMarkup}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
           <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
           <td data-label="Coût">${escapeHtml(intervention.price)}</td>
