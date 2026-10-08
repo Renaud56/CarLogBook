@@ -398,6 +398,7 @@
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
     .intervention-history-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .intervention-history-table { min-width: 680px; }
+    .history-mobile-label { display: none; }
     .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
     .history-intervention-tag {
       display: inline-block;
@@ -408,6 +409,7 @@
       color: #1e40af;
       font-size: 0.82rem;
       font-weight: 700;
+      white-space: nowrap;
     }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
     #interventions tbody tr[data-intervention-id]:hover { background: #f8fafc; }
@@ -579,7 +581,24 @@
       .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
       .history-filter select { width: 100%; max-width: none; }
       .history-count { text-align: right; }
-      .delete-button { width: 40px; min-width: 40px; min-height: 40px; }
+      .intervention-history-table-wrap { overflow-x: visible; }
+      .intervention-history-table { min-width: 0; table-layout: fixed; }
+      #interventions th,
+      #interventions td { padding: 7px 3px; font-size: 0.68rem; vertical-align: top; overflow-wrap: anywhere; }
+      #interventions th { padding: 7px 3px; font-size: 0.68rem; }
+      #interventions th:nth-child(1), #interventions td:nth-child(1) { width: 20%; }
+      #interventions th:nth-child(2), #interventions td:nth-child(2) { width: 31%; }
+      #interventions th:nth-child(3), #interventions td:nth-child(3) { width: 14.5%; }
+      #interventions th:nth-child(4), #interventions td:nth-child(4) { width: 12.5%; }
+      #interventions th:nth-child(5), #interventions td:nth-child(5) { width: 9%; }
+      #interventions th:nth-child(6), #interventions td:nth-child(6) { width: 13%; }
+      #interventions .history-sort { width: 100%; min-height: 34px; padding: 0; font-size: 0.68rem; text-align: left; overflow-wrap: anywhere; }
+      #interventions .history-desktop-label { display: none; }
+      #interventions .history-mobile-label { display: inline; }
+      #interventions .history-intervention-tags { gap: 2px; margin-top: 2px; }
+      #interventions .history-intervention-tag { padding: 2px 4px; font-size: 0.68rem; }
+      #interventions .link-btn { font-size: 0.62rem; }
+      #interventions .delete-button { width: 36px; min-width: 36px; min-height: 36px; }
       .modal-form { padding: 18px 16px; }
       .maintenance-content { padding: 16px 12px; }
       .maintenance-table,
@@ -730,9 +749,9 @@
             <tr>
               <th aria-sort="descending"><button id="interventionSortDateButton" class="history-sort" type="button" aria-pressed="true" onclick="sortInterventions('date')">Date <span id="interventionSortDateIndicator" aria-hidden="true">↓</span></button></th>
               <th>Intervention</th>
-              <th aria-sort="none"><button id="interventionSortKmButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('km')">Kilométrage <span id="interventionSortKmIndicator" aria-hidden="true"></span></button></th>
+              <th aria-sort="none"><button id="interventionSortKmButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('km')"><span class="history-desktop-label">Kilométrage</span><span class="history-mobile-label">Km</span> <span id="interventionSortKmIndicator" aria-hidden="true"></span></button></th>
               <th aria-sort="none"><button id="interventionSortPriceButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('price')">Coût <span id="interventionSortPriceIndicator" aria-hidden="true"></span></button></th>
-              <th>Document</th>
+              <th><span class="history-desktop-label">Document</span><span class="history-mobile-label">Doc</span></th>
               <th>Action</th>
             </tr>
           </thead>
