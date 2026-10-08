@@ -384,17 +384,29 @@
       color: var(--text-main);
       font: inherit;
     }
+    .history-sort {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .history-sort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
     .intervention-mobile-card { display: none; }
     .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
     .history-intervention-tag {
       display: inline-block;
-      padding: 2px 7px;
+      padding: 4px 9px;
       border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-size: 0.72rem;
-      font-weight: 600;
+      border: 1px solid #bfdbfe;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
     #interventions tbody tr[data-intervention-id]:hover { background: #f8fafc; }
@@ -566,11 +578,18 @@
       .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
       .history-filter select { width: 100%; max-width: none; }
       .history-count { text-align: right; }
+      #interventions thead { display: block; }
+      #interventions thead tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0 8px; }
+      #interventions thead th { display: none; padding: 0; border: 0; }
+      #interventions thead th:nth-child(1),
+      #interventions thead th:nth-child(3),
+      #interventions thead th:nth-child(4) { display: block; }
+      #interventions .history-sort { width: 100%; min-height: 40px; padding: 7px 5px; border: 1px solid var(--border); border-radius: 6px; background: #fff; font-size: 0.78rem; text-align: center; }
       #interventions table,
       #interventions tbody,
       #interventions tr,
       #interventions td { display: block; width: 100%; }
-      #interventions thead { display: none; }
+      #interventions thead { display: block; }
       #interventions tr {
         padding: 10px 0;
         border-bottom: 1px solid var(--border);
@@ -735,10 +754,10 @@
         <table>
           <thead>
             <tr>
-              <th>Date</th>
+              <th aria-sort="descending"><button id="interventionSortDateButton" class="history-sort" type="button" aria-pressed="true" onclick="sortInterventions('date')">Date <span id="interventionSortDateIndicator" aria-hidden="true">↓</span></button></th>
               <th>Intervention</th>
-              <th>Kilométrage</th>
-              <th>Coût</th>
+              <th aria-sort="none"><button id="interventionSortKmButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('km')">Kilométrage <span id="interventionSortKmIndicator" aria-hidden="true"></span></button></th>
+              <th aria-sort="none"><button id="interventionSortPriceButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('price')">Coût <span id="interventionSortPriceIndicator" aria-hidden="true"></span></button></th>
               <th>Document</th>
               <th>Action</th>
             </tr>
@@ -1214,6 +1233,8 @@
     let chartInterventionsOnly = false;
     let chartSelectedYear = null;
     let interventionTypeFilter = '';
+    let interventionSortKey = 'date';
+    let interventionSortDirection = 'desc';
     let interventionMonthFilter = null;
     Object.values(vehiclesData).forEach(normalizeVehicleFixedCosts);
 
@@ -2958,15 +2979,45 @@
             Number(month) - 1 === interventionMonthFilter.monthIndex;
         })())
       );
+      const sortHeaders = {
+        date: { button: 'interventionSortDateButton', indicator: 'interventionSortDateIndicator', label: 'date' },
+        km: { button: 'interventionSortKmButton', indicator: 'interventionSortKmIndicator', label: 'kilométrage' },
+        price: { button: 'interventionSortPriceButton', indicator: 'interventionSortPriceIndicator', label: 'coût' }
+      };
+      Object.entries(sortHeaders).forEach(([key, header]) => {
+        const active = key === interventionSortKey;
+        const button = document.getElementById(header.button);
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('aria-label', `Trier par ${header.label}${active ? `, ordre ${interventionSortDirection === 'desc' ? 'décroissant' : 'croissant'}` : ''}`);
+        button.closest('th').setAttribute('aria-sort', active
+          ? interventionSortDirection === 'desc' ? 'descending' : 'ascending'
+          : 'none');
+        document.getElementById(header.indicator).textContent = active
+          ? interventionSortDirection === 'desc' ? '↓' : '↑'
+          : '';
+      });
+      const dateValue = intervention => {
+        const [day, month, year] = String(intervention.date || '').split('/').map(Number);
+        return Date.UTC(year || 0, (month || 1) - 1, day || 1);
+      };
+      const numberValue = value => Number(String(value || '').replace(/\s/g, '').replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      const sortedInterventions = visibleInterventions.slice().sort((first, second) => {
+        const firstValue = interventionSortKey === 'date' ? dateValue(first) : numberValue(first[interventionSortKey]);
+        const secondValue = interventionSortKey === 'date' ? dateValue(second) : numberValue(second[interventionSortKey]);
+        const comparison = interventionSortDirection === 'desc' ? secondValue - firstValue : firstValue - secondValue;
+        return comparison || dateValue(second) - dateValue(first);
+      });
       document.getElementById('interventionHistoryCount').textContent =
         `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
-      document.getElementById('interventions-table').innerHTML = visibleInterventions.map(intervention => {
+      document.getElementById('interventions-table').innerHTML = sortedInterventions.map(intervention => {
         const index = data.interventions.indexOf(intervention);
         const tags = interventionTags(intervention);
         const title = tags[0] || intervention.name;
-        const additionalTags = renderHistoryInterventionTags(tags.slice(1));
-        const detail = intervention.name && intervention.name !== title && intervention.name !== tags.join(' · ')
+        const demoBadge = intervention.demo ? '<span class="demo-badge">DÉMO</span>' : '';
+        const typeMarkup = `${renderHistoryInterventionTags(tags)}${demoBadge}`;
+        const detail = intervention.name && !tags.includes(intervention.name) && intervention.name !== tags.join(' · ')
           ? intervention.name : '';
+        const actionLabel = title || intervention.name || tags.join(', ');
         const links = renderInterventionDocuments(data, intervention);
         const rowLabel = `${tags.join(', ') || title}, ${intervention.date}, ${intervention.km}`;
         return `<tr data-intervention-id="${escapeHtml(intervention.id)}" tabindex="0" aria-label="Afficher le détail : ${escapeHtml(rowLabel)}" aria-haspopup="dialog">
@@ -2974,23 +3025,22 @@
             <span class="intervention-desktop-date">${escapeHtml(intervention.date)}</span>
             <div class="intervention-mobile-card">
               <div class="intervention-mobile-heading">
-                <strong class="intervention-mobile-title">${escapeHtml(title)}${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}</strong>
+                ${typeMarkup}
                 <span class="intervention-mobile-price">${escapeHtml(intervention.price)}</span>
               </div>
-              ${additionalTags}
               <div class="intervention-mobile-meta"><span>${escapeHtml(intervention.date)}</span><span>${escapeHtml(intervention.km)}</span></div>
               ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
               ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
               <div class="intervention-mobile-actions">
-                ${deleteButton('intervention', index, title)}
+                ${deleteButton('intervention', index, actionLabel)}
               </div>
             </div>
           </td>
-          <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${additionalTags}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
+          <td data-label="Intervention">${typeMarkup}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
           <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
           <td data-label="Coût">${escapeHtml(intervention.price)}</td>
           <td data-label="Document">${links}</td>
-          <td data-label="Action">${deleteButton('intervention', index, title)}</td>
+          <td data-label="Action">${deleteButton('intervention', index, actionLabel)}</td>
         </tr>`;
       }).join('');
     }
@@ -3212,6 +3262,16 @@
     function filterInterventions(type) {
       interventionTypeFilter = type;
       interventionMonthFilter = null;
+      renderInterventionHistory(vehiclesData[currentVehicleId]);
+    }
+
+    function sortInterventions(sortKey) {
+      if (interventionSortKey === sortKey) {
+        interventionSortDirection = interventionSortDirection === 'desc' ? 'asc' : 'desc';
+      } else {
+        interventionSortKey = sortKey;
+        interventionSortDirection = 'desc';
+      }
       renderInterventionHistory(vehiclesData[currentVehicleId]);
     }
 
