@@ -451,6 +451,22 @@
       cursor: pointer;
     }
     .delete-button:hover { background: #fef2f2; }
+    .edit-purchase-button {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .purchase-row-actions { display: flex; gap: 6px; }
     .delete-confirm-button {
       min-height: 44px;
       padding: 0 16px;
@@ -790,6 +806,7 @@
               <th>Article</th>
               <th>Magasin</th>
               <th>Prix</th>
+              <th>Liens</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -986,6 +1003,7 @@
         <div class="field"><label for="purchasePrice">Prix (€)</label><input id="purchasePrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field full-width"><label for="purchaseItem">Article</label><input id="purchaseItem" name="item" type="text" maxlength="120" required></div>
         <div class="field full-width"><label for="purchaseStore">Magasin (facultatif)</label><input id="purchaseStore" name="store" type="text" maxlength="80"></div>
+        <div class="field full-width"><span class="field-label">Liens (facultatif)</span><div class="document-links-list" id="purchaseLinksList"><div class="document-link-entry"><div class="field"><label for="purchaseUrl-1">URL</label><input id="purchaseUrl-1" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div></div></div><button class="btn-manage-types" type="button" onclick="addPurchaseLinkField()">+ Ajouter un lien</button></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('purchaseModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'achat</button></div>
     </form>
@@ -1203,6 +1221,7 @@
       ? initialBackup.currentVehicleId : 'v2';
     let recordSequence = 0;
     let documentLinkFieldSequence = 1;
+    let purchaseLinkFieldSequence = 1;
     let completingDeadlineId = null;
     let editingAutomaticDeadlineId = null;
     let editingAutomaticDeadlineValue = '';
@@ -1211,6 +1230,7 @@
     let pendingMaintenanceItemId = null;
     let maintenanceChoiceItemId = null;
     let editingInterventionId = null;
+    let editingPurchaseId = null;
     let detailsInterventionId = null;
     let editingFixedCost = null;
     let maintenanceRecords = TEST_MODE ? {} : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
@@ -2270,6 +2290,11 @@
         document.getElementById('interventionTypeError').textContent = '';
         updateInterventionDeadlineSelect();
       }
+      if (modalId === 'purchaseModal') {
+        editingPurchaseId = null;
+        document.getElementById('purchaseModalTitle').textContent = 'Ajouter un achat';
+        document.querySelector('#purchaseForm button[type="submit"]').textContent = 'Enregistrer l\'achat';
+      }
       if (modalId === 'plannedInterventionModal') {
         editingAutomaticDeadlineId = null;
         editingAutomaticDeadlineValue = '';
@@ -2285,6 +2310,10 @@
         documentLinkFieldSequence = 1;
         document.querySelectorAll('#documentLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
       }
+      if (modalId === 'purchaseModal') {
+        purchaseLinkFieldSequence = 1;
+        document.querySelectorAll('#purchaseLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
+      }
       if (form.elements.km) {
         form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
       }
@@ -2299,6 +2328,14 @@
       document.getElementById('documentLinksList').appendChild(entry);
     }
 
+    function addPurchaseLinkField() {
+      const entry = document.createElement('div');
+      const fieldId = ++purchaseLinkFieldSequence;
+      entry.className = 'document-link-entry';
+      entry.innerHTML = `<div class="field"><label for="purchaseUrl-${fieldId}">URL</label><input id="purchaseUrl-${fieldId}" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
+      document.getElementById('purchaseLinksList').appendChild(entry);
+    }
+
     function addInterventionDocument() {
       const interventionId = detailsInterventionId;
       closeInterventionDetails();
@@ -2308,6 +2345,7 @@
 
     function closeActionModal(modalId) {
       document.getElementById(modalId).close();
+      if (modalId === 'purchaseModal') editingPurchaseId = null;
       if (modalId === 'plannedInterventionModal') {
         editingAutomaticDeadlineId = null;
         editingAutomaticDeadlineValue = '';
@@ -2622,13 +2660,35 @@
     function savePurchase(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
+      const urlInputs = [...event.currentTarget.querySelectorAll('[name="purchaseUrls[]"]')];
+      const urls = urlInputs.map(input => normalizeDocumentUrl(input.value));
+      const invalidUrlIndex = urlInputs.findIndex((input, index) => input.value.trim() && !urls[index]);
+      if (invalidUrlIndex !== -1) {
+        urlInputs[invalidUrlIndex].setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        urlInputs[invalidUrlIndex].reportValidity();
+        return;
+      }
       const price = Number(values.price);
-      vehiclesData[currentVehicleId].purchases.unshift({
-        id: createDataId('purchase'),
-        costTracked: true,
-        date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price)
-      });
-      addCostToCurrentMonth('parts', price, values.date, values.item);
+      const data = vehiclesData[currentVehicleId];
+      const updatedPurchase = {
+        date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price),
+        urls: urls.filter(Boolean)
+      };
+      if (editingPurchaseId) {
+        const purchase = data.purchases.find(item => item.id === editingPurchaseId);
+        if (!purchase) {
+          closeActionModal('purchaseModal');
+          return;
+        }
+        const trackCost = purchase.costTracked === true;
+        if (trackCost) removeTrackedCost(data, purchase, 'parts', 'price');
+        Object.assign(purchase, updatedPurchase);
+        if (trackCost) addCostToCurrentMonth('parts', price, values.date, values.item);
+      } else {
+        data.purchases.unshift({ id: createDataId('purchase'), costTracked: true, ...updatedPurchase });
+        addCostToCurrentMonth('parts', price, values.date, values.item);
+      }
+      editingPurchaseId = null;
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('purchaseModal');
@@ -2935,7 +2995,7 @@
       ).join('');
 
       document.getElementById('purchases-table').innerHTML = data.purchases.map((purchase, index) =>
-        `<tr><td>${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${deleteButton('purchase', index, purchase.item)}</td></tr>`
+        `<tr><td>${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${(Array.isArray(purchase.urls) ? purchase.urls : []).map((url, linkIndex) => documentLink(url, `Lien ${linkIndex + 1}`)).join('<br>') || '—'}</td><td><div class="purchase-row-actions"><button class="edit-purchase-button" type="button" aria-label="Modifier l’achat ${escapeHtml(purchase.item)}" title="Modifier l’achat" onclick="editPurchase(${index})">✏️</button>${deleteButton('purchase', index, purchase.item)}</div></td></tr>`
       ).join('');
 
       document.getElementById('documents-table').innerHTML = data.documents.map((documentRecord, index) =>
@@ -3084,6 +3144,30 @@
       form.elements.garage.value = intervention.garage || '';
       form.elements.url.value = intervention.docUrl || '';
       updateInterventionTypeTiles(types);
+    }
+
+    function editPurchase(index) {
+      const purchase = vehiclesData[currentVehicleId].purchases[index];
+      if (!purchase) return;
+      openActionModal('purchaseModal');
+      editingPurchaseId = purchase.id;
+      document.getElementById('purchaseModalTitle').textContent = 'Modifier un achat';
+      document.querySelector('#purchaseForm button[type="submit"]').textContent = 'Enregistrer les modifications';
+      const [day, month, year] = purchase.date.split('/');
+      const form = document.getElementById('purchaseForm');
+      setDateField(form.elements.date, `${year}-${month}-${day}`);
+      form.elements.price.value = parseEuroAmount(purchase.price);
+      form.elements.item.value = purchase.item || '';
+      form.elements.store.value = purchase.store || '';
+      const urls = Array.isArray(purchase.urls) ? purchase.urls : [];
+      const urlInputs = [form.querySelector('[name="purchaseUrls[]"]')];
+      urls.slice(1).forEach(url => {
+        addPurchaseLinkField();
+        urlInputs.push(form.querySelectorAll('[name="purchaseUrls[]"]')[urlInputs.length]);
+      });
+      urlInputs.forEach((input, urlIndex) => {
+        input.value = urls[urlIndex] || '';
+      });
     }
 
     function deleteButton(type, index, label) {
@@ -3337,8 +3421,12 @@
         });
         data.fuel.forEach(fuel => addRecord(vehicleId, 'Carburant', `Plein ${fuel.volume || ''}`, fuel.date,
           [fuel.volume, fuel.priceL, fuel.total, fuel.km], Object.values(fuel)));
-        data.purchases.forEach(purchase => addRecord(vehicleId, 'Achat / pièce', purchase.item, purchase.date,
-          [purchase.store, purchase.price], Object.values(purchase)));
+        data.purchases.forEach(purchase => {
+          const urls = Array.isArray(purchase.urls) ? purchase.urls : [];
+          addRecord(vehicleId, 'Achat / pièce', purchase.item, purchase.date,
+            [purchase.store, purchase.price], [...Object.values(purchase), ...urls],
+            urls.map((url, index) => ({ label: `Lien ${index + 1}`, url })));
+        });
         data.documents.forEach(item => addRecord(vehicleId, 'Document', item.name, item.date,
           [item.category, interventionLabel(data, item.interventionId)], Object.values(item), [{ label: 'Ouvrir', url: item.url }]));
         fixedCostRecordsFromVehicle(data).forEach(item => addRecord(vehicleId, 'Coût fixe', item.name, item.year,
