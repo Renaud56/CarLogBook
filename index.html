@@ -107,6 +107,21 @@
     .backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .backup-status { margin-top: 8px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
     .backup-note { margin-top: 4px; color: var(--text-muted); font-size: 0.75rem; }
+    .global-search { margin-bottom: 18px; }
+    .global-search-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 420px); align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .global-search-toolbar h2 { font-size: 1rem; }
+    .global-search-input { width: 100%; min-height: 42px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text-main); font: inherit; }
+    .global-search-count { min-height: 1.2em; margin: 8px 0; color: var(--text-muted); font-size: 0.82rem; }
+    .global-search-table-wrap { overflow-x: auto; }
+    .global-search-table { min-width: 680px; }
+    .global-search-table td { vertical-align: top; }
+    .global-search-links { display: grid; gap: 4px; }
+    @media (max-width: 600px) {
+      .global-search-toolbar { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    }
+    .document-links-list { display: grid; gap: 12px; }
+    .document-link-entry { display: grid; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .document-link-remove { justify-self: start; min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text-main); font: inherit; cursor: pointer; }
 
     /* KPI Cards Grid */
     .kpi-grid {
@@ -129,6 +144,14 @@
     .kpi-card .sub { font-size: 0.8rem; color: var(--text-muted); }
     .mileage-value-row { display: flex; align-items: center; gap: 8px; }
     .mileage-value-row .value { min-width: 0; margin: 6px 0; }
+    .deadline-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .deadline-heading .label { min-width: 0; }
+    .deadline-refresh, .deadline-auto-action { display: inline-grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--accent); cursor: pointer; }
+    .deadline-refresh:hover, .deadline-auto-action:hover { border-color: var(--accent); background: #eff6ff; }
+    .deadline-refresh svg, .deadline-auto-action svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .deadline-auto-label { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.75rem; font-weight: 500; }
+    .deadline-auto-label svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .deadline-auto-controls { display: flex; align-items: center; gap: 4px; }
     .deadline-list { display: grid; gap: 10px; margin-top: 12px; }
     .deadline-upcoming-panel { border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; }
     .deadline-upcoming-panel summary { min-height: 44px; padding: 12px; color: var(--text-main); font-size: 0.84rem; font-weight: 700; cursor: pointer; }
@@ -385,18 +408,33 @@
       color: var(--text-main);
       font: inherit;
     }
+    .history-sort {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .history-sort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .history-count { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
-    .intervention-mobile-card { display: none; }
+    .intervention-history-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .intervention-history-table { min-width: 680px; }
+    .history-mobile-label { display: none; }
     .table-mobile-card { display: none; }
     .history-intervention-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
     .history-intervention-tag {
       display: inline-block;
-      padding: 2px 7px;
+      padding: 4px 9px;
       border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-size: 0.72rem;
-      font-weight: 600;
+      border: 1px solid #bfdbfe;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
     #interventions tbody tr[data-intervention-id]:hover { background: #f8fafc; }
@@ -438,6 +476,22 @@
       cursor: pointer;
     }
     .delete-button:hover { background: #fef2f2; }
+    .edit-purchase-button {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .purchase-row-actions { display: flex; gap: 6px; }
     .delete-confirm-button {
       min-height: 44px;
       padding: 0 16px;
@@ -488,7 +542,7 @@
     .field textarea { min-height: 88px; resize: vertical; }
     .field-heading { display: grid; gap: 3px; }
     .field-hint { color: var(--text-muted); font-size: 0.78rem; font-weight: 400; }
-    .intervention-type-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 5px; }
+    .intervention-type-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 5px; }
     .intervention-type-tile {
       display: flex;
       align-items: center;
@@ -505,7 +559,7 @@
     }
     .intervention-type-tile.selected { border-color: var(--accent); background: #eff6ff; color: #1d4ed8; }
     .intervention-type-tile input { width: 16px; height: 16px; min-height: 16px; flex: 0 0 16px; margin: 0; padding: 0; border: 0; accent-color: var(--accent); }
-    .intervention-type-tile span { min-width: 0; overflow-wrap: anywhere; }
+    .intervention-type-tile span { min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
     .intervention-type-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .intervention-type-header .btn-manage-types { min-height: 36px; padding: 0 10px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
@@ -582,20 +636,24 @@
       .history-filter { align-items: stretch; flex-direction: column; gap: 5px; }
       .history-filter select { width: 100%; max-width: none; }
       .history-count { text-align: right; }
-      #interventions table,
-      #interventions tbody,
-      #interventions tr,
-      #interventions td { display: block; width: 100%; }
-      #interventions thead { display: none; }
-      #interventions tr {
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      #interventions tr:last-child { border-bottom: 0; }
-      #interventions td { display: none; padding: 0; border: 0; }
-      #interventions td:first-child { display: block; }
-      #interventions .intervention-desktop-date { display: none; }
-      #interventions .intervention-mobile-card { display: block; }
+      .intervention-history-table-wrap { overflow-x: visible; }
+      .intervention-history-table { min-width: 0; table-layout: fixed; }
+      #interventions th,
+      #interventions td { padding: 7px 3px; font-size: 0.68rem; vertical-align: top; overflow-wrap: anywhere; }
+      #interventions th { padding: 7px 3px; font-size: 0.68rem; }
+      #interventions th:nth-child(1), #interventions td:nth-child(1) { width: 20%; }
+      #interventions th:nth-child(2), #interventions td:nth-child(2) { width: 31%; }
+      #interventions th:nth-child(3), #interventions td:nth-child(3) { width: 14.5%; }
+      #interventions th:nth-child(4), #interventions td:nth-child(4) { width: 12.5%; }
+      #interventions th:nth-child(5), #interventions td:nth-child(5) { width: 9%; }
+      #interventions th:nth-child(6), #interventions td:nth-child(6) { width: 13%; }
+      #interventions .history-sort { width: 100%; min-height: 34px; padding: 0; font-size: 0.68rem; text-align: left; overflow-wrap: anywhere; }
+      #interventions .history-desktop-label { display: none; }
+      #interventions .history-mobile-label { display: inline; }
+      #interventions .history-intervention-tags { gap: 2px; margin-top: 2px; }
+      #interventions .history-intervention-tag { padding: 2px 4px; font-size: 0.68rem; }
+      #interventions .link-btn { font-size: 0.62rem; }
+      #interventions .delete-button { width: 36px; min-width: 36px; min-height: 36px; }
       #fuel table, #fuel tbody, #fuel tr, #fuel td,
       #purchases table, #purchases tbody, #purchases tr, #purchases td,
       #documents table, #documents tbody, #documents tr, #documents td,
@@ -613,15 +671,9 @@
       .table-mobile-meta, .table-mobile-link { margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
       .table-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; }
       .table-mobile-actions { display: flex; justify-content: flex-end; margin-top: 7px; }
+      .table-mobile-actions .purchase-row-actions { gap: 8px; }
       .misc-cost-type-row { align-items: stretch; flex-wrap: wrap; }
       .type-list .misc-cost-type-actions { width: 100%; justify-content: flex-end; }
-      .intervention-mobile-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-      .intervention-mobile-title { min-width: 0; overflow-wrap: anywhere; font-size: 0.96rem; }
-      .intervention-mobile-price { flex: 0 0 auto; font-size: 0.92rem; font-weight: 700; }
-      .intervention-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 3px; color: var(--text-muted); font-size: 0.8rem; }
-      .intervention-mobile-detail { margin-top: 3px; color: var(--text-muted); font-size: 0.82rem; overflow-wrap: anywhere; }
-      .intervention-mobile-links { margin-top: 3px; font-size: 0.8rem; }
-      .intervention-mobile-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 7px; }
       .delete-button { width: 40px; min-width: 40px; min-height: 40px; }
       .modal-form { padding: 18px 16px; }
       .maintenance-content { padding: 16px 12px; }
@@ -703,7 +755,7 @@
         <div class="sub" id="kpi-cost-month">Moyenne : 118 € / mois</div>
       </div>
       <div class="kpi-card">
-        <div class="label">Prochaines Échéances</div>
+        <div class="deadline-heading"><div class="label">Prochaines Échéances</div><button class="deadline-refresh" type="button" aria-label="Recréer les échéances calculées automatiquement" title="Recréer les échéances calculées automatiquement" onclick="openRefreshDeadlinesModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"></path><path d="M4 17v-5h5"></path><path d="M5.6 9a7 7 0 0 1 11.5-2L20 12M4 12l2.9 5a7 7 0 0 0 11.5-2"></path></svg></button></div>
         <div class="deadline-list" id="deadlinesList"></div>
         <button class="btn-action deadline-add" onclick="openActionModal('plannedInterventionModal')">📅 + Prochaine intervention</button>
       </div>
@@ -734,6 +786,20 @@
       </div>
     </div>
 
+    <section class="global-search" aria-labelledby="globalSearchTitle">
+      <div class="global-search-toolbar">
+        <h2 id="globalSearchTitle">Recherche globale</h2>
+        <input class="global-search-input" id="globalSearchInput" type="search" placeholder="Rechercher dans les fiches…" aria-label="Recherche globale par mots-clés" oninput="renderGlobalSearch(this.value)">
+      </div>
+      <p class="global-search-count" id="globalSearchCount" aria-live="polite"></p>
+      <div class="global-search-table-wrap">
+        <table class="global-search-table">
+          <thead><tr><th>Véhicule</th><th>Fiche</th><th>Élément</th><th>Date / période</th><th>Détails</th><th>Liens</th></tr></thead>
+          <tbody id="globalSearchResults"></tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- Navigation Onglets -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="interventionsTabButton" onclick="showTab('interventions', this)">🛠️ Entretiens & Factures</button>
@@ -759,19 +825,21 @@
           <button class="btn-cancel" id="clearInterventionMonthFilter" type="button" onclick="clearInterventionMonthFilter()" hidden>Effacer le filtre du mois</button>
           <span class="history-count" id="interventionHistoryCount" aria-live="polite"></span>
         </div>
-        <table>
+        <div class="intervention-history-table-wrap">
+        <table class="intervention-history-table">
           <thead>
             <tr>
-              <th>Date</th>
+              <th aria-sort="descending"><button id="interventionSortDateButton" class="history-sort" type="button" aria-pressed="true" onclick="sortInterventions('date')">Date <span id="interventionSortDateIndicator" aria-hidden="true">↓</span></button></th>
               <th>Intervention</th>
-              <th>Kilométrage</th>
-              <th>Coût</th>
-              <th>Document</th>
+              <th aria-sort="none"><button id="interventionSortKmButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('km')"><span class="history-desktop-label">Kilométrage</span><span class="history-mobile-label">Km</span> <span id="interventionSortKmIndicator" aria-hidden="true"></span></button></th>
+              <th aria-sort="none"><button id="interventionSortPriceButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('price')">Coût <span id="interventionSortPriceIndicator" aria-hidden="true"></span></button></th>
+              <th><span class="history-desktop-label">Document</span><span class="history-mobile-label">Doc</span></th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="interventions-table"></tbody>
         </table>
+        </div>
       </div>
     </div>
 
@@ -804,6 +872,7 @@
               <th>Article</th>
               <th>Magasin</th>
               <th>Prix</th>
+              <th>Liens</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -971,6 +1040,7 @@
       <div class="intervention-detail-list" id="interventionDetailsContent"></div>
       <div class="intervention-detail-actions">
         <button class="intervention-detail-close" type="button" onclick="closeInterventionDetails()">Fermer</button>
+        <button class="intervention-detail-edit" type="button" onclick="addInterventionDocument()">Ajouter des documents</button>
         <button class="intervention-detail-edit" type="button" onclick="editIntervention()">Modifier</button>
       </div>
     </div>
@@ -993,6 +1063,13 @@
       <div class="modal-header"><div><h2 id="completeDeadlineTitle">Confirmer l'échéance</h2><p id="completeDeadlineMessage"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="answerDeadlineCompletion(false)">&times;</button></div>
       <div class="field"><label for="completeDeadlineSelect">Échéance</label><select id="completeDeadlineSelect"></select></div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="answerDeadlineCompletion(false)">Non, conserver</button><button class="btn-save" type="button" onclick="answerDeadlineCompletion(true)">Oui, retirer l'échéance</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="action-modal" id="refreshDeadlinesModal" aria-labelledby="refreshDeadlinesTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="refreshDeadlinesTitle">Recréer les échéances automatiques ?</h2><p>Les échéances automatiques supprimées seront recréées à partir du suivi d’entretien. Vos échéances manuelles et celles déjà modifiées seront conservées.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('refreshDeadlinesModal')">&times;</button></div>
+      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('refreshDeadlinesModal')">Annuler</button><button class="btn-save" type="button" onclick="refreshAutomaticDeadlines()">Recréer</button></div>
     </div>
   </dialog>
 
@@ -1053,6 +1130,7 @@
         <div class="field"><label for="purchasePrice">Prix (€)</label><input id="purchasePrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field full-width"><label for="purchaseItem">Article</label><input id="purchaseItem" name="item" type="text" maxlength="120" required></div>
         <div class="field full-width"><label for="purchaseStore">Magasin (facultatif)</label><input id="purchaseStore" name="store" type="text" maxlength="80"></div>
+        <div class="field full-width"><span class="field-label">Liens (facultatif)</span><div class="document-links-list" id="purchaseLinksList"><div class="document-link-entry"><div class="field"><label for="purchaseUrl-1">URL</label><input id="purchaseUrl-1" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div></div></div><button class="btn-manage-types" type="button" onclick="addPurchaseLinkField()">+ Ajouter un lien</button></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('purchaseModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'achat</button></div>
     </form>
@@ -1064,9 +1142,8 @@
       <div class="modal-fields">
         <div class="field"><label for="documentDateDisplay">Date (JJ/MM/AAAA)</label><input id="documentDate" name="date" type="hidden"><input id="documentDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du document (jour, mois, année)" oninput="updateDateField(this)" required></div>
         <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Contrôle technique">Contrôle technique</option><option value="Autre">Autre</option></select></div>
-        <div class="field full-width"><label for="documentName">Nom du document</label><input id="documentName" name="name" type="text" maxlength="120" required></div>
+        <div class="field full-width"><span class="field-label">Documents et liens</span><div class="document-links-list" id="documentLinksList"><div class="document-link-entry"><div class="field"><label for="documentName-1">Nom du document</label><input id="documentName-1" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-1">URL du document</label><input id="documentUrl-1" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div></div></div><button class="btn-manage-types" type="button" onclick="addDocumentLinkField()">+ Ajouter un autre lien</button></div>
         <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
-        <div class="field full-width"><label for="documentUrl">URL du document</label><input id="documentUrl" name="url" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('documentModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le lien</button></div>
     </form>
@@ -1141,8 +1218,8 @@
           { month: "Oct 26", fuel: 75, maint: 105, insur: 40, parts: 0, event: "Vidange" }
         ],
         interventions: [
-          { id: "v1-intervention-1", date: "05/10/2026", name: "Vidange + Filtre à Huile", km: "84 000 km", price: "105 €", doc: "Facture_Peugeot.pdf" },
-          { id: "v1-intervention-2", date: "12/03/2026", name: "Filtre à Air & Habitacle", km: "81 200 km", price: "45 €", doc: "Facture_Norauto.pdf" }
+          { id: "v1-intervention-1", date: "05/10/2026", name: "Vidange + Filtre à Huile", km: "84 000 km", price: "105 €", doc: "Facture_Peugeot.pdf", docUrl: "https://google.com/?demo=vidange-208" },
+          { id: "v1-intervention-2", date: "12/03/2026", name: "Filtre à Air & Habitacle", km: "81 200 km", price: "45 €", doc: "Facture_Norauto.pdf", docUrl: "https://google.com/?demo=filtre-208" }
         ],
         fuel: [
           { date: "01/10/2026", volume: "42 L", priceL: "1.78 €", total: "74.76 €", km: "84 500 km" }
@@ -1182,9 +1259,9 @@
         ],
         interventions: [
           { id: "v2-demo-multiple-types", date: "06/10/2026", type: "Vidange", types: ["Vidange", "Pneumatiques", "Courroie"], name: "Exemple : plusieurs opérations le même jour", km: "161 500 km", price: "650 €", doc: "", demo: true },
-          { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", demo: true },
+          { id: "v2-demo-oil", date: "07/10/2024", type: "Vidange", name: "Vidange moteur + filtre à huile", km: "132 000 km", price: "150 €", doc: "", docUrl: "https://google.com/?demo=vidange-scenic", demo: true },
           { id: "v2-demo-cabin-filter", date: "07/10/2024", type: "Filtre d’habitacle", name: "Filtre d’habitacle (pollen)", km: "132 000 km", price: "35 €", doc: "", demo: true },
-          { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", demo: true },
+          { id: "v2-demo-air-filter", date: "14/06/2022", type: "Filtre à air", name: "Remplacement filtre à air", km: "105 000 km", price: "40 €", doc: "", docUrl: "https://google.com/?demo=filtre-air-scenic", demo: true },
           { id: "v2-demo-fuel-filter", date: "14/06/2022", type: "Filtre à gazole", name: "Remplacement filtre à gazole", km: "105 000 km", price: "85 €", doc: "", demo: true },
           { id: "v2-demo-timing-belt", date: "14/06/2021", type: "Distribution", name: "Distribution + pompe à eau", km: "90 000 km", price: "780 €", doc: "", demo: true },
           { id: "v2-demo-accessory-belt", date: "14/06/2021", type: "Courroie d’accessoires", name: "Courroie d’accessoires + galets", km: "90 000 km", price: "220 €", doc: "", demo: true },
@@ -1192,7 +1269,7 @@
           { id: "v2-demo-coolant", date: "15/06/2021", type: "Liquide de refroidissement", name: "Remplacement liquide de refroidissement", km: "90 000 km", price: "110 €", doc: "", demo: true },
           { id: "v2-demo-rear-brakes", date: "10/01/2024", type: "Freinage", name: "Contrôle freins et plaquettes arrière", km: "125 000 km", price: "0 €", doc: "", demo: true },
           { id: "v2-demo-tyres", date: "18/02/2024", type: "Pneumatiques", name: "Contrôle et permutation des pneumatiques", km: "127 000 km", price: "25 €", doc: "", demo: true },
-          { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf" },
+          { id: "v2-intervention-1", date: "18/02/2026", name: "2 Pneus Avant Michelin", km: "158 000 km", price: "240 €", doc: "Facture_Euromaster.pdf", docUrl: "https://google.com/?demo=pneus-scenic" },
           { id: "v2-intervention-2", date: "10/01/2026", name: "Plaquettes de frein", km: "156 500 km", price: "160 €", doc: "Facture_Garage.pdf" }
         ],
         fuel: [
@@ -1206,7 +1283,11 @@
           { id: "v2-demo-misc-parking-2", date: "12/09/2026", type: "Parking", description: "Stationnement gare", price: "5,20 €", costTracked: true },
           { id: "v2-demo-misc-parking-3", date: "06/10/2026", type: "Parking", description: "Parking centre-ville", price: "4,50 €", costTracked: true }
         ],
-        documents: []
+        documents: [
+          { id: "v2-demo-oil-receipt", date: "07/10/2024", name: "Facture vidange", category: "Facture", url: "https://google.com/?demo=facture-vidange", interventionId: "v2-demo-oil" },
+          { id: "v2-demo-oil-parts", date: "07/10/2024", name: "Référence du filtre à huile", category: "Autre", url: "https://google.com/?demo=reference-filtre", interventionId: "v2-demo-oil" },
+          { id: "v2-demo-oil-checklist", date: "07/10/2024", name: "Contrôle après vidange", category: "Autre", url: "https://google.com/?demo=controle-vidange", interventionId: "v2-demo-oil" }
+        ]
       }
     };
 
@@ -1319,12 +1400,17 @@
     let currentVehicleId = TEST_MODE ? 'v2' : initialBackup && vehiclesData[initialBackup.currentVehicleId]
       ? initialBackup.currentVehicleId : vehiclesData.v2 ? 'v2' : Object.keys(vehiclesData)[0];
     let recordSequence = 0;
+    let documentLinkFieldSequence = 1;
+    let purchaseLinkFieldSequence = 1;
     let completingDeadlineId = null;
+    let editingAutomaticDeadlineId = null;
+    let editingAutomaticDeadlineValue = '';
     let confirmationDeadlines = [];
     let confirmationIntervention = null;
     let pendingMaintenanceItemId = null;
     let maintenanceChoiceItemId = null;
     let editingInterventionId = null;
+    let editingPurchaseId = null;
     let detailsInterventionId = null;
     let editingFixedCost = null;
     let editingVehicleId = null;
@@ -1346,6 +1432,8 @@
     let chartInterventionsOnly = false;
     let chartSelectedYear = null;
     let interventionTypeFilter = '';
+    let interventionSortKey = 'date';
+    let interventionSortDirection = 'desc';
     let interventionMonthFilter = null;
     Object.values(vehiclesData).forEach(normalizeVehicleFixedCosts);
 
@@ -1369,11 +1457,14 @@
       return [...new Set(values.filter(value => typeof value === 'string' && value.trim()))];
     }
 
-    function updateInterventionTypeTiles(selectedType = '') {
-      const selectedTypes = Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
+    function updateInterventionTypeTiles(selectedType = null) {
+      const selectedTypes = selectedType === null
+        ? [...document.querySelectorAll('#interventionTypeTiles input[name="types"]:checked')].map(input => input.value)
+        : Array.isArray(selectedType) ? selectedType : selectedType ? [selectedType] : [];
       const tiles = document.getElementById('interventionTypeTiles');
       if (!tiles) return;
-      tiles.innerHTML = interventionTypes.map((type, index) => {
+      const sortedTypes = interventionTypes.slice().sort((first, second) => first.localeCompare(second, 'fr', { sensitivity: 'base' }));
+      tiles.innerHTML = sortedTypes.map(type => {
         const selected = selectedTypes.includes(type);
         return `<label class="intervention-type-tile${selected ? ' selected' : ''}"><input type="checkbox" name="types" value="${escapeHtml(type)}" onchange="toggleInterventionTypeTile(this)"${selected ? ' checked' : ''}><span>${escapeHtml(type)}</span></label>`;
       }).join('');
@@ -1617,7 +1708,15 @@
     }
 
     function formatEuro(value) {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+      const amount = Number(value);
+      const normalizedAmount = Number.isFinite(amount) ? Number(amount.toFixed(10)) : amount;
+      const cents = normalizedAmount * 100;
+      const roundedAmount = Number.isFinite(cents)
+        ? Math.ceil(cents - Number.EPSILON * Math.abs(cents) * 2) / 100
+        : normalizedAmount;
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2
+      }).format(roundedAmount);
     }
 
     function currentMileageValue(data) {
@@ -2333,9 +2432,10 @@
       const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
       const today = localDateValue();
       const manualTypes = new Set(data.plannedInterventions.map(intervention => intervention.type));
+      const excludedItems = new Set(data.automaticDeadlineExclusions || []);
       return maintenanceSchedule.items.flatMap(item => {
         const record = records[item.id];
-        if (!record || manualTypes.has(item.type)) return [];
+        if (!record || manualTypes.has(item.type) || excludedItems.has(item.id)) return [];
         const status = maintenanceItemStatus(item, record, currentKm, today, annualMileage);
         return [{
           id: `maintenance-${item.id}`,
@@ -2418,7 +2518,10 @@
           : deleteButton(data.deadlines.includes(deadline) ? 'deadline' : 'planned',
             data.deadlines.includes(deadline) ? data.deadlines.indexOf(deadline) : data.plannedInterventions.indexOf(deadline),
             label);
-        return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${deadline.comment ? `<span class="deadline-comment">${escapeHtml(deadline.comment)}</span>` : ''}<span class="deadline-status ${status.className}">${status.label}</span></div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
+        const automaticActions = deadline.maintenanceItemId
+          ? `<div class="deadline-auto-controls"><span class="deadline-auto-label" title="Calculée automatiquement depuis le suivi d’entretien"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 7v4M8 4.5h.01"></path></svg>Auto</span><button class="deadline-auto-action" type="button" aria-label="Modifier ${escapeHtml(label)}" title="Modifier cette échéance" onclick="editAutomaticDeadline('${escapeHtml(deadline.maintenanceItemId)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></button><button class="deadline-auto-action" type="button" aria-label="Supprimer ${escapeHtml(label)}" title="Supprimer cette échéance" onclick="requestDeleteAutomaticDeadline('${escapeHtml(deadline.maintenanceItemId)}', ${escapeHtml(JSON.stringify(label))})"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"></path></svg></button></div>`
+          : '';
+        return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${automaticActions}${deadline.comment ? `<span class="deadline-comment">${escapeHtml(deadline.comment)}</span>` : ''}<span class="deadline-status ${status.className}">${status.label}</span></div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
       };
       const urgent = deadlines.filter(entry => ['soon', 'overdue'].includes(entry.status.className));
       const collapsed = deadlines.filter(entry => !['soon', 'overdue'].includes(entry.status.className));
@@ -2632,11 +2735,20 @@
         document.getElementById('interventionModalTitle').textContent = 'Ajouter une intervention';
         document.querySelector('#interventionForm button[type="submit"]').textContent = 'Enregistrer l’intervention';
         document.getElementById('interventionDeadlineField').hidden = false;
-        updateInterventionTypeTiles();
+        updateInterventionTypeTiles([]);
         document.getElementById('interventionTypeError').textContent = '';
         updateInterventionDeadlineSelect();
       }
+      if (modalId === 'purchaseModal') {
+        editingPurchaseId = null;
+        document.getElementById('purchaseModalTitle').textContent = 'Ajouter un achat';
+        document.querySelector('#purchaseForm button[type="submit"]').textContent = 'Enregistrer l\'achat';
+      }
       if (modalId === 'plannedInterventionModal') {
+        editingAutomaticDeadlineId = null;
+        editingAutomaticDeadlineValue = '';
+        document.getElementById('plannedInterventionModalTitle').textContent = 'Planifier une intervention';
+        document.querySelector('#plannedInterventionForm button[type="submit"]').textContent = 'Enregistrer l’échéance';
         updatePlannedInterventionTypeSelect();
         form.elements.date.dataset.minDate = today;
         form.elements.date.nextElementSibling.dataset.minDate = today;
@@ -2644,14 +2756,50 @@
       }
       if (modalId === 'documentModal') updateDocumentInterventionSelect();
       if (modalId === 'miscCostModal') updateMiscCostTypeSelect();
+      if (modalId === 'documentModal') {
+        documentLinkFieldSequence = 1;
+        document.querySelectorAll('#documentLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
+      }
+      if (modalId === 'purchaseModal') {
+        purchaseLinkFieldSequence = 1;
+        document.querySelectorAll('#purchaseLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
+      }
       if (form.elements.km) {
         form.elements.km.value = vehiclesData[currentVehicleId].km.replace(/\D/g, '');
       }
       dialog.showModal();
     }
 
+    function addDocumentLinkField() {
+      const entry = document.createElement('div');
+      const fieldId = ++documentLinkFieldSequence;
+      entry.className = 'document-link-entry';
+      entry.innerHTML = `<div class="field"><label for="documentName-${fieldId}">Nom du document</label><input id="documentName-${fieldId}" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-${fieldId}">URL du document</label><input id="documentUrl-${fieldId}" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
+      document.getElementById('documentLinksList').appendChild(entry);
+    }
+
+    function addPurchaseLinkField() {
+      const entry = document.createElement('div');
+      const fieldId = ++purchaseLinkFieldSequence;
+      entry.className = 'document-link-entry';
+      entry.innerHTML = `<div class="field"><label for="purchaseUrl-${fieldId}">URL</label><input id="purchaseUrl-${fieldId}" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
+      document.getElementById('purchaseLinksList').appendChild(entry);
+    }
+
+    function addInterventionDocument() {
+      const interventionId = detailsInterventionId;
+      closeInterventionDetails();
+      openActionModal('documentModal');
+      document.getElementById('documentIntervention').value = interventionId;
+    }
+
     function closeActionModal(modalId) {
       document.getElementById(modalId).close();
+      if (modalId === 'purchaseModal') editingPurchaseId = null;
+      if (modalId === 'plannedInterventionModal') {
+        editingAutomaticDeadlineId = null;
+        editingAutomaticDeadlineValue = '';
+      }
       if (modalId === 'interventionModal') {
         completingDeadlineId = null;
         pendingMaintenanceItemId = null;
@@ -2780,6 +2928,42 @@
       switchVehicle(currentVehicleId);
       if (document.getElementById('maintenanceModal').open) renderMaintenanceSchedule();
       setSyncStatus('Véhicule et données associées supprimés définitivement.');
+    }
+
+    function openRefreshDeadlinesModal() {
+      document.getElementById('refreshDeadlinesModal').showModal();
+    }
+
+    function refreshAutomaticDeadlines() {
+      const data = vehiclesData[currentVehicleId];
+      data.automaticDeadlineExclusions = [];
+      persistData();
+      closeActionModal('refreshDeadlinesModal');
+      switchVehicle(currentVehicleId);
+    }
+
+    function editAutomaticDeadline(itemId) {
+      const deadline = calculatedMaintenanceDeadlines(vehiclesData[currentVehicleId])
+        .find(item => item.maintenanceItemId === itemId);
+      if (!deadline) return;
+      openActionModal('plannedInterventionModal');
+      editingAutomaticDeadlineId = deadline.id;
+      editingAutomaticDeadlineValue = deadline.value;
+      const form = document.getElementById('plannedInterventionForm');
+      document.getElementById('plannedInterventionModalTitle').textContent = 'Modifier l’échéance automatique';
+      form.querySelector('button[type="submit"]').textContent = 'Enregistrer les modifications';
+      form.elements.date.dataset.minDate = '';
+      form.elements.date.nextElementSibling.dataset.minDate = '';
+      form.elements.type.value = deadline.type;
+      setDateField(form.elements.date, deadline.date);
+      form.elements.comment.value = '';
+    }
+
+    function requestDeleteAutomaticDeadline(itemId, label) {
+      pendingDelete = { type: 'automaticDeadline', itemId };
+      document.getElementById('deleteRecordMessage').textContent =
+        `Voulez-vous vraiment supprimer l’échéance automatique « ${label} » ? Elle pourra être recréée avec le bouton d’actualisation.`;
+      document.getElementById('deleteRecordModal').showModal();
     }
 
     function deadlineLabel(deadline) {
@@ -3029,12 +3213,19 @@
     function savePlannedIntervention(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
-      vehiclesData[currentVehicleId].plannedInterventions.push({
-        id: createDeadlineId(),
+      const data = vehiclesData[currentVehicleId];
+      data.plannedInterventions.push({
+        id: editingAutomaticDeadlineId || createDeadlineId(),
         type: values.type,
         date: values.date,
-        comment: values.comment.trim()
+        comment: values.comment.trim(),
+        value: editingAutomaticDeadlineValue,
+        ...(editingAutomaticDeadlineId ? { sourceMaintenanceItemId: editingAutomaticDeadlineId.replace('maintenance-', '') } : {})
       });
+      if (editingAutomaticDeadlineId) {
+        const itemId = editingAutomaticDeadlineId.replace('maintenance-', '');
+        data.automaticDeadlineExclusions = [...new Set([...(data.automaticDeadlineExclusions || []), itemId])];
+      }
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('plannedInterventionModal');
@@ -3043,13 +3234,35 @@
     function savePurchase(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
+      const urlInputs = [...event.currentTarget.querySelectorAll('[name="purchaseUrls[]"]')];
+      const urls = urlInputs.map(input => normalizeDocumentUrl(input.value));
+      const invalidUrlIndex = urlInputs.findIndex((input, index) => input.value.trim() && !urls[index]);
+      if (invalidUrlIndex !== -1) {
+        urlInputs[invalidUrlIndex].setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        urlInputs[invalidUrlIndex].reportValidity();
+        return;
+      }
       const price = Number(values.price);
-      vehiclesData[currentVehicleId].purchases.unshift({
-        id: createDataId('purchase'),
-        costTracked: true,
-        date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price)
-      });
-      addCostToCurrentMonth('parts', price, values.date, values.item);
+      const data = vehiclesData[currentVehicleId];
+      const updatedPurchase = {
+        date: formatDate(values.date), item: values.item, store: values.store, price: formatEuro(price),
+        urls: urls.filter(Boolean)
+      };
+      if (editingPurchaseId) {
+        const purchase = data.purchases.find(item => item.id === editingPurchaseId);
+        if (!purchase) {
+          closeActionModal('purchaseModal');
+          return;
+        }
+        const trackCost = purchase.costTracked === true;
+        if (trackCost) removeTrackedCost(data, purchase, 'parts', 'price');
+        Object.assign(purchase, updatedPurchase);
+        if (trackCost) addCostToCurrentMonth('parts', price, values.date, values.item);
+      } else {
+        data.purchases.unshift({ id: createDataId('purchase'), costTracked: true, ...updatedPurchase });
+        addCostToCurrentMonth('parts', price, values.date, values.item);
+      }
+      editingPurchaseId = null;
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('purchaseModal');
@@ -3076,17 +3289,21 @@
     function saveDocument(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
-      const safeUrl = normalizeDocumentUrl(values.url);
-      if (!safeUrl) {
-        event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
-        event.currentTarget.elements.url.reportValidity();
+      const names = new FormData(event.currentTarget).getAll('documentNames[]');
+      const urlInputs = [...event.currentTarget.querySelectorAll('[name="documentUrls[]"]')];
+      const safeUrls = urlInputs.map(input => normalizeDocumentUrl(input.value));
+      const invalidUrlIndex = safeUrls.findIndex(url => !url);
+      if (invalidUrlIndex !== -1) {
+        urlInputs[invalidUrlIndex].setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        urlInputs[invalidUrlIndex].reportValidity();
         return;
       }
-      vehiclesData[currentVehicleId].documents.unshift({
+      const data = vehiclesData[currentVehicleId];
+      data.documents.unshift(...safeUrls.map((url, index) => ({
         id: createDataId('document'),
-        date: formatDate(values.date), name: values.name, category: values.category, url: safeUrl,
+        date: formatDate(values.date), name: names[index].trim(), category: values.category, url,
         interventionId: values.interventionId || ''
-      });
+      })));
       persistData();
       switchVehicle(currentVehicleId);
       closeActionModal('documentModal');
@@ -3130,7 +3347,7 @@
       return eventsByMonth;
     }
 
-    function chartMileageByYear(data) {
+    function interventionMileageReadings(data) {
       const readingsByDate = new Map();
       data.interventions.forEach(intervention => {
         const dateParts = String(intervention.date || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -3146,6 +3363,11 @@
       const readings = [...readingsByDate.entries()]
         .map(([date, km]) => ({ date, year: date.slice(0, 4), km }))
         .sort((first, second) => first.date.localeCompare(second.date));
+      return readings;
+    }
+
+    function chartMileageByYear(data) {
+      const readings = interventionMileageReadings(data);
       const mileageByYear = new Map();
       let previousReading = null;
       readings.forEach(reading => {
@@ -3160,6 +3382,24 @@
         }
       });
       return mileageByYear;
+    }
+
+    function averageAnnualMileage(data) {
+      const readings = interventionMileageReadings(data);
+      const validReadings = [];
+      readings.forEach(reading => {
+        const previousReading = validReadings[validReadings.length - 1];
+        if (!previousReading || reading.km >= previousReading.km) validReadings.push(reading);
+      });
+      if (validReadings.length < 2) return null;
+      const first = validReadings[0];
+      const last = validReadings[validReadings.length - 1];
+      const firstDate = Date.parse(`${first.date}T00:00:00Z`);
+      const lastDate = Date.parse(`${last.date}T00:00:00Z`);
+      const elapsedDays = (lastDate - firstDate) / 86400000;
+      const distance = last.km - first.km;
+      if (elapsedDays < 30 || distance <= 0) return null;
+      return Math.round(distance * 365.25 / elapsedDays);
     }
 
     function showChartYear(year) {
@@ -3288,10 +3528,10 @@
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts'], ['misc', 'c-misc']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
-          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${Number(period[category]) || 0}€"></div>`
+          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${formatEuro(Number(period[category]) || 0)}"></div>`
         ).join('');
         const costBar = `
-          <div class="chart-bar-value">${total}€</div>
+          <div class="chart-bar-value">${formatEuro(total)}</div>
           <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
             ${segments}
           </div>
@@ -3305,7 +3545,7 @@
                 <div class="chart-mileage-bar" style="height: ${(mileage / maxMileage) * maxHeightPx}px;" title="${mileage.toLocaleString('fr-FR')} km estimés (échelle distincte des coûts)"></div>
               </div>
             </div>`
-          : `<div class="column-total">${total}€</div>
+          : `<div class="column-total">${formatEuro(total)}</div>
              <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">${segments}</div>`;
 
         col.innerHTML = `
@@ -3335,7 +3575,10 @@
       const data = vehiclesData[vId];
 
       document.getElementById('kpi-km').innerText = data.km;
-      document.getElementById('kpi-km-year').innerText = "Moyenne: ~" + data.kmYear;
+      const averageKmYear = averageAnnualMileage(data);
+      document.getElementById('kpi-km-year').innerText = averageKmYear === null
+        ? `Moyenne: ~${data.kmYear}`
+        : `Moyenne: ~${formatKilometers(averageKmYear)} / an`;
       document.getElementById('kpi-cost').innerText = data.additionalCost ? formatEuro(totalCostWithEntries(data)) : data.totalCost;
       document.getElementById('kpi-cost-month').innerText = data.additionalCost ? `Moyenne : ${formatEuro(totalCostWithEntries(data) / 12)} / mois` : "Moyenne : " + data.costMonth;
 
@@ -3351,7 +3594,7 @@
       ).join('');
 
       document.getElementById('purchases-table').innerHTML = data.purchases.map((purchase, index) =>
-        `<tr><td><span class="table-desktop-date">${escapeHtml(purchase.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>${escapeHtml(purchase.item)}</strong><span class="table-mobile-value">${escapeHtml(purchase.price)}</span></div><div class="table-mobile-meta"><span>${escapeHtml(purchase.date)}</span><span>${escapeHtml(purchase.store || '—')}</span></div><div class="table-mobile-actions">${deleteButton('purchase', index, purchase.item)}</div></div></td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${deleteButton('purchase', index, purchase.item)}</td></tr>`
+        `<tr><td><span class="table-desktop-date">${escapeHtml(purchase.date)}</span><div class="table-mobile-card"><div class="table-mobile-heading"><strong>${escapeHtml(purchase.item)}</strong><span class="table-mobile-value">${escapeHtml(purchase.price)}</span></div><div class="table-mobile-meta"><span>${escapeHtml(purchase.date)}</span><span>${escapeHtml(purchase.store || '—')}</span></div><div class="table-mobile-link">${(Array.isArray(purchase.urls) ? purchase.urls : []).map((url, linkIndex) => documentLink(url, `Lien ${linkIndex + 1}`)).join('<br>') || '—'}</div><div class="table-mobile-actions"><div class="purchase-row-actions"><button class="edit-purchase-button" type="button" aria-label="Modifier l’achat ${escapeHtml(purchase.item)}" title="Modifier l’achat" onclick="editPurchase(${index})">✏️</button>${deleteButton('purchase', index, purchase.item)}</div></div></div></td><td><strong>${escapeHtml(purchase.item)}</strong></td><td>${escapeHtml(purchase.store || '—')}</td><td>${escapeHtml(purchase.price)}</td><td>${(Array.isArray(purchase.urls) ? purchase.urls : []).map((url, linkIndex) => documentLink(url, `Lien ${linkIndex + 1}`)).join('<br>') || '—'}</td><td><div class="purchase-row-actions"><button class="edit-purchase-button" type="button" aria-label="Modifier l’achat ${escapeHtml(purchase.item)}" title="Modifier l’achat" onclick="editPurchase(${index})">✏️</button>${deleteButton('purchase', index, purchase.item)}</div></td></tr>`
       ).join('');
 
       document.getElementById('documents-table').innerHTML = data.documents.map((documentRecord, index) =>
@@ -3365,6 +3608,8 @@
       if (document.getElementById('maintenanceModal').open && currentVehicleId === maintenanceSchedule.vehicleId) {
         renderMaintenanceSchedule();
       }
+      document.querySelector('.deadline-refresh').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+      renderGlobalSearch(document.getElementById('globalSearchInput').value);
     }
 
     function renderInterventionHistory(data) {
@@ -3396,39 +3641,54 @@
             Number(month) - 1 === interventionMonthFilter.monthIndex;
         })())
       );
+      const sortHeaders = {
+        date: { button: 'interventionSortDateButton', indicator: 'interventionSortDateIndicator', label: 'date' },
+        km: { button: 'interventionSortKmButton', indicator: 'interventionSortKmIndicator', label: 'kilométrage' },
+        price: { button: 'interventionSortPriceButton', indicator: 'interventionSortPriceIndicator', label: 'coût' }
+      };
+      Object.entries(sortHeaders).forEach(([key, header]) => {
+        const active = key === interventionSortKey;
+        const button = document.getElementById(header.button);
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('aria-label', `Trier par ${header.label}${active ? `, ordre ${interventionSortDirection === 'desc' ? 'décroissant' : 'croissant'}` : ''}`);
+        button.closest('th').setAttribute('aria-sort', active
+          ? interventionSortDirection === 'desc' ? 'descending' : 'ascending'
+          : 'none');
+        document.getElementById(header.indicator).textContent = active
+          ? interventionSortDirection === 'desc' ? '↓' : '↑'
+          : '';
+      });
+      const dateValue = intervention => {
+        const [day, month, year] = String(intervention.date || '').split('/').map(Number);
+        return Date.UTC(year || 0, (month || 1) - 1, day || 1);
+      };
+      const numberValue = value => Number(String(value || '').replace(/\s/g, '').replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      const sortedInterventions = visibleInterventions.slice().sort((first, second) => {
+        const firstValue = interventionSortKey === 'date' ? dateValue(first) : numberValue(first[interventionSortKey]);
+        const secondValue = interventionSortKey === 'date' ? dateValue(second) : numberValue(second[interventionSortKey]);
+        const comparison = interventionSortDirection === 'desc' ? secondValue - firstValue : firstValue - secondValue;
+        return comparison || dateValue(second) - dateValue(first);
+      });
       document.getElementById('interventionHistoryCount').textContent =
         `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
-      document.getElementById('interventions-table').innerHTML = visibleInterventions.map(intervention => {
+      document.getElementById('interventions-table').innerHTML = sortedInterventions.map(intervention => {
         const index = data.interventions.indexOf(intervention);
         const tags = interventionTags(intervention);
         const title = tags[0] || intervention.name;
-        const additionalTags = renderHistoryInterventionTags(tags.slice(1));
-        const detail = intervention.name && intervention.name !== title && intervention.name !== tags.join(' · ')
+        const demoBadge = intervention.demo ? '<span class="demo-badge">DÉMO</span>' : '';
+        const typeMarkup = `${renderHistoryInterventionTags(tags)}${demoBadge}`;
+        const detail = intervention.name && !tags.includes(intervention.name) && intervention.name !== tags.join(' · ')
           ? intervention.name : '';
+        const actionLabel = title || intervention.name || tags.join(', ');
         const links = renderInterventionDocuments(data, intervention);
         const rowLabel = `${tags.join(', ') || title}, ${intervention.date}, ${intervention.km}`;
         return `<tr data-intervention-id="${escapeHtml(intervention.id)}" tabindex="0" aria-label="Afficher le détail : ${escapeHtml(rowLabel)}" aria-haspopup="dialog">
-          <td data-label="Date">
-            <span class="intervention-desktop-date">${escapeHtml(intervention.date)}</span>
-            <div class="intervention-mobile-card">
-              <div class="intervention-mobile-heading">
-                <strong class="intervention-mobile-title">${escapeHtml(title)}${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}</strong>
-                <span class="intervention-mobile-price">${escapeHtml(intervention.price)}</span>
-              </div>
-              ${additionalTags}
-              <div class="intervention-mobile-meta"><span>${escapeHtml(intervention.date)}</span><span>${escapeHtml(intervention.km)}</span></div>
-              ${detail || intervention.garage ? `<div class="intervention-mobile-detail">${detail ? escapeHtml(detail) : ''}${detail && intervention.garage ? ' · ' : ''}${intervention.garage ? escapeHtml(intervention.garage) : ''}</div>` : ''}
-              ${links !== '—' ? `<div class="intervention-mobile-links">${links}</div>` : ''}
-              <div class="intervention-mobile-actions">
-                ${deleteButton('intervention', index, title)}
-              </div>
-            </div>
-          </td>
-          <td data-label="Intervention"><strong>${escapeHtml(title)}</strong>${intervention.demo ? '<span class="demo-badge">DÉMO</span>' : ''}${additionalTags}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
+          <td data-label="Date">${escapeHtml(intervention.date)}</td>
+          <td data-label="Intervention">${typeMarkup}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ''}${intervention.garage ? `<br><small>${escapeHtml(intervention.garage)}</small>` : ''}</td>
           <td data-label="Kilométrage">${escapeHtml(intervention.km)}</td>
           <td data-label="Coût">${escapeHtml(intervention.price)}</td>
           <td data-label="Document">${links}</td>
-          <td data-label="Action">${deleteButton('intervention', index, title)}</td>
+          <td data-label="Action">${deleteButton('intervention', index, actionLabel)}</td>
         </tr>`;
       }).join('');
     }
@@ -3490,6 +3750,31 @@
       form.elements.garage.value = intervention.garage || '';
       form.elements.url.value = intervention.docUrl || '';
       updateInterventionTypeTiles(types);
+    }
+
+    function editPurchase(index) {
+      const purchase = vehiclesData[currentVehicleId].purchases[index];
+      if (!purchase) return;
+      if (!purchase.id) purchase.id = createDataId('purchase');
+      openActionModal('purchaseModal');
+      editingPurchaseId = purchase.id;
+      document.getElementById('purchaseModalTitle').textContent = 'Modifier un achat';
+      document.querySelector('#purchaseForm button[type="submit"]').textContent = 'Enregistrer les modifications';
+      const [day, month, year] = purchase.date.split('/');
+      const form = document.getElementById('purchaseForm');
+      setDateField(form.elements.date, `${year}-${month}-${day}`);
+      form.elements.price.value = parseEuroAmount(purchase.price);
+      form.elements.item.value = purchase.item || '';
+      form.elements.store.value = purchase.store || '';
+      const urls = Array.isArray(purchase.urls) ? purchase.urls : [];
+      const urlInputs = [form.querySelector('[name="purchaseUrls[]"]')];
+      urls.slice(1).forEach(url => {
+        addPurchaseLinkField();
+        urlInputs.push(form.querySelectorAll('[name="purchaseUrls[]"]')[urlInputs.length]);
+      });
+      urlInputs.forEach((input, urlIndex) => {
+        input.value = urls[urlIndex] || '';
+      });
     }
 
     function deleteButton(type, index, label) {
@@ -3569,6 +3854,16 @@
         setSyncStatus('Type supprimé. Les coûts déjà enregistrés sont conservés.');
         return;
       }
+      if (type === 'automaticDeadline') {
+        data.automaticDeadlineExclusions = [...new Set([
+          ...(data.automaticDeadlineExclusions || []), pendingDelete.itemId
+        ])];
+        pendingDelete = null;
+        document.getElementById('deleteRecordModal').close();
+        persistData();
+        switchVehicle(currentVehicleId);
+        return;
+      }
       if (type === 'fixedCost') {
         const year = String(pendingDelete.year);
         const costs = fixedCostsForYear(data, year);
@@ -3612,6 +3907,11 @@
         cancelDeleteRecord();
         setSyncStatus('Suppression impossible : cet élément n’existe plus.');
         return;
+      }
+      if (type === 'planned' && record.sourceMaintenanceItemId) {
+        data.automaticDeadlineExclusions = [...new Set([
+          ...(data.automaticDeadlineExclusions || []), record.sourceMaintenanceItemId
+        ])];
       }
       deletedRecords = [...new Set([...deletedRecords, deletionKey(currentVehicleId, type, record)])];
       if (type === 'invoice') {
@@ -3659,6 +3959,16 @@
       renderInterventionHistory(vehiclesData[currentVehicleId]);
     }
 
+    function sortInterventions(sortKey) {
+      if (interventionSortKey === sortKey) {
+        interventionSortDirection = interventionSortDirection === 'desc' ? 'asc' : 'desc';
+      } else {
+        interventionSortKey = sortKey;
+        interventionSortDirection = 'desc';
+      }
+      renderInterventionHistory(vehiclesData[currentVehicleId]);
+    }
+
     function showInterventionsForMonth(year, monthIndex) {
       interventionTypeFilter = '';
       interventionMonthFilter = { year: String(year), monthIndex };
@@ -3694,6 +4004,103 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
+      document.querySelector('.backup-panel').hidden = tabId !== 'interventions';
+    }
+
+    function normalizeSearchText(value) {
+      return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+    }
+
+    function globalSearchRecords() {
+      const records = [];
+      const vehicleLabels = Object.fromEntries([...document.querySelectorAll('#vehicleSelect option')]
+        .map(option => [option.value, option.textContent.trim()]));
+      const addRecord = (vehicleId, type, title, period, details, searchValues = [], links = []) => {
+        const vehicle = vehicleLabels[vehicleId] || vehicleId;
+        const detailText = (Array.isArray(details) ? details : [details]).filter(Boolean).join(' · ');
+        const validLinks = links.filter(link => normalizeDocumentUrl(link.url));
+        records.push({
+          vehicle,
+          type,
+          title: title || type,
+          period: period || '—',
+          details: detailText || '—',
+          links: validLinks,
+          searchText: normalizeSearchText([
+            vehicle, type, title, period, detailText,
+            ...searchValues,
+            ...validLinks.flatMap(link => [link.label, link.url])
+          ].join(' '))
+        });
+      };
+
+      Object.entries(vehiclesData).forEach(([vehicleId, data]) => {
+        addRecord(vehicleId, 'Véhicule', vehicleLabels[vehicleId], '', [data.km, data.kmYear].filter(Boolean).join(' · '), [data.km, data.kmYear]);
+        data.interventions.forEach(intervention => {
+          const linkedDocuments = data.documents.filter(item => item.interventionId === intervention.id);
+          const tags = interventionTags(intervention);
+          const links = [
+            ...(intervention.docUrl ? [{ label: 'Facture', url: intervention.docUrl }] : []),
+            ...linkedDocuments.map(item => ({ label: item.name, url: item.url }))
+          ];
+          addRecord(vehicleId, 'Intervention', tags.join(' · ') || intervention.name, intervention.date,
+            [intervention.name, intervention.km, intervention.price, intervention.garage, intervention.doc],
+            [...tags, ...linkedDocuments.flatMap(item => [item.name, item.category, item.url])], links);
+        });
+        data.fuel.forEach(fuel => addRecord(vehicleId, 'Carburant', `Plein ${fuel.volume || ''}`, fuel.date,
+          [fuel.volume, fuel.priceL, fuel.total, fuel.km], Object.values(fuel)));
+        data.purchases.forEach(purchase => {
+          const urls = Array.isArray(purchase.urls) ? purchase.urls : [];
+          addRecord(vehicleId, 'Achat / pièce', purchase.item, purchase.date,
+            [purchase.store, purchase.price], [...Object.values(purchase), ...urls],
+            urls.map((url, index) => ({ label: `Lien ${index + 1}`, url })));
+        });
+        data.miscCosts.forEach(item => addRecord(vehicleId, 'Coût divers', item.type, item.date,
+          [item.description, item.price], Object.values(item)));
+        data.documents.forEach(item => addRecord(vehicleId, 'Document', item.name, item.date,
+          [item.category, interventionLabel(data, item.interventionId)], Object.values(item), [{ label: 'Ouvrir', url: item.url }]));
+        fixedCostRecordsFromVehicle(data).forEach(item => addRecord(vehicleId, 'Coût fixe', item.name, item.year,
+          [formatEuro(item.amount)], [item.year, item.name, item.amount, item.id]));
+        data.deadlines.forEach(item => addRecord(vehicleId, 'Échéance', item.name || item.type, item.date || '',
+          [item.value, item.comment], Object.values(item)));
+        data.plannedInterventions.forEach(item => addRecord(vehicleId, 'Échéance planifiée', item.name || item.type,
+          item.date ? formatDate(item.date) : '', [item.value, item.comment], Object.values(item)));
+        data.monthlyStats.filter(item => item.event).forEach(item => addRecord(vehicleId, 'Note mensuelle', item.event, item.month,
+          [item.event], Object.values(item)));
+        if (vehicleId === maintenanceSchedule.vehicleId) {
+          const maintenanceKm = Number(data.km.replace(/\D/g, ''));
+          const maintenanceRecordsForVehicle = maintenanceRecords[vehicleId] || {};
+          const excludedItems = new Set(data.automaticDeadlineExclusions || []);
+          const manualTypes = new Set(data.plannedInterventions.map(item => item.type));
+          maintenanceSchedule.items.forEach(item => {
+            const record = maintenanceRecordsForVehicle[item.id];
+            if (!record) return;
+            addRecord(vehicleId, 'Suivi entretien', item.name, formatDate(record.date),
+              [formatKilometers(record.km), item.type], [item.name, item.type, record.date, record.km]);
+            if (excludedItems.has(item.id) || manualTypes.has(item.type)) return;
+            const status = maintenanceItemStatus(item, record, maintenanceKm, localDateValue());
+            addRecord(vehicleId, 'Échéance automatique', item.name, status.nextDate ? formatDate(status.nextDate) : '',
+              [status.nextKm === null ? '' : formatKilometers(status.nextKm)], [item.type, status.nextDate, status.nextKm]);
+          });
+        }
+      });
+      return records;
+    }
+
+    function renderGlobalSearch(query) {
+      const tokens = normalizeSearchText(query).trim().split(/\s+/).filter(Boolean);
+      const results = document.getElementById('globalSearchResults');
+      const count = document.getElementById('globalSearchCount');
+      if (!tokens.length) {
+        results.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      const matches = globalSearchRecords().filter(record => tokens.every(token => record.searchText.includes(token)));
+      count.textContent = `${matches.length} résultat${matches.length === 1 ? '' : 's'}`;
+      results.innerHTML = matches.length
+        ? matches.map(record => `<tr><td>${escapeHtml(record.vehicle)}</td><td>${escapeHtml(record.type)}</td><td><strong>${escapeHtml(record.title)}</strong></td><td>${escapeHtml(record.period)}</td><td>${escapeHtml(record.details)}</td><td><div class="global-search-links">${record.links.map(link => documentLink(link.url, link.label)).join('') || '—'}</div></td></tr>`).join('')
+        : '<tr><td colspan="6">Aucun résultat</td></tr>';
     }
 
     const interventionHistoryBody = document.getElementById('interventions-table');
