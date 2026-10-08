@@ -1440,7 +1440,15 @@
     }
 
     function formatEuro(value) {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+      const amount = Number(value);
+      const normalizedAmount = Number.isFinite(amount) ? Number(amount.toFixed(10)) : amount;
+      const cents = normalizedAmount * 100;
+      const roundedAmount = Number.isFinite(cents)
+        ? Math.ceil(cents - Number.EPSILON * Math.abs(cents) * 2) / 100
+        : normalizedAmount;
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2
+      }).format(roundedAmount);
     }
 
     function currentMileageValue(data) {
@@ -2936,10 +2944,10 @@
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
-          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${Number(period[category]) || 0}€"></div>`
+          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${formatEuro(Number(period[category]) || 0)}"></div>`
         ).join('');
         const costBar = `
-          <div class="chart-bar-value">${total}€</div>
+          <div class="chart-bar-value">${formatEuro(total)}</div>
           <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
             ${segments}
           </div>
@@ -2953,7 +2961,7 @@
                 <div class="chart-mileage-bar" style="height: ${(mileage / maxMileage) * maxHeightPx}px;" title="${mileage.toLocaleString('fr-FR')} km estimés (échelle distincte des coûts)"></div>
               </div>
             </div>`
-          : `<div class="column-total">${total}€</div>
+          : `<div class="column-total">${formatEuro(total)}</div>
              <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">${segments}</div>`;
 
         col.innerHTML = `
