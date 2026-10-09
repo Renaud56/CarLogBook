@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  <!-- Voiture -->
+  <path d="M96 300 L132 220 Q140 204 158 204 L300 204 Q318 204 330 218 L368 262 L402 270 Q420 274 420 292 L420 322 Q420 336 406 336 L96 336 Q84 336 84 322 L84 312 Q84 304 96 300 Z" fill="#ffffff"/>
+  <path d="M148 224 L286 224 L330 268 L132 268 Z" fill="#1e3a5f"/>
+  <circle cx="162" cy="342" r="38" fill="#1e3a5f" stroke="#ffffff" stroke-width="14"/>
+  <circle cx="352" cy="342" r="38" fill="#1e3a5f" stroke="#ffffff" stroke-width="14"/>
+  <!-- Roue crantée -->
+  <g transform="translate(372 120)">
+    <circle r="58" fill="none" stroke="#f5a623" stroke-width="22" stroke-dasharray="22.8 22.8" stroke-dashoffset="11.4"/>
+    <circle r="50" fill="#f5a623"/>
+    <circle r="20" fill="#1e3a5f"/>
+  </g>
+</svg>

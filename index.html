@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Suivi entretien</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="theme-color" content="#1e3a5f">
   <style>
     :root {
       --bg-primary: #f4f6f9;
@@ -4314,5 +4318,10 @@
     if (TEST_MODE) setSyncStatus('Mode test actif : données de démonstration, aucune sauvegarde ni synchronisation.');
   </script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="gsiReady()"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
