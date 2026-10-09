@@ -2503,12 +2503,32 @@
       });
     }
 
+    function automaticInspectionDeadline(data) {
+      const isInspection = text => /contr[oô]le technique/i.test(text);
+      const lastInspection = data.interventions
+        .filter(item => isInspection(`${interventionTags(item).join(' ')} ${item.name || ''}`) && /^\d{2}\/\d{2}\/\d{4}$/.test(item.date || ''))
+        .sort((first, second) => parseFrenchDate(second.date) - parseFrenchDate(first.date))[0];
+      if (!lastInspection) return null;
+      const [day, month, year] = lastInspection.date.split('/');
+      return {
+        id: 'automatic-inspection',
+        automatic: true,
+        type: 'Contrôle technique',
+        name: 'Contrôle technique',
+        date: addMonths(`${year}-${month}-${day}`, 24),
+        value: ''
+      };
+    }
+
     function upcomingInterventions(data) {
-      return [
+      const others = [
         ...data.deadlines,
         ...data.plannedInterventions,
         ...calculatedMaintenanceDeadlines(data)
       ];
+      const inspection = automaticInspectionDeadline(data);
+      const hasInspection = others.some(deadline => /contr[oô]le technique/i.test(`${deadline.name || ''} ${deadline.type || ''}`));
+      return inspection && !hasInspection ? [...others, inspection] : others;
     }
 
     function deadlineDateValue(deadline) {
@@ -2568,12 +2588,14 @@
         const clickAction = deadline.maintenanceItemId
           ? `startMaintenanceIntervention('${escapeHtml(deadline.maintenanceItemId)}', '${escapeHtml(deadline.id)}')`
           : `startDeadlineIntervention('${escapeHtml(deadline.id)}')`;
-        const deleteAction = deadline.maintenanceItemId
+        const deleteAction = deadline.maintenanceItemId || deadline.automatic
           ? ''
           : deleteButton(data.deadlines.includes(deadline) ? 'deadline' : 'planned',
             data.deadlines.includes(deadline) ? data.deadlines.indexOf(deadline) : data.plannedInterventions.indexOf(deadline),
             label);
-        const automaticActions = deadline.maintenanceItemId
+        const automaticActions = deadline.automatic
+          ? `<div class="deadline-auto-controls"><span class="deadline-auto-label" title="Calculée automatiquement depuis le dernier contrôle technique"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 7v4M8 4.5h.01"></path></svg>Auto</span></div>`
+          : deadline.maintenanceItemId
           ? `<div class="deadline-auto-controls"><span class="deadline-auto-label" title="Calculée automatiquement depuis le suivi d’entretien"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 7v4M8 4.5h.01"></path></svg>Auto</span><button class="deadline-auto-action" type="button" aria-label="Modifier ${escapeHtml(label)}" title="Modifier cette échéance" onclick="editAutomaticDeadline('${escapeHtml(deadline.maintenanceItemId)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></button><button class="deadline-auto-action" type="button" aria-label="Supprimer ${escapeHtml(label)}" title="Supprimer cette échéance" onclick="requestDeleteAutomaticDeadline('${escapeHtml(deadline.maintenanceItemId)}', ${escapeHtml(JSON.stringify(label))})"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"></path></svg></button></div>`
           : '';
         return `<div class="deadline-item"><div class="deadline-details"><span class="deadline-name">${escapeHtml(label)}</span>${automaticActions}${deadline.comment ? `<span class="deadline-comment">${escapeHtml(deadline.comment)}</span>` : ''}<span class="deadline-status ${status.className}">${status.label}</span></div><div class="deadline-actions"><span class="deadline-value">${escapeHtml(value)}</span>${deleteAction}<button class="deadline-complete" type="button" aria-label="Enregistrer ${escapeHtml(label)} comme effectuée" onclick="${clickAction}">+</button></div></div>`;
@@ -3094,7 +3116,7 @@
 
     function matchingDeadlines(data, types) {
       const matchingTypes = Array.isArray(types) ? types : [types];
-      return upcomingInterventions(data).filter(deadline => matchingTypes.includes(deadline.type));
+      return upcomingInterventions(data).filter(deadline => !deadline.automatic && matchingTypes.includes(deadline.type));
     }
 
     function removeDeadline(data, deadlineId) {
