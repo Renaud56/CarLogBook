@@ -3763,9 +3763,17 @@
     }
 
     function tableRows(records, columnCount, emptyMessage, renderRow) {
-      return records.length
-        ? records.map(renderRow).join('')
+      const sorted = records.map((record, index) => ({ record, index }))
+        .sort((first, second) => frenchDateTime(second.record.date) - frenchDateTime(first.record.date));
+      return sorted.length
+        ? sorted.map(({ record, index }) => renderRow(record, index)).join('')
         : `<tr class="empty-row"><td colspan="${columnCount}">${escapeHtml(emptyMessage)}</td></tr>`;
+    }
+
+    function frenchDateTime(value) {
+      const [day, month, year] = String(value || '').split('/').map(Number);
+      const time = new Date(year, month - 1, day).getTime();
+      return Number.isNaN(time) ? 0 : time;
     }
 
     function switchVehicle(vId) {
