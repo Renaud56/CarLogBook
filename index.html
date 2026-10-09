@@ -116,6 +116,9 @@
     .global-search-input { width: 100%; min-height: 44px; margin-top: 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text-main); font: inherit; font-size: 16px; }
     .global-search-count { min-height: 1.2em; margin: 8px 0 0; color: var(--text-muted); font-size: 0.82rem; }
     .global-search-count:empty { display: none; }
+    .global-search-month { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 0.85rem; font-weight: 600; }
+    .global-search-month[hidden] { display: none; }
+    .global-search-month .btn-cancel { min-height: 36px; padding: 0 12px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
     .document-links-list { display: grid; gap: 12px; }
     .document-link-entry { display: grid; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
     .document-link-remove { justify-self: start; min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text-main); font: inherit; cursor: pointer; }
@@ -332,6 +335,19 @@
       cursor: pointer;
     }
     .chart-month-interventions:hover { background: #ffedc2; }
+    .chart-month-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
     .chart-month-interventions:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .chart-legend {
@@ -767,6 +783,7 @@
     <!-- Recherche globale -->
     <section class="global-search" aria-label="Recherche globale">
       <input class="global-search-input" id="globalSearchInput" type="search" placeholder="🔍 Rechercher dans les interventions, achats, documents, échéances…" aria-label="Recherche globale par mots-clés" oninput="renderGlobalSearch(this.value)">
+      <div class="global-search-month" id="globalSearchMonth" hidden><span id="globalSearchMonthLabel"></span><button class="btn-cancel" type="button" onclick="clearGlobalSearchMonth()">Effacer le mois</button></div>
       <p class="global-search-count" id="globalSearchCount" aria-live="polite"></p>
       <div class="content-card" id="globalSearchResults" hidden></div>
     </section>
@@ -3686,15 +3703,11 @@
         const total = visibleCategories.reduce((sum, category) => sum + (Number(period[category]) || 0), 0);
         const col = document.createElement('div');
         col.className = `chart-column${!chartSelectedYear ? ' annual-column' : ''}`;
-        const monthInterventions = chartVisibility.interventions && chartSelectedYear
-          ? data.interventions.filter(intervention => {
-            const dateParts = String(intervention.date || '').split('/');
-            return dateParts[1] === String(period.monthIndex + 1).padStart(2, '0') &&
-              dateParts[2] === chartSelectedYear;
-          })
-          : [];
-        const interventionButton = monthInterventions.length
-          ? `<button class="chart-month-interventions" type="button" aria-label="Afficher ${monthInterventions.length} intervention${monthInterventions.length === 1 ? '' : 's'} de ${escapeHtml(period.month)}" title="Afficher les interventions de ${escapeHtml(period.month)}" onclick="showInterventionsForMonth('${escapeHtml(period.year)}', ${period.monthIndex})">🛠️</button>`
+        const monthItemCount = chartVisibility.interventions && chartSelectedYear
+          ? monthRecordCount(data, period.year, period.monthIndex)
+          : 0;
+        const interventionButton = monthItemCount
+          ? `<button class="chart-month-interventions" type="button" aria-label="Afficher les ${monthItemCount} élément${monthItemCount === 1 ? '' : 's'} de ${escapeHtml(period.month)}" title="Afficher tout ce qui concerne ${escapeHtml(period.month)}" onclick="showMonthInSearch('${escapeHtml(period.year)}', ${period.monthIndex})">🛠️<span class="chart-month-count">${monthItemCount}</span></button>`
           : '';
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts'], ['misc', 'c-misc']
@@ -3746,6 +3759,7 @@
       if (currentVehicleId !== vId) {
         chartSelectedYear = null;
         interventionMonthFilter = null;
+        globalSearchMonth = null;
       }
       currentVehicleId = vId;
       renderVehicleSelect();
@@ -4232,6 +4246,30 @@
       renderInterventionHistory(vehiclesData[currentVehicleId]);
     }
 
+    function monthRecordCount(data, year, monthIndex) {
+      const month = String(monthIndex + 1).padStart(2, '0');
+      return [data.interventions, data.fuel, data.purchases, data.miscCosts, data.documents]
+        .flat()
+        .filter(record => {
+          const parts = String(record.date || '').split('/');
+          return parts[1] === month && parts[2] === String(year);
+        }).length;
+    }
+
+    let globalSearchMonth = null;
+
+    function showMonthInSearch(year, monthIndex) {
+      globalSearchMonth = { year: String(year), monthIndex };
+      document.getElementById('globalSearchInput').value = '';
+      renderGlobalSearch('');
+      document.getElementById('globalSearchMonth').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearGlobalSearchMonth() {
+      globalSearchMonth = null;
+      renderGlobalSearch(document.getElementById('globalSearchInput').value);
+    }
+
     function showInterventionsForMonth(year, monthIndex) {
       interventionTypeFilter = '';
       interventionMonthFilter = { year: String(year), monthIndex };
@@ -4288,6 +4326,8 @@
         const validLinks = links.filter(link => normalizeDocumentUrl(link.url));
         records.push({
           vehicle,
+          vehicleId,
+          month: (String(period || '').match(/(\d{2})\/(\d{2})\/(\d{4})/) || []).slice(2, 4).reverse().join('-'),
           type,
           title: title || type,
           period: period || '—',
@@ -4352,14 +4392,26 @@
       const tokens = normalizeSearchText(query).trim().split(/\s+/).filter(Boolean);
       const results = document.getElementById('globalSearchResults');
       const count = document.getElementById('globalSearchCount');
-      if (!tokens.length) {
+      const monthBar = document.getElementById('globalSearchMonth');
+      monthBar.hidden = !globalSearchMonth;
+      if (globalSearchMonth) {
+        const monthName = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][globalSearchMonth.monthIndex];
+        document.getElementById('globalSearchMonthLabel').textContent = `Mois : ${monthName} ${globalSearchMonth.year}`;
+      }
+      if (!tokens.length && !globalSearchMonth) {
         results.innerHTML = '';
         results.hidden = true;
         count.textContent = '';
         return;
       }
       results.hidden = false;
-      const matches = globalSearchRecords().filter(record => tokens.every(token => record.searchText.includes(token)));
+      const monthKey = globalSearchMonth
+        ? `${globalSearchMonth.year}-${String(globalSearchMonth.monthIndex + 1).padStart(2, '0')}`
+        : '';
+      const monthTypes = ['Intervention', 'Carburant', 'Achat / pièce', 'Coût divers', 'Document'];
+      const matches = globalSearchRecords().filter(record =>
+        tokens.every(token => record.searchText.includes(token)) &&
+        (!monthKey || (record.vehicleId === currentVehicleId && record.month === monthKey && monthTypes.includes(record.type))));
       count.textContent = `${matches.length} résultat${matches.length === 1 ? '' : 's'}`;
       if (!matches.length) {
         results.innerHTML = '<p class="field-hint">Aucun résultat.</p>';
