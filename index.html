@@ -2589,9 +2589,20 @@
 
     function renderVehicleInspectionBadge(data) {
       const badge = document.getElementById('vehicleInspectionBadge');
-      const inspection = [...data.deadlines, ...data.plannedInterventions].find(deadline =>
-        /contr[oô]le technique/i.test(`${deadline.name || ''} ${deadline.type || ''}`)
-      );
+      const isInspection = text => /contr[oô]le technique/i.test(text);
+      // Dernier CT enregistré dans les interventions : prochaine échéance = +2 ans
+      const lastInspection = data.interventions
+        .filter(item => isInspection(`${interventionTags(item).join(' ')} ${item.name || ''}`) && /^\d{2}\/\d{2}\/\d{4}$/.test(item.date || ''))
+        .sort((first, second) => parseFrenchDate(second.date) - parseFrenchDate(first.date))[0];
+      let inspection = null;
+      if (lastInspection) {
+        const [day, month, year] = lastInspection.date.split('/');
+        inspection = { date: addMonths(`${year}-${month}-${day}`, 24) };
+      } else {
+        inspection = [...data.deadlines, ...data.plannedInterventions].find(deadline =>
+          isInspection(`${deadline.name || ''} ${deadline.type || ''}`)
+        );
+      }
       if (!inspection) {
         badge.hidden = true;
         return;
