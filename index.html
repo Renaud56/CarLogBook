@@ -1373,7 +1373,7 @@
     };
 
     const defaultVehicleNames = {
-      v1: 'Peugeot 208 (AA-123-BB)',
+      v1: 'Peugeot 308 SW II 1.6 BlueHDi 100 ch (2017)',
       v2: 'Scénic III XMOD 1.5 dCi 115 ch (2015)'
     };
 
@@ -1491,10 +1491,22 @@
     const defaultInterventionTypes = [
       'Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique',
       'Courroie', 'Filtre d’habitacle', 'Filtre à air', 'Filtre à gazole', 'Distribution',
-      'Courroie d’accessoires', 'Liquide de frein', 'Liquide de refroidissement', 'Réparation', 'Autre'
+      'Courroie d’accessoires', 'Liquide de frein', 'Liquide de refroidissement', 'Additif FAP', 'AdBlue',
+      'Réparation', 'Autre'
     ];
     let interventionTypes = !TEST_MODE && initialBackup && initialBackup.interventionTypes.length
       ? initialBackup.interventionTypes.slice() : defaultInterventionTypes.slice();
+    maintenanceSchedules.flatMap(schedule => schedule.items).forEach(item => {
+      if (!interventionTypes.includes(item.type)) interventionTypes.push(item.type);
+    });
+
+    function scheduleFor(vehicleId = currentVehicleId) {
+      return maintenanceSchedules.find(schedule => schedule.vehicleId === vehicleId) || null;
+    }
+
+    function scheduleItems(vehicleId = currentVehicleId) {
+      return scheduleFor(vehicleId)?.items || [];
+    }
     const defaultMiscCostTypes = ['Parking', 'Péage', 'Lavage', 'Amende', 'Autre'];
     let miscCostTypes = !TEST_MODE && initialBackup && Array.isArray(initialBackup.miscCostTypes)
       ? initialBackup.miscCostTypes.slice() : defaultMiscCostTypes.slice();
@@ -1556,7 +1568,7 @@
         ...vehicle.interventions.flatMap(interventionTags),
         ...vehicle.plannedInterventions.map(item => item.type),
         ...vehicle.deadlines.map(item => item.type)
-      ].concat(maintenanceSchedule.items.map(item => item.type)).filter(Boolean)));
+      ].concat(maintenanceSchedules.flatMap(schedule => schedule.items).map(item => item.type)).filter(Boolean)));
       document.getElementById('interventionTypesList').innerHTML = interventionTypes.map((type, index) => {
         const isUsed = usedTypes.has(type);
         return `<li><span>${escapeHtml(type)}${isUsed ? ' <small>(utilisé)</small>' : ''}</span><button type="button" data-type-index="${index}" aria-label="Supprimer le type ${escapeHtml(type)}" onclick="removeInterventionType(${index})" ${isUsed ? 'disabled title="Ce type est déjà utilisé"' : ''}>${ICON_TRASH}</button></li>`;
@@ -1678,7 +1690,7 @@
 
     function removeInterventionType(index) {
       const type = interventionTypes[index];
-      const isUsed = maintenanceSchedule.items.some(item => item.type === type) ||
+      const isUsed = maintenanceSchedules.some(schedule => schedule.items.some(item => item.type === type)) ||
         Object.values(vehiclesData).some(vehicle =>
           vehicle.interventions.some(intervention => interventionTags(intervention).includes(type)) ||
           [...vehicle.plannedInterventions, ...vehicle.deadlines].some(item => item.type === type)
@@ -2526,14 +2538,14 @@
     }
 
     function calculatedMaintenanceDeadlines(data) {
-      if (currentVehicleId !== maintenanceSchedule.vehicleId) return [];
+      if (!scheduleFor()) return [];
       const records = maintenanceRecords[currentVehicleId] || {};
       const currentKm = Number(data.km.replace(/\D/g, ''));
       const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
       const today = localDateValue();
       const manualTypes = new Set(data.plannedInterventions.map(intervention => intervention.type));
       const excludedItems = new Set(data.automaticDeadlineExclusions || []);
-      return maintenanceSchedule.items.flatMap(item => {
+      return scheduleItems().flatMap(item => {
         const record = records[item.id];
         if (!record || manualTypes.has(item.type) || excludedItems.has(item.id)) return [];
         const status = maintenanceItemStatus(item, record, currentKm, today, annualMileage);
@@ -2688,7 +2700,8 @@
     }
 
     function renderMaintenanceSchedule() {
-      const schedule = maintenanceSchedule;
+      const schedule = scheduleFor();
+      if (!schedule) return;
       const data = vehiclesData[currentVehicleId];
       const currentKm = Number(data.km.replace(/\D/g, ''));
       const annualMileage = Number(String(data.kmYear || '').replace(/\D/g, '')) || 0;
@@ -2747,13 +2760,13 @@
     }
 
     function openMaintenanceSchedule() {
-      if (currentVehicleId !== maintenanceSchedule.vehicleId) return;
+      if (!scheduleFor()) return;
       renderMaintenanceSchedule();
       document.getElementById('maintenanceModal').showModal();
     }
 
     function startMaintenanceIntervention(itemId, deadlineId = '') {
-      const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+      const item = scheduleItems().find(entry => entry.id === itemId);
       if (!item) return;
       closeActionModal('maintenanceModal');
       openActionModal('interventionModal');
@@ -2765,7 +2778,7 @@
     }
 
     function openMaintenanceEntryOptions(itemId) {
-      const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+      const item = scheduleItems().find(entry => entry.id === itemId);
       if (!item) return;
       maintenanceChoiceItemId = itemId;
       const deadlines = upcomingInterventions(vehiclesData[currentVehicleId]).filter(deadline =>
@@ -2819,7 +2832,7 @@
 
     function recordPlannedMaintenance() {
       if (!maintenanceChoiceItemId) return;
-      const item = maintenanceSchedule.items.find(entry => entry.id === maintenanceChoiceItemId);
+      const item = scheduleItems().find(entry => entry.id === maintenanceChoiceItemId);
       const deadlineId = document.getElementById('maintenancePlannedSelect').value;
       if (!item || !deadlineId) return;
       const deadline = upcomingInterventions(vehiclesData[currentVehicleId]).find(entry => entry.id === deadlineId);
@@ -3145,7 +3158,7 @@
       const data = vehiclesData[currentVehicleId];
       const deadline = upcomingInterventions(data).find(item => item.id === deadlineId);
       if (!deadline) return;
-      const maintenanceItem = maintenanceSchedule.items.find(item =>
+      const maintenanceItem = scheduleItems().find(item =>
         item.id === deadline.maintenanceItemId || item.type === deadline.type
       );
       if (maintenanceItem) {
@@ -3188,7 +3201,7 @@
         if (!deadline) return;
         const data = vehiclesData[currentVehicleId];
         removeDeadline(data, deadlineId);
-        const maintenanceItem = maintenanceSchedule.items.find(item =>
+        const maintenanceItem = scheduleItems().find(item =>
           item.id === deadline.maintenanceItemId || item.type === deadline.type
         );
         if (maintenanceItem && confirmationIntervention) {
@@ -3312,7 +3325,7 @@
         const vehicleMaintenanceRecords = maintenanceRecords[currentVehicleId] || {};
         Object.entries(vehicleMaintenanceRecords).forEach(([itemId, record]) => {
           if (record.interventionId === intervention.id) {
-            const item = maintenanceSchedule.items.find(entry => entry.id === itemId);
+            const item = scheduleItems().find(entry => entry.id === itemId);
             if (item && !types.includes(item.type)) {
               delete vehicleMaintenanceRecords[itemId];
             } else {
@@ -3795,11 +3808,11 @@
       document.getElementById('miscCosts-table').innerHTML = tableRows(data.miscCosts, 3, 'Aucun coût divers enregistré.', (cost, index) =>
         `<tr data-row-action data-edit="miscCost" data-index="${index}" tabindex="0" aria-label="Modifier le coût : ${escapeHtml(cost.type)}"><td class="col-date">${escapeHtml(cost.date)}</td><td><strong>${escapeHtml(cost.type)}</strong>${cost.description ? `<span class="cell-sub">${escapeHtml(cost.description)}</span>` : ''}</td><td class="col-amount">${escapeHtml(cost.price)}</td></tr>`
       );
-      document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
-      if (document.getElementById('maintenanceModal').open && currentVehicleId === maintenanceSchedule.vehicleId) {
+      document.getElementById('maintenanceOpenButton').hidden = !scheduleFor();
+      if (document.getElementById('maintenanceModal').open && scheduleFor()) {
         renderMaintenanceSchedule();
       }
-      document.querySelector('.deadline-refresh').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
+      document.querySelector('.deadline-refresh').hidden = !scheduleFor();
       renderGlobalSearch(document.getElementById('globalSearchInput').value);
     }
 
@@ -4371,12 +4384,12 @@
           [item.value, item.comment], Object.values(item)));
         data.plannedInterventions.forEach(item => addRecord(vehicleId, 'Échéance', item.name || item.type,
           item.date ? formatDate(item.date) : '', [item.value, item.comment], Object.values(item)));
-        if (vehicleId === maintenanceSchedule.vehicleId) {
+        if (scheduleFor(vehicleId)) {
           const maintenanceKm = Number(data.km.replace(/\D/g, ''));
           const maintenanceRecordsForVehicle = maintenanceRecords[vehicleId] || {};
           const excludedItems = new Set(data.automaticDeadlineExclusions || []);
           const manualTypes = new Set(data.plannedInterventions.map(item => item.type));
-          maintenanceSchedule.items.forEach(item => {
+          scheduleItems(vehicleId).forEach(item => {
             const record = maintenanceRecordsForVehicle[item.id];
             if (!record || excludedItems.has(item.id) || manualTypes.has(item.type)) return;
             const status = maintenanceItemStatus(item, record, maintenanceKm, localDateValue());
