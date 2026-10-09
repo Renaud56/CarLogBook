@@ -429,9 +429,9 @@
     .data-table { table-layout: fixed; }
     .data-table th { font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
     .data-table td { vertical-align: top; overflow-wrap: anywhere; }
-    .data-table .col-date { width: 105px; }
+    .data-table .col-date { width: 105px; font-weight: 700; color: var(--text-main); }
     .data-table .col-num { width: 110px; }
-    .data-table .col-amount { width: 110px; font-weight: 700; white-space: nowrap; }
+    .data-table .col-amount { width: 110px; font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; }
     .data-table .col-links { width: 90px; }
     .data-table .col-actions { width: 64px; text-align: right; }
     .data-table .cell-sub { display: block; margin-top: 2px; color: var(--text-muted); font-size: 0.8rem; font-weight: 400; }
@@ -449,7 +449,7 @@
     .history-intervention-tag {
       display: inline-block;
       padding: 4px 9px;
-      border-radius: 999px;
+      border-radius: 14px;
       border: 1px solid #bfdbfe;
       background: #dbeafe;
       color: #1e40af;
@@ -457,7 +457,9 @@
       font-weight: 700;
       max-width: 100%;
       line-height: 1.25;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      word-break: normal;
+      hyphens: none;
     }
     .drive-status { position: relative; }
     .drive-status::after { content: ''; position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: #dc2626; border: 1px solid #fff; }
@@ -469,7 +471,7 @@
     .intervention-detail-item { display: grid; gap: 4px; min-width: 0; }
     .intervention-detail-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
     .intervention-detail-value { overflow-wrap: anywhere; }
-    .intervention-detail-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .intervention-detail-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 22px; }
     .intervention-detail-actions button {
       min-height: 44px;
       padding: 0 16px;
@@ -588,7 +590,7 @@
     .intervention-type-tile span { min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
     .intervention-type-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .intervention-type-header .btn-manage-types { min-height: 36px; padding: 0 10px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 22px; }
     .modal-actions button { min-height: 44px; padding: 0 16px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
     .btn-cancel { border: 1px solid var(--border); background: #fff; color: var(--text-main); }
     .btn-save { border: 1px solid var(--accent); background: var(--accent); color: #fff; }
@@ -678,14 +680,14 @@
       .history-filter select { width: 100%; max-width: none; }
       .history-count { text-align: right; }
       .data-table th, .data-table td { padding: 8px 3px; font-size: 0.76rem; }
-      .data-table .col-date { width: 19%; }
-      .data-table .col-num { width: 17%; }
-      .data-table .col-amount { width: 17%; white-space: normal; }
+      .data-table .col-date { width: 24%; font-size: 0.8rem; white-space: nowrap; }
+      .data-table .col-num { width: 15%; white-space: normal; overflow-wrap: normal; }
+      .data-table .col-amount { width: 18%; font-size: 0.86rem; white-space: nowrap; }
       .data-table .col-links { width: 11%; }
       .data-table .col-actions { width: 42px; }
       .data-table .history-sort { width: 100%; min-height: 34px; font-size: 0.76rem; }
       .data-table .history-intervention-tags { gap: 3px; margin-top: 2px; }
-      .data-table .history-intervention-tag { padding: 2px 6px; font-size: 0.74rem; }
+      .data-table .history-intervention-tag { padding: 2px 6px; font-size: 0.7rem; }
       .data-table .cell-sub { font-size: 0.72rem; }
       .data-table .link-btn { font-size: 0.72rem; }
       .data-table .delete-button { width: 36px; min-width: 36px; min-height: 36px; }
@@ -844,7 +846,6 @@
               <th class="col-num" aria-sort="none"><button id="interventionSortKmButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('km')">Km <span id="interventionSortKmIndicator" aria-hidden="true"></span></button></th>
               <th class="col-amount" aria-sort="none"><button id="interventionSortPriceButton" class="history-sort" type="button" aria-pressed="false" onclick="sortInterventions('price')">Montant <span id="interventionSortPriceIndicator" aria-hidden="true"></span></button></th>
               <th class="col-links">Liens</th>
-              <th class="col-actions"><span class="sr-only">Action</span></th>
             </tr>
           </thead>
           <tbody id="interventions-table"></tbody>
@@ -867,7 +868,6 @@
               <th>Plein</th>
               <th class="col-num">Km</th>
               <th class="col-amount">Montant</th>
-              <th class="col-actions"><span class="sr-only">Action</span></th>
             </tr>
           </thead>
           <tbody id="fuel-table"></tbody>
@@ -890,7 +890,6 @@
               <th>Article</th>
               <th class="col-amount">Montant</th>
               <th class="col-links">Liens</th>
-              <th class="col-actions"><span class="sr-only">Action</span></th>
             </tr>
           </thead>
           <tbody id="purchases-table"></tbody>
@@ -912,7 +911,6 @@
               <th class="col-date">Date</th>
               <th>Document</th>
               <th class="col-links">Liens</th>
-              <th class="col-actions"><span class="sr-only">Action</span></th>
             </tr>
           </thead>
           <tbody id="documents-table"></tbody>
@@ -934,7 +932,6 @@
               <th class="col-date">Date</th>
               <th>Coût</th>
               <th class="col-amount">Montant</th>
-              <th class="col-actions"><span class="sr-only">Action</span></th>
             </tr>
           </thead>
           <tbody id="miscCosts-table"></tbody>
@@ -1000,7 +997,7 @@
         <div class="field"><label for="fuelTotal">Montant total (€)</label><input id="fuelTotal" name="total" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
         <div class="field"><label for="fuelPricePerL">Prix au litre (€/L, facultatif)</label><input id="fuelPricePerL" name="pricePerL" type="number" min="0.001" step="0.001" inputmode="decimal"></div>
       </div>
-      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('fuelModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le plein</button></div>
+      <div class="modal-actions"><button class="delete-confirm-button" type="button" hidden data-delete-type="fuel" onclick="deleteFromEditModal('fuel')">Supprimer</button><button class="btn-cancel" type="button" onclick="closeActionModal('fuelModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le plein</button></div>
     </form>
   </dialog>
 
@@ -1085,6 +1082,7 @@
       </div>
       <div class="intervention-detail-list" id="interventionDetailsContent"></div>
       <div class="intervention-detail-actions">
+        <button class="delete-confirm-button" type="button" onclick="deleteInterventionFromDetails()">Supprimer</button>
         <button class="intervention-detail-close" type="button" onclick="closeInterventionDetails()">Fermer</button>
         <button class="intervention-detail-edit" type="button" onclick="addInterventionDocument()">Ajouter des documents</button>
         <button class="intervention-detail-edit" type="button" onclick="editIntervention()">Modifier</button>
@@ -1164,7 +1162,7 @@
         <div class="field"><label for="miscCostPrice">Montant (€)</label><input id="miscCostPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field full-width"><label for="miscCostDescription">Description (facultative)</label><input id="miscCostDescription" name="description" type="text" maxlength="120" placeholder="Ex. Parking gare"></div>
       </div>
-      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('miscCostModal')">Annuler</button><button class="btn-manage-types" type="button" onclick="openMiscCostTypesModal()">Gérer les types</button><button class="btn-save" type="submit">Enregistrer le coût</button></div>
+      <div class="modal-actions"><button class="delete-confirm-button" type="button" hidden data-delete-type="miscCost" onclick="deleteFromEditModal('miscCost')">Supprimer</button><button class="btn-cancel" type="button" onclick="closeActionModal('miscCostModal')">Annuler</button><button class="btn-manage-types" type="button" onclick="openMiscCostTypesModal()">Gérer les types</button><button class="btn-save" type="submit">Enregistrer le coût</button></div>
     </form>
   </dialog>
 
@@ -1178,7 +1176,7 @@
         <div class="field full-width"><label for="purchaseStore">Magasin (facultatif)</label><input id="purchaseStore" name="store" type="text" maxlength="80"></div>
         <div class="field full-width"><span class="field-label">Liens (facultatif)</span><div class="document-links-list" id="purchaseLinksList"><div class="document-link-entry"><div class="field"><label for="purchaseUrl-1">URL</label><input id="purchaseUrl-1" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div></div></div><button class="btn-manage-types" type="button" onclick="addPurchaseLinkField()">+ Ajouter un lien</button></div>
       </div>
-      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('purchaseModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'achat</button></div>
+      <div class="modal-actions"><button class="delete-confirm-button" type="button" hidden data-delete-type="purchase" onclick="deleteFromEditModal('purchase')">Supprimer</button><button class="btn-cancel" type="button" onclick="closeActionModal('purchaseModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'achat</button></div>
     </form>
   </dialog>
 
@@ -1191,7 +1189,7 @@
         <div class="field full-width"><span class="field-label">Documents et liens</span><div class="document-links-list" id="documentLinksList"><div class="document-link-entry"><div class="field"><label for="documentName-1">Nom du document</label><input id="documentName-1" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-1">URL du document</label><input id="documentUrl-1" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div></div></div><button class="btn-manage-types" id="documentAddLinkButton" type="button" onclick="addDocumentLinkField()">+ Ajouter un autre lien</button></div>
         <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
       </div>
-      <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('documentModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le lien</button></div>
+      <div class="modal-actions"><button class="delete-confirm-button" type="button" hidden data-delete-type="document" onclick="deleteFromEditModal('document')">Supprimer</button><button class="btn-cancel" type="button" onclick="closeActionModal('documentModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer le lien</button></div>
     </form>
   </dialog>
 
@@ -2778,6 +2776,8 @@
       const now = new Date();
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       form.reset();
+      const modalDeleteButton = dialog.querySelector('[data-delete-type]');
+      if (modalDeleteButton) modalDeleteButton.hidden = true;
       form.querySelectorAll('input').forEach(input => input.setCustomValidity(''));
       form.elements.date.dataset.minDate = '';
       setDateField(form.elements.date, today);
@@ -3698,22 +3698,22 @@
       // Remplissage des tables
       renderInterventionHistory(data);
 
-      document.getElementById('fuel-table').innerHTML = tableRows(data.fuel, 5, 'Aucun plein enregistré.', (fuel, index) =>
-        `<tr data-row-action data-edit="fuel" data-index="${index}" tabindex="0" aria-label="Modifier le plein du ${escapeHtml(fuel.date)}"><td class="col-date">${escapeHtml(fuel.date)}</td><td><strong>Plein</strong><span class="cell-sub">${escapeHtml([fuel.volume, fuel.priceL && `${fuel.priceL} / L`].filter(Boolean).join(' · '))}</span></td><td class="col-num">${escapeHtml(fuel.km)}</td><td class="col-amount">${escapeHtml(fuel.total)}</td><td class="col-actions">${deleteButton('fuel', index, fuel.date)}</td></tr>`
+      document.getElementById('fuel-table').innerHTML = tableRows(data.fuel, 4, 'Aucun plein enregistré.', (fuel, index) =>
+        `<tr data-row-action data-edit="fuel" data-index="${index}" tabindex="0" aria-label="Modifier le plein du ${escapeHtml(fuel.date)}"><td class="col-date">${escapeHtml(fuel.date)}</td><td><strong>Plein</strong><span class="cell-sub">${escapeHtml([fuel.volume, fuel.priceL && `${fuel.priceL} / L`].filter(Boolean).join(' · '))}</span></td><td class="col-num">${escapeHtml(fuel.km)}</td><td class="col-amount">${escapeHtml(fuel.total)}</td></tr>`
       );
 
-      document.getElementById('purchases-table').innerHTML = tableRows(data.purchases, 5, 'Aucun achat enregistré.', (purchase, index) => {
+      document.getElementById('purchases-table').innerHTML = tableRows(data.purchases, 4, 'Aucun achat enregistré.', (purchase, index) => {
         const links = (Array.isArray(purchase.urls) ? purchase.urls : []).map(url => documentLink(url, 'Lien')).join('<br>') || '—';
-        return `<tr data-row-action data-edit="purchase" data-index="${index}" tabindex="0" aria-label="Modifier l’achat : ${escapeHtml(purchase.item)}"><td class="col-date">${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong>${purchase.store ? `<span class="cell-sub">${escapeHtml(purchase.store)}</span>` : ''}</td><td class="col-amount">${escapeHtml(purchase.price)}</td><td class="col-links">${links}</td><td class="col-actions">${deleteButton('purchase', index, purchase.item)}</td></tr>`;
+        return `<tr data-row-action data-edit="purchase" data-index="${index}" tabindex="0" aria-label="Modifier l’achat : ${escapeHtml(purchase.item)}"><td class="col-date">${escapeHtml(purchase.date)}</td><td><strong>${escapeHtml(purchase.item)}</strong>${purchase.store ? `<span class="cell-sub">${escapeHtml(purchase.store)}</span>` : ''}</td><td class="col-amount">${escapeHtml(purchase.price)}</td><td class="col-links">${links}</td></tr>`;
       });
 
-      document.getElementById('documents-table').innerHTML = tableRows(data.documents, 4, 'Aucun document enregistré.', (documentRecord, index) => {
+      document.getElementById('documents-table').innerHTML = tableRows(data.documents, 3, 'Aucun document enregistré.', (documentRecord, index) => {
         const sub = [documentRecord.category, interventionLabel(data, documentRecord.interventionId)].filter(Boolean).join(' · ');
-        return `<tr data-row-action data-edit="document" data-index="${index}" tabindex="0" aria-label="Modifier le document : ${escapeHtml(documentRecord.name)}"><td class="col-date">${escapeHtml(documentRecord.date)}</td><td><strong>${escapeHtml(documentRecord.name)}</strong>${sub ? `<span class="cell-sub">${escapeHtml(sub)}</span>` : ''}</td><td class="col-links">${documentLink(documentRecord.url, 'Lien')}</td><td class="col-actions">${deleteButton('document', index, documentRecord.name)}</td></tr>`;
+        return `<tr data-row-action data-edit="document" data-index="${index}" tabindex="0" aria-label="Modifier le document : ${escapeHtml(documentRecord.name)}"><td class="col-date">${escapeHtml(documentRecord.date)}</td><td><strong>${escapeHtml(documentRecord.name)}</strong>${sub ? `<span class="cell-sub">${escapeHtml(sub)}</span>` : ''}</td><td class="col-links">${documentLink(documentRecord.url, 'Lien')}</td></tr>`;
       });
 
-      document.getElementById('miscCosts-table').innerHTML = tableRows(data.miscCosts, 4, 'Aucun coût divers enregistré.', (cost, index) =>
-        `<tr data-row-action data-edit="miscCost" data-index="${index}" tabindex="0" aria-label="Modifier le coût : ${escapeHtml(cost.type)}"><td class="col-date">${escapeHtml(cost.date)}</td><td><strong>${escapeHtml(cost.type)}</strong>${cost.description ? `<span class="cell-sub">${escapeHtml(cost.description)}</span>` : ''}</td><td class="col-amount">${escapeHtml(cost.price)}</td><td class="col-actions">${deleteButton('miscCost', index, cost.type)}</td></tr>`
+      document.getElementById('miscCosts-table').innerHTML = tableRows(data.miscCosts, 3, 'Aucun coût divers enregistré.', (cost, index) =>
+        `<tr data-row-action data-edit="miscCost" data-index="${index}" tabindex="0" aria-label="Modifier le coût : ${escapeHtml(cost.type)}"><td class="col-date">${escapeHtml(cost.date)}</td><td><strong>${escapeHtml(cost.type)}</strong>${cost.description ? `<span class="cell-sub">${escapeHtml(cost.description)}</span>` : ''}</td><td class="col-amount">${escapeHtml(cost.price)}</td></tr>`
       );
       document.getElementById('maintenanceOpenButton').hidden = currentVehicleId !== maintenanceSchedule.vehicleId;
       if (document.getElementById('maintenanceModal').open && currentVehicleId === maintenanceSchedule.vehicleId) {
@@ -3782,7 +3782,7 @@
       });
       document.getElementById('interventionHistoryCount').textContent =
         `${visibleInterventions.length} / ${data.interventions.length} intervention${data.interventions.length === 1 ? '' : 's'}`;
-      document.getElementById('interventions-table').innerHTML = tableRows(sortedInterventions, 6, 'Aucune intervention.', intervention => {
+      document.getElementById('interventions-table').innerHTML = tableRows(sortedInterventions, 5, 'Aucune intervention.', intervention => {
         const index = data.interventions.indexOf(intervention);
         const tags = interventionTags(intervention);
         const title = tags[0] || intervention.name;
@@ -3799,7 +3799,6 @@
           <td class="col-num">${escapeHtml(intervention.km)}</td>
           <td class="col-amount">${escapeHtml(intervention.price)}</td>
           <td class="col-links">${links}</td>
-          <td class="col-actions">${deleteButton('intervention', index, actionLabel)}</td>
         </tr>`;
       });
     }
@@ -3842,6 +3841,31 @@
       document.getElementById('interventionDetailsModal').close();
     }
 
+    function deleteInterventionFromDetails() {
+      const data = vehiclesData[currentVehicleId];
+      const index = data.interventions.findIndex(item => item.id === detailsInterventionId);
+      if (index < 0) return;
+      const intervention = data.interventions[index];
+      const label = interventionTags(intervention)[0] || intervention.name;
+      closeInterventionDetails();
+      requestDeleteRecord('intervention', index, label);
+    }
+
+    function deleteFromEditModal(type) {
+      const data = vehiclesData[currentVehicleId];
+      const config = {
+        fuel: { id: editingFuelId, list: data.fuel, modal: 'fuelModal', label: record => record.date },
+        purchase: { id: editingPurchaseId, list: data.purchases, modal: 'purchaseModal', label: record => record.item },
+        miscCost: { id: editingMiscCostId, list: data.miscCosts, modal: 'miscCostModal', label: record => record.type },
+        document: { id: editingDocumentId, list: data.documents, modal: 'documentModal', label: record => record.name }
+      }[type];
+      const index = config.list.findIndex(record => record.id === config.id);
+      if (index < 0) return;
+      const label = config.label(config.list[index]);
+      closeActionModal(config.modal);
+      requestDeleteRecord(type, index, label);
+    }
+
     function editIntervention() {
       if (!detailsInterventionId) return;
       const intervention = vehiclesData[currentVehicleId].interventions.find(item => item.id === detailsInterventionId);
@@ -3871,6 +3895,7 @@
       if (!purchase.id) purchase.id = createDataId('purchase');
       openActionModal('purchaseModal');
       editingPurchaseId = purchase.id;
+      document.querySelector('#purchaseModal [data-delete-type]').hidden = false;
       document.getElementById('purchaseModalTitle').textContent = 'Modifier un achat';
       document.querySelector('#purchaseForm button[type="submit"]').textContent = 'Enregistrer les modifications';
       const [day, month, year] = purchase.date.split('/');
@@ -3901,6 +3926,7 @@
       if (!fuel.id) fuel.id = createDataId('fuel');
       openActionModal('fuelModal');
       editingFuelId = fuel.id;
+      document.querySelector('#fuelModal [data-delete-type]').hidden = false;
       document.getElementById('fuelModalTitle').textContent = 'Modifier un plein';
       document.querySelector('#fuelForm button[type="submit"]').textContent = 'Enregistrer les modifications';
       const form = document.getElementById('fuelForm');
@@ -3917,6 +3943,7 @@
       if (!cost.id) cost.id = createDataId('misc-cost');
       openActionModal('miscCostModal');
       editingMiscCostId = cost.id;
+      document.querySelector('#miscCostModal [data-delete-type]').hidden = false;
       document.getElementById('miscCostModalTitle').textContent = 'Modifier un coût divers';
       document.querySelector('#miscCostForm button[type="submit"]').textContent = 'Enregistrer les modifications';
       const form = document.getElementById('miscCostForm');
@@ -3935,6 +3962,7 @@
       if (!documentRecord.id) documentRecord.id = createDataId('document');
       openActionModal('documentModal');
       editingDocumentId = documentRecord.id;
+      document.querySelector('#documentModal [data-delete-type]').hidden = false;
       document.getElementById('documentModalTitle').textContent = 'Modifier un document';
       document.querySelector('#documentForm button[type="submit"]').textContent = 'Enregistrer les modifications';
       document.getElementById('documentAddLinkButton').hidden = true;
