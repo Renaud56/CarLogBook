@@ -1013,8 +1013,8 @@
       <div class="modal-header"><div><h2 id="fuelModalTitle">Ajouter un plein</h2><p>Enregistrez le carburant et le kilométrage.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('fuelModal')">&times;</button></div>
       <div class="modal-fields">
         <div class="field"><label for="fuelDateDisplay">Date (JJ/MM/AAAA)</label><input id="fuelDate" name="date" type="hidden"><input id="fuelDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du plein (jour, mois, année)" oninput="updateDateField(this)" required></div>
-        <div class="field"><label for="fuelKm">Kilométrage (km)</label><input id="fuelKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
-        <div class="field"><label for="fuelVolume">Volume (L)</label><input id="fuelVolume" name="volume" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
+        <div class="field"><label for="fuelKm">Kilométrage (km, facultatif)</label><input id="fuelKm" name="km" type="number" min="0" step="1" inputmode="numeric"></div>
+        <div class="field"><label for="fuelVolume">Volume (L, facultatif)</label><input id="fuelVolume" name="volume" type="number" min="0.01" step="0.01" inputmode="decimal"></div>
         <div class="field"><label for="fuelTotal">Montant total (€)</label><input id="fuelTotal" name="total" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
         <div class="field"><label for="fuelPricePerL">Prix au litre (€/L, facultatif)</label><input id="fuelPricePerL" name="pricePerL" type="number" min="0.001" step="0.001" inputmode="decimal"></div>
       </div>
@@ -3239,13 +3239,13 @@
     function saveFuel(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
-      const volume = Number(values.volume);
+      const volume = values.volume ? Number(values.volume) : 0;
       const total = Number(values.total);
-      const pricePerL = values.pricePerL ? Number(values.pricePerL) : total / volume;
+      const pricePerL = values.pricePerL ? Number(values.pricePerL) : volume ? total / volume : 0;
       const data = vehiclesData[currentVehicleId];
       const updatedFuel = {
-        date: formatDate(values.date), volume: `${volume} L`, priceL: formatEuro(pricePerL),
-        total: formatEuro(total), km: `${Number(values.km).toLocaleString('fr-FR')} km`
+        date: formatDate(values.date), volume: volume ? `${volume} L` : '', priceL: pricePerL ? formatEuro(pricePerL) : '',
+        total: formatEuro(total), km: values.km ? `${Number(values.km).toLocaleString('fr-FR')} km` : ''
       };
       if (editingFuelId) {
         const fuel = data.fuel.find(item => item.id === editingFuelId);
@@ -3261,7 +3261,7 @@
         data.fuel.unshift({ id: createDataId('fuel'), costTracked: true, ...updatedFuel });
         addCostToCurrentMonth('fuel', total, values.date);
       }
-      data.km = updatedFuel.km;
+      if (updatedFuel.km) data.km = updatedFuel.km;
       editingFuelId = null;
       persistData();
       switchVehicle(currentVehicleId);
@@ -4033,9 +4033,9 @@
       const form = document.getElementById('fuelForm');
       setDateField(form.elements.date, isoFromFrenchDate(fuel.date));
       form.elements.km.value = String(fuel.km || '').replace(/\D/g, '');
-      form.elements.volume.value = parseEuroAmount(fuel.volume);
+      form.elements.volume.value = fuel.volume ? parseEuroAmount(fuel.volume) : '';
       form.elements.total.value = parseEuroAmount(fuel.total);
-      form.elements.pricePerL.value = parseEuroAmount(fuel.priceL);
+      form.elements.pricePerL.value = fuel.priceL ? parseEuroAmount(fuel.priceL) : '';
     }
 
     function editMiscCost(index) {
@@ -4231,9 +4231,9 @@
         }
       } else if (type === 'fuel') {
         removeTrackedCost(data, record, 'fuel', 'total');
-        if (Number(record.km.replace(/\D/g, '')) === Number(data.km.replace(/\D/g, ''))) {
+        if (record.km && Number(record.km.replace(/\D/g, '')) === Number(data.km.replace(/\D/g, ''))) {
           const remainingKilometers = [...data.fuel, ...data.interventions]
-            .map(entry => Number(entry.km.replace(/\D/g, '')))
+            .map(entry => Number(String(entry.km || '').replace(/\D/g, '')))
             .filter(Number.isFinite);
           data.km = formatKilometers(remainingKilometers.length ? Math.max(...remainingKilometers) : 0);
         }
