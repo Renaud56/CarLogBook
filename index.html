@@ -637,6 +637,10 @@
     .maintenance-row-actions { display: grid; gap: 6px; min-width: 165px; }
     .maintenance-action { min-height: 40px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 7px; background: #fff; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .maintenance-action.secondary { border-color: var(--border); color: var(--text-main); }
+    .maintenance-choice { display: grid; gap: 10px; padding: 14px 0; border-top: 1px solid var(--border); }
+    .maintenance-choice[hidden] { display: none; }
+    .maintenance-choice h3 { font-size: 0.85rem; font-weight: 600; }
+    .maintenance-choice .maintenance-action { width: 100%; min-height: 44px; white-space: normal; border-radius: 6px; }
     .demo-badge { display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 0.7rem; font-weight: 700; vertical-align: middle; }
     .maintenance-source { margin-top: 16px; font-size: 0.8rem; color: var(--text-muted); }
     .maintenance-advice { display: grid; gap: 8px; margin: 16px 0 0 18px; color: var(--text-muted); font-size: 0.85rem; }
@@ -1211,17 +1215,20 @@
   <dialog class="action-modal" id="maintenanceEntryModal" aria-labelledby="maintenanceEntryTitle">
     <div class="modal-form">
       <div class="modal-header"><div><h2 id="maintenanceEntryTitle">Mettre à jour le suivi</h2><p id="maintenanceEntryItem"></p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('maintenanceEntryModal')">&times;</button></div>
-      <div class="field">
-        <label for="maintenancePlannedSelect">Échéance déjà planifiée</label>
-        <select id="maintenancePlannedSelect"></select>
-        <button class="maintenance-action" id="maintenancePlannedAction" type="button" onclick="recordPlannedMaintenance()">Enregistrer l’intervention planifiée</button>
+      <div class="maintenance-choice" id="maintenanceExistingSection">
+        <div class="field"><label for="maintenanceExistingSelect">Associer une intervention déjà enregistrée</label>
+        <select id="maintenanceExistingSelect"></select></div>
+        <button class="maintenance-action" id="maintenanceExistingAction" type="button" onclick="linkExistingMaintenance()">Associer l’intervention sélectionnée</button>
       </div>
-      <div class="field" style="margin-top: 16px;">
-        <label for="maintenanceExistingSelect">Intervention passée déjà enregistrée</label>
-        <select id="maintenanceExistingSelect"></select>
-        <button class="maintenance-action secondary" id="maintenanceExistingAction" type="button" onclick="linkExistingMaintenance()">Associer cette intervention</button>
+      <div class="maintenance-choice" id="maintenancePlannedSection">
+        <div class="field"><label for="maintenancePlannedSelect">Valider une échéance planifiée</label>
+        <select id="maintenancePlannedSelect"></select></div>
+        <button class="maintenance-action" id="maintenancePlannedAction" type="button" onclick="recordPlannedMaintenance()">Enregistrer cette échéance comme effectuée</button>
       </div>
-      <div class="modal-actions"><button class="btn-save" type="button" onclick="startNewMaintenanceIntervention()">Saisir une nouvelle intervention</button></div>
+      <div class="maintenance-choice">
+        <h3>Autre cas</h3>
+        <button class="maintenance-action" type="button" onclick="startNewMaintenanceIntervention()">Saisir une nouvelle intervention</button>
+      </div>
     </div>
   </dialog>
 
@@ -2690,27 +2697,25 @@
       plannedSelect.innerHTML = deadlines.map(deadline =>
         `<option value="${escapeHtml(deadline.id)}">${escapeHtml(deadlineLabel(deadline))}</option>`
       ).join('');
-      const plannedAction = document.getElementById('maintenancePlannedAction');
-      plannedAction.disabled = deadlines.length === 0;
-      if (deadlines.length === 0) {
-        plannedSelect.innerHTML = '<option value="">Aucune échéance planifiée pour cet entretien</option>';
-      }
+      document.getElementById('maintenancePlannedSection').hidden = deadlines.length === 0;
 
-      const interventions = vehiclesData[currentVehicleId].interventions
-        .filter(intervention => matchesMaintenanceIntervention(item, intervention))
+      const record = (maintenanceRecords[currentVehicleId] || {})[item.id];
+      const optionLabel = intervention =>
+        `${intervention.demo ? 'DÉMO — ' : ''}${interventionTags(intervention).join(' · ') || intervention.name} — ${intervention.date} — ${intervention.km}`;
+      const allInterventions = vehiclesData[currentVehicleId].interventions
         .slice()
         .sort((first, second) => parseFrenchDate(second.date) - parseFrenchDate(first.date));
+      const matching = allInterventions.filter(intervention => matchesMaintenanceIntervention(item, intervention));
+      const others = allInterventions.filter(intervention => !matching.includes(intervention));
+      // Suggestion : même type d'entretien, la plus récente (ou celle déjà associée)
+      const suggestedId = (record && matching.find(intervention => intervention.id === record.interventionId)?.id) || matching[0]?.id;
+      const optionMarkup = intervention =>
+        `<option value="${escapeHtml(intervention.id)}"${intervention.id === suggestedId ? ' selected' : ''}>${escapeHtml(optionLabel(intervention))}</option>`;
       const existingSelect = document.getElementById('maintenanceExistingSelect');
-      existingSelect.innerHTML = interventions.map(intervention => {
-        const demoPrefix = intervention.demo ? 'DÉMO — ' : '';
-        const label = `${demoPrefix}${interventionTags(intervention).join(' · ') || intervention.name} — ${intervention.date} — ${intervention.km}`;
-        return `<option value="${escapeHtml(intervention.id)}">${escapeHtml(label)}</option>`;
-      }).join('');
-      const existingAction = document.getElementById('maintenanceExistingAction');
-      existingAction.disabled = interventions.length === 0;
-      if (interventions.length === 0) {
-        existingSelect.innerHTML = '<option value="">Aucune intervention passée correspondante</option>';
-      }
+      existingSelect.innerHTML =
+        (matching.length ? `<optgroup label="Correspond à cet entretien">${matching.map(optionMarkup).join('')}</optgroup>` : '') +
+        (others.length ? `<optgroup label="Autres interventions">${others.map(optionMarkup).join('')}</optgroup>` : '');
+      document.getElementById('maintenanceExistingSection').hidden = allInterventions.length === 0;
       document.getElementById('maintenanceEntryItem').textContent = item.name;
       closeActionModal('maintenanceModal');
       document.getElementById('maintenanceEntryModal').showModal();
