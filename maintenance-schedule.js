@@ -1,8 +1,8 @@
 const maintenanceSchedule = {
   vehicleId: 'v2',
   vehicleLabel: 'Renault Scénic III XMOD 1.5 dCi — 2015, 115 ch',
-  notice: 'Intervalles repris de la liste fournie pour le Scénic 3 XMOD 1.5 dCi 110 ch. Votre véhicule est indiqué à 115 ch : vérifiez la concordance avec le carnet d’entretien ou le programme Renault associé au VIN avant de considérer ces échéances comme constructeur.',
-  sourceLabel: 'Liste d’entretien fournie par le propriétaire ; application au 115 ch à confirmer.',
+  notice: 'Intervalles alignés sur la fiche de suivi officielle fournie pour le Scénic III 1.5 dCi. Vérifiez la concordance avec le carnet d’entretien ou le programme Renault associé au VIN.',
+  sourceLabel: 'Fiche de suivi officielle fournie par le propriétaire (révisions A/B, années 1 à 12).',
   items: [
     {
       id: 'engine-oil',
@@ -16,9 +16,9 @@ const maintenanceSchedule = {
       id: 'cabin-filter',
       name: 'Filtre d’habitacle (pollen)',
       type: 'Filtre d’habitacle',
-      details: 'À remplacer plus tôt si nécessaire pour préserver la ventilation et la climatisation.',
+      details: 'Remplacé lors des révisions A (années impaires : 1, 3, 5…), soit tous les 2 ans ou 30 000 km.',
       intervalKm: 30000,
-      intervalMonths: 12
+      intervalMonths: 24
     },
     {
       id: 'air-filter',
@@ -64,17 +64,16 @@ const maintenanceSchedule = {
       id: 'coolant',
       name: 'Liquide de refroidissement',
       type: 'Liquide de refroidissement',
-      details: 'La liste fournie indique le type D Renault.',
-      intervalKm: 120000,
+      details: 'La liste fournie indique le type D Renault. Fiche officielle : année 5, puis année 10.',
+      intervalKm: 150000,
       intervalMonths: 60
     },
     {
       id: 'rear-brakes',
-      name: 'Contrôle freins et plaquettes arrière',
+      name: 'Contrôle et dépoussiérage des garnitures de frein à tambours',
       type: 'Freinage',
-      details: 'Point d’attention indiqué pour le frein de parking électrique ; contrôle à chaque révision.',
-      intervalKm: 30000,
-      intervalMonths: 24
+      details: 'Contrôle à 90 000 km selon la fiche officielle ; à chaque révision, le contrôle du freinage fait aussi partie des points vérifiés.',
+      intervalKm: 90000
     },
     {
       id: 'xmod-tyres',
@@ -86,6 +85,8 @@ const maintenanceSchedule = {
     }
   ],
   additionalAdvice: [
+    'Révision A (années impaires, 30 000 km) : filtre d’habitacle, points de contrôle (freinage, pneus, éclairage, suspensions, batterie, lave-glace) et diagnostic électronique, sans vidange.',
+    'Révision B (années paires, 30 000 km) : vidange + filtre à huile, points de contrôle, diagnostic électronique et filtres d’usure selon le kilométrage (air et gazole à 60 000 km).',
     'FAP / EGR : en cas de trajets principalement courts, la liste conseille périodiquement un trajet routier prolongé pour favoriser la régénération du FAP. Ce conseil d’usage n’est pas calculé comme une échéance datée.',
     'Batterie Stop & Start : la liste conseille une batterie EFB ou AGM lors du remplacement.',
     'Extended Grip XMOD : aucun entretien mécanique dédié n’est indiqué dans la liste fournie.'
