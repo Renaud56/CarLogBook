@@ -26,6 +26,7 @@
       --c-insur: #10b981;
       --c-parts: #8b5cf6;
       --c-misc: #ec4899;
+      --c-km: #94a3b8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -118,6 +119,7 @@
     .global-search-count:empty { display: none; }
     .global-search-month { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 0.85rem; font-weight: 600; }
     .global-search-month[hidden] { display: none; }
+    .global-search-month { scroll-margin-top: 120px; }
     .global-search-month .btn-cancel { min-height: 36px; padding: 0 12px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
     .document-links-list { display: grid; gap: 12px; }
     .document-link-entry { display: grid; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
@@ -205,10 +207,11 @@
     /* Component: Graphique Coulissant */
     .chart-card {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 16px;
       border: 1px solid var(--border);
       padding: 20px;
       margin-bottom: 25px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
     }
 
     .chart-header {
@@ -220,9 +223,10 @@
 
     .chart-period-controls {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px 12px;
       margin: 0 0 10px;
       color: var(--text-muted);
       font-size: 0.82rem;
@@ -238,103 +242,115 @@
       font-weight: 600;
       cursor: pointer;
     }
+    .chart-period-activity {
+      padding: 0 12px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+    .chart-period-activity:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .chart-scroll-container {
       overflow-x: auto;
       scroll-behavior: smooth;
-      padding-bottom: 10px;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
     }
 
     .chart-wrapper {
       display: flex;
-      gap: 8px;
       align-items: flex-end;
-      height: 260px;
       min-width: max-content;
-      padding: 76px 20px 10px;
-      border-bottom: 2px solid var(--border);
+      padding: 10px 4px 0;
     }
+    .chart-wrapper.monthly { padding-top: 46px; }
 
     .chart-column {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 44px;
+      min-width: 44px;
+    }
+    .chart-column.annual-column { width: 66px; min-width: 66px; cursor: pointer; }
+    /* Plot areas share the same height so gridlines line up across columns (25/50/75/100 % of max). */
+    .chart-plot {
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100%;
       justify-content: flex-end;
-      position: relative;
-      width: 108px;
-      min-width: 108px;
+      height: 172px;
+      border-bottom: 1px solid #cbd5e1;
+      background-image: repeating-linear-gradient(to top, transparent 0 34px, #eef2f7 34px 35px);
+      transition: background-color 0.15s ease;
     }
-    .chart-column.annual-column { width: 140px; min-width: 140px; }
-    .chart-bar-pair { display: flex; align-items: flex-end; gap: 10px; }
-    .chart-bar-group { display: flex; flex-direction: column; align-items: center; }
-    .chart-bar-value {
-      min-height: 16px;
+    @media (hover: hover) { .chart-column:hover .chart-plot { background-color: #f8fafc; } }
+    .chart-values {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       margin-bottom: 4px;
-      color: var(--text-main);
       font-size: 0.62rem;
       font-weight: 700;
+      line-height: 1.2;
       white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
-    .chart-mileage-bar {
-      width: 28px;
-      border-radius: 6px 6px 0 0;
-      background: var(--accent);
+    .chart-value-cost { color: var(--text-main); }
+    .chart-value-km { color: #475569; font-weight: 600; }
+    .chart-bars { display: flex; align-items: flex-end; gap: 3px; }
+    .bar-stack, .chart-mileage-bar {
+      width: 22px;
+      border-radius: 6px 6px 2px 2px;
+      transform-origin: bottom;
+      animation: chart-grow 0.35s ease-out;
     }
-
-    .bar-stack {
-      width: 28px;
-      border-radius: 6px 6px 0 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column-reverse;
-      background: #f1f5f9;
-      position: relative;
-    }
-
-    .bar-segment { width: 100%; }
+    .bar-stack { display: flex; flex-direction: column-reverse; overflow: hidden; }
+    .bar-segment { width: 100%; flex-basis: 0; min-height: 0; }
+    .bar-segment + .bar-segment { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.7); }
+    .chart-mileage-bar { background: var(--c-km); }
+    @keyframes chart-grow { from { transform: scaleY(0); } }
+    @media (prefers-reduced-motion: reduce) { .bar-stack, .chart-mileage-bar { animation: none; } }
 
     .column-label {
-      font-size: 0.75rem;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
       color: var(--text-muted);
-      margin-top: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
     }
     .chart-year-button {
-      padding: 2px 6px;
+      min-height: 26px;
+      padding: 0 9px;
       border: 0;
-      border-radius: 5px;
-      background: transparent;
+      border-radius: 999px;
+      background: #eff6ff;
       color: var(--accent);
       font: inherit;
       font-weight: 700;
       cursor: pointer;
     }
-    .chart-year-button:hover { background: #eff6ff; }
+    @media (hover: hover) { .annual-column:hover .chart-year-button { background: #dbeafe; } }
     .chart-year-button:focus-visible,
     .chart-period-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    .column-total {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 4px;
-    }
-
     .chart-month-interventions {
       position: absolute;
-      top: -48px;
+      top: -42px;
       left: 50%;
-      min-width: 36px;
-      min-height: 36px;
+      width: 34px;
+      height: 34px;
       transform: translateX(-50%);
-      border: 0;
+      border: 1px solid #fde68a;
       border-radius: 50%;
-      background: #fff7e6;
-      font-size: 1.1rem;
+      background: #fffbeb;
+      font-size: 0.95rem;
       cursor: pointer;
     }
-    .chart-month-interventions:hover { background: #ffedc2; }
+    .chart-month-interventions:hover { background: #fef3c7; }
     .chart-month-count {
       position: absolute;
       top: -4px;
@@ -352,33 +368,35 @@
 
     .chart-legend {
       display: flex;
-      gap: 15px;
-      font-size: 0.8rem;
+      gap: 8px;
+      font-size: 0.78rem;
       flex-wrap: wrap;
-      margin-top: 15px;
+      margin-top: 14px;
     }
 
     .legend-toggle {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 2px;
-      border: 0;
-      background: transparent;
+      min-height: 32px;
+      padding: 0 11px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #f8fafc;
       color: var(--text-main);
       font: inherit;
+      font-weight: 600;
       cursor: pointer;
+      transition: opacity 0.15s ease, background-color 0.15s ease;
     }
-    .legend-toggle[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through; }
+    .legend-toggle[hidden] { display: none; }
+    .legend-toggle[aria-pressed="false"] { opacity: 0.5; background: #fff; text-decoration: line-through; }
     .legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
-    .chart-wrapper.interventions-only { height: auto; min-height: 90px; align-items: stretch; padding-top: 12px; }
-    .interventions-only .chart-column { height: auto; min-height: 68px; justify-content: flex-start; }
-    .interventions-only .chart-month-interventions { position: static; transform: none; margin-bottom: 8px; }
-    .interventions-only .chart-bar-pair { display: none; }
-    .interventions-only .column-total,
-    .interventions-only .bar-stack { display: none; }
+    .chart-wrapper.interventions-only { align-items: stretch; padding-top: 12px; }
+    .interventions-only .chart-month-interventions { position: static; align-self: center; transform: none; margin-bottom: 8px; }
+    .interventions-only .chart-plot { display: none; }
     .chart-empty { padding: 30px 20px; color: var(--text-muted); font-size: 0.9rem; }
     /* Tabs & Tables */
     .nav-tabs {
@@ -663,7 +681,7 @@
 
     /* Harmonisation : même rayon et même hauteur tactile pour les boutons texte et icônes */
     .btn-action, .btn-manage-types, .btn-cancel, .btn-save, .delete-confirm-button, .maintenance-action,
-    .vehicle-list-actions button, .fixed-cost-year-edit, .chart-period-back, .document-link-remove,
+    .vehicle-list-actions button, .fixed-cost-year-edit, .chart-period-back, .chart-period-activity, .document-link-remove,
     .intervention-detail-actions button, .modal-actions button, .type-list .misc-cost-type-actions button {
       min-height: 44px; border-radius: 8px; font: inherit; font-size: 0.9rem; font-weight: 600;
     }
@@ -690,9 +708,8 @@
       .backup-actions { grid-template-columns: 1fr; }
       .chart-card { padding: 16px; }
       .chart-header { align-items: flex-start; gap: 8px; flex-direction: column; }
-      .chart-period-controls { align-items: flex-start; flex-direction: column; }
-      .chart-column { width: 108px; min-width: 108px; }
-      .chart-legend { gap: 8px 14px; }
+      .chart-period-controls { justify-content: flex-start; }
+      .chart-legend { gap: 6px; }
       .intervention-detail-actions button { flex: 1; }
       .content-card { padding: 16px 12px; }
       .history-toolbar { align-items: stretch; flex-direction: column; gap: 6px; }
@@ -783,7 +800,7 @@
     <!-- Recherche globale -->
     <section class="global-search" aria-label="Recherche globale">
       <input class="global-search-input" id="globalSearchInput" type="search" placeholder="🔍 Rechercher dans les interventions, achats, documents, échéances…" aria-label="Recherche globale par mots-clés" oninput="renderGlobalSearch(this.value)">
-      <div class="global-search-month" id="globalSearchMonth" hidden><span id="globalSearchMonthLabel"></span><button class="btn-cancel" type="button" onclick="clearGlobalSearchMonth()">Effacer le mois</button></div>
+      <div class="global-search-month" id="globalSearchMonth" hidden><span id="globalSearchMonthLabel"></span><button class="btn-cancel" type="button" onclick="clearGlobalSearchMonth()">Effacer le filtre</button></div>
       <p class="global-search-count" id="globalSearchCount" aria-live="polite"></p>
       <div class="content-card" id="globalSearchResults" hidden></div>
     </section>
@@ -827,7 +844,7 @@
         <button class="legend-toggle" data-series="parts" aria-pressed="true" onclick="toggleChartSeries('parts')"><span class="dot" style="background: var(--c-parts)"></span> Achats / Pièces</button>
         <button class="legend-toggle" data-series="misc" aria-pressed="true" onclick="toggleChartSeries('misc')"><span class="dot" style="background: var(--c-misc)"></span> Coûts divers</button>
         <button class="legend-toggle" data-series="interventions" aria-pressed="true" onclick="toggleChartSeries('interventions')"><span style="font-size:0.9rem">🛠️</span> Interventions</button>
-        <button class="legend-toggle" data-series="mileage" aria-pressed="true" onclick="toggleChartSeries('mileage')" hidden><span class="dot" style="background: var(--accent)"></span> Km parcourus</button>
+        <button class="legend-toggle" data-series="mileage" aria-pressed="true" onclick="toggleChartSeries('mileage')" hidden><span class="dot" style="background: var(--c-km)"></span> Km parcourus</button>
       </div>
     </div>
 
@@ -3532,9 +3549,11 @@
       return month && year ? `${monthNames[Number(month) - 1]} ${year.slice(-2)}` : '';
     }
 
+    const CHART_MONTH_NAMES = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
     function chartPeriodFromMonthLabel(label) {
       const [month, shortYear] = String(label || '').split(' ');
-      const monthIndex = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'].indexOf(month);
+      const monthIndex = CHART_MONTH_NAMES.indexOf(month);
       if (monthIndex < 0 || !/^\d{2}$/.test(shortYear || '')) return null;
       return { year: String(2000 + Number(shortYear)), monthIndex };
     }
@@ -3619,13 +3638,21 @@
       return Math.round(distance * 365.25 / elapsedDays);
     }
 
+    function formatChartEuro(value) {
+      return value >= 10000
+        ? `${(value / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} k€`
+        : `${Math.round(value).toLocaleString('fr-FR')} €`;
+    }
+
     function showChartYear(year) {
       chartSelectedYear = year;
+      setSearchYear(year);
       renderChart(vehiclesData[currentVehicleId]);
     }
 
     function showChartYears() {
       chartSelectedYear = null;
+      if (globalSearchMonth) clearGlobalSearchMonth();
       renderChart(vehiclesData[currentVehicleId]);
     }
 
@@ -3699,14 +3726,25 @@
 
       let chartData;
       if (chartSelectedYear) {
-        chartData = monthlyData
+        const yearMonths = new Map(monthlyData
           .filter(month => month.year === chartSelectedYear)
-          .sort((first, second) => first.monthIndex - second.monthIndex);
-        periodControls.innerHTML = `<button class="chart-period-back" type="button" onclick="showChartYears()">‹ Toutes les années</button><span>Détail mensuel · ${escapeHtml(chartSelectedYear)}</span>`;
+          .map(month => [month.monthIndex, month]));
+        const today = new Date();
+        const lastDataMonth = Math.max(-1, ...yearMonths.keys());
+        const lastMonthIndex = Number(chartSelectedYear) === today.getFullYear()
+          ? Math.max(today.getMonth(), lastDataMonth)
+          : Number(chartSelectedYear) < today.getFullYear() ? 11 : lastDataMonth;
+        // Show every month of the year (not only months with data) so the timeline has no gaps.
+        chartData = Array.from({ length: lastMonthIndex + 1 }, (_, monthIndex) => yearMonths.get(monthIndex) || {
+          month: `${CHART_MONTH_NAMES[monthIndex]} ${chartSelectedYear.slice(-2)}`,
+          year: chartSelectedYear, monthIndex, fuel: 0, maint: 0, insur: 0, parts: 0, misc: 0
+        });
+        periodControls.innerHTML = `<button class="chart-period-back" type="button" onclick="showChartYears()">‹ Toutes les années</button><span>Détail mensuel · ${escapeHtml(chartSelectedYear)}</span><button class="chart-period-activity" type="button" onclick="showYearInSearch('${escapeHtml(chartSelectedYear)}')">📋 Activité ${escapeHtml(chartSelectedYear)} ↑</button>`;
       } else {
         chartData = [...statsByYear.values()].sort((first, second) => Number(first.year) - Number(second.year));
         periodControls.innerHTML = '<span>Vue annuelle · touchez une année pour afficher ses mois.</span>';
       }
+      container.classList.toggle('monthly', Boolean(chartSelectedYear));
       container.classList.toggle('interventions-only', chartInterventionsOnly);
       if (chartInterventionsOnly) {
         chartData = chartVisibility.interventions
@@ -3741,33 +3779,32 @@
         const segments = [
           ['fuel', 'c-fuel'], ['maint', 'c-maint'], ['insur', 'c-insur'], ['parts', 'c-parts'], ['misc', 'c-misc']
         ].filter(([category]) => chartVisibility[category]).map(([category, color]) =>
-          `<div class="bar-segment" style="height: ${((Number(period[category]) || 0) / maxTotal) * maxHeightPx}px; background: var(--${color});" title="${escapeHtml(category)}: ${formatEuro(Number(period[category]) || 0)}"></div>`
+          `<div class="bar-segment" style="flex-grow: ${Number(period[category]) || 0}; background: var(--${color});" title="${escapeHtml(category)}: ${formatEuro(Number(period[category]) || 0)}"></div>`
         ).join('');
-        const costBar = `
-          <div class="chart-bar-value">${formatEuro(total)}</div>
-          <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">
-            ${segments}
-          </div>
-        `;
+        const barHeight = (value, max) => value > 0 ? Math.max(3, (value / max) * maxHeightPx) : 0;
         const mileage = Number(period.mileage) || 0;
-        const bars = showAnnualMileage && mileage > 0
-          ? `<div class="chart-bar-pair">
-              <div class="chart-bar-group">${costBar}</div>
-              <div class="chart-bar-group">
-                <div class="chart-bar-value">${mileage.toLocaleString('fr-FR')} km</div>
-                <div class="chart-mileage-bar" style="height: ${(mileage / maxMileage) * maxHeightPx}px;" title="${mileage.toLocaleString('fr-FR')} km estimés (échelle distincte des coûts)"></div>
-              </div>
-            </div>`
-          : `<div class="column-total">${formatEuro(total)}</div>
-             <div class="bar-stack" style="height: ${(total / maxTotal) * maxHeightPx}px;">${segments}</div>`;
+        const showMileage = showAnnualMileage && mileage > 0;
+        const values = [
+          total > 0 ? `<span class="chart-value-cost" title="${formatEuro(total)}">${formatChartEuro(total)}</span>` : '',
+          showMileage ? `<span class="chart-value-km">${mileage.toLocaleString('fr-FR')} km</span>` : ''
+        ].join('');
+        const bars = `
+          <div class="chart-plot">
+            <div class="chart-values">${values}</div>
+            <div class="chart-bars">
+              ${total > 0 ? `<div class="bar-stack" style="height: ${barHeight(total, maxTotal)}px;">${segments}</div>` : ''}
+              ${showMileage ? `<div class="chart-mileage-bar" style="height: ${barHeight(mileage, maxMileage)}px;" title="${mileage.toLocaleString('fr-FR')} km estimés (échelle distincte des coûts)"></div>` : ''}
+            </div>
+          </div>`;
 
         col.innerHTML = `
           ${interventionButton}
           ${bars}
           <div class="column-label">${chartSelectedYear
-            ? escapeHtml(period.month)
-            : `<button class="chart-year-button" type="button" aria-label="Afficher les mois de ${escapeHtml(period.year)}" onclick="showChartYear('${escapeHtml(period.year)}')">${escapeHtml(period.year)}</button>`}</div>
+            ? escapeHtml(CHART_MONTH_NAMES[period.monthIndex])
+            : `<button class="chart-year-button" type="button" aria-label="Afficher les mois de ${escapeHtml(period.year)}">${escapeHtml(period.year)}</button>`}</div>
         `;
+        if (!chartSelectedYear) col.addEventListener('click', () => showChartYear(period.year));
         container.appendChild(col);
       });
 
@@ -4314,6 +4351,17 @@
       document.getElementById('globalSearchMonth').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function setSearchYear(year) {
+      globalSearchMonth = { year: String(year), monthIndex: null };
+      document.getElementById('globalSearchInput').value = '';
+      renderGlobalSearch('');
+    }
+
+    function showYearInSearch(year) {
+      setSearchYear(year);
+      document.getElementById('globalSearchMonth').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function clearGlobalSearchMonth() {
       globalSearchMonth = null;
       renderGlobalSearch(document.getElementById('globalSearchInput').value);
@@ -4381,6 +4429,7 @@
           vehicle,
           vehicleId,
           month: (String(period || '').match(/(\d{2})\/(\d{2})\/(\d{4})/) || []).slice(2, 4).reverse().join('-'),
+          year: (String(period || '').match(/(?:^|\/)(\d{4})$/) || [])[1] || '',
           type,
           title: title || type,
           period: period || '—',
@@ -4449,7 +4498,9 @@
       monthBar.hidden = !globalSearchMonth;
       if (globalSearchMonth) {
         const monthName = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][globalSearchMonth.monthIndex];
-        document.getElementById('globalSearchMonthLabel').textContent = `Mois : ${monthName} ${globalSearchMonth.year}`;
+        document.getElementById('globalSearchMonthLabel').textContent = globalSearchMonth.monthIndex === null
+          ? `Année : ${globalSearchMonth.year}`
+          : `Mois : ${monthName} ${globalSearchMonth.year}`;
       }
       if (!tokens.length && !globalSearchMonth) {
         results.innerHTML = '';
@@ -4458,13 +4509,16 @@
         return;
       }
       results.hidden = false;
-      const monthKey = globalSearchMonth
+      const monthKey = globalSearchMonth && globalSearchMonth.monthIndex !== null
         ? `${globalSearchMonth.year}-${String(globalSearchMonth.monthIndex + 1).padStart(2, '0')}`
         : '';
       const monthTypes = ['Intervention', 'Carburant', 'Achat / pièce', 'Coût divers', 'Document'];
+      const yearTypes = [...monthTypes, 'Coût fixe'];
+      const matchesPeriod = record => !globalSearchMonth || (record.vehicleId === currentVehicleId && (globalSearchMonth.monthIndex === null
+        ? record.year === globalSearchMonth.year && yearTypes.includes(record.type)
+        : record.month === monthKey && monthTypes.includes(record.type)));
       const matches = globalSearchRecords().filter(record =>
-        tokens.every(token => record.searchText.includes(token)) &&
-        (!monthKey || (record.vehicleId === currentVehicleId && record.month === monthKey && monthTypes.includes(record.type))));
+        tokens.every(token => record.searchText.includes(token)) && matchesPeriod(record));
       count.textContent = `${matches.length} résultat${matches.length === 1 ? '' : 's'}`;
       if (!matches.length) {
         results.innerHTML = '<p class="field-hint">Aucun résultat.</p>';
