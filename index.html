@@ -766,9 +766,185 @@
       .intervention-type-tile { min-height: 36px; padding: 4px 6px; gap: 5px; font-size: 0.72rem; line-height: 1.15; }
       .modal-actions button { flex: 1; }
     }
+
+    /* ===== Couche UI moderne (surcharge les styles de base ci-dessus) ===== */
+    :root {
+      --bg-primary: #f1f5f9;
+      --radius-card: 16px;
+      --radius-ctrl: 10px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+      --ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
+      --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: radial-gradient(900px 360px at 50% -160px, #dbeafe 0%, rgba(219, 234, 254, 0) 70%) no-repeat, var(--bg-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.82);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      backdrop-filter: saturate(180%) blur(12px);
+      border-bottom-color: rgba(226, 232, 240, 0.7);
+      transition: box-shadow 0.2s ease;
+    }
+    header.scrolled { box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); }
+    .brand { font-weight: 800; letter-spacing: -0.01em; }
+    .vehicle-picker select { border-radius: var(--radius-ctrl); background: #fff; }
+
+    .kpi-card, .content-card, .chart-card, .backup-panel {
+      border-radius: var(--radius-card);
+      border-color: rgba(226, 232, 240, 0.9);
+      box-shadow: var(--shadow-md);
+    }
+    .kpi-grid > .kpi-card:first-child { background: linear-gradient(135deg, #eff6ff 0%, #ffffff 65%); }
+    .kpi-card .value { font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; }
+
+    .btn-action {
+      min-height: 52px;
+      border-radius: 14px;
+      border-color: rgba(226, 232, 240, 0.9);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-action:hover { background: #eff6ff; color: var(--accent); border-color: #bfdbfe; box-shadow: var(--shadow-md); }
+
+    /* Retour tactile commun */
+    .btn-action, .btn-save, .btn-cancel, .btn-manage-types, .tab-btn, .legend-toggle, .chart-year-button,
+    .chart-period-back, .chart-period-activity, .deadline-complete, .deadline-refresh, .deadline-auto-action,
+    .intervention-detail-actions button, .delete-confirm-button, .delete-button, .maintenance-action,
+    .intervention-type-tile, .modal-close {
+      transition: transform 0.12s var(--ease), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease;
+    }
+    .btn-action:active, .btn-save:active, .btn-cancel:active, .btn-manage-types:active, .tab-btn:active,
+    .legend-toggle:active, .chart-year-button:active, .chart-period-back:active, .chart-period-activity:active,
+    .deadline-complete:active, .deadline-refresh:active, .deadline-auto-action:active,
+    .intervention-detail-actions button:active, .delete-confirm-button:active, .delete-button:active,
+    .maintenance-action:active, .intervention-type-tile:active, .modal-close:active { transform: scale(0.96); }
+
+    .btn-save, .intervention-detail-actions .intervention-detail-edit, .chart-period-activity {
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+    }
+    .btn-save:hover, .intervention-detail-actions .intervention-detail-edit:hover, .chart-period-activity:hover { background: #1d4ed8; }
+
+    .global-search-input {
+      min-height: 50px;
+      border-color: rgba(226, 232, 240, 0.9);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .field input, .field select, .field textarea, .global-search-input, .history-filter select, .vehicle-picker select {
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field input, .field select, .field textarea, .history-filter select { border-radius: var(--radius-ctrl); }
+    .field input:focus, .field select:focus, .field textarea:focus, .global-search-input:focus,
+    .history-filter select:focus, .vehicle-picker select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: var(--ring);
+    }
+
+    .nav-tabs {
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { min-height: 40px; padding: 8px 14px; border-radius: 10px; }
+    .tab-btn:hover:not(.active) { background: #f1f5f9; color: var(--text-main); }
+    .tab-btn.active { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+    .tab-content.active { animation: fade-up 0.25s var(--ease); }
+
+    th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom-width: 1px; }
+    tbody tr { transition: background-color 0.15s ease; }
+    .data-table tbody tr[data-row-action]:active,
+    #interventions tbody tr[data-intervention-id]:active { background: #eff6ff; }
+    .search-section-title { border-bottom-width: 1px; }
+
+    dialog.action-modal, dialog.maintenance-modal {
+      border: 0;
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.28);
+    }
+    dialog.action-modal[open], dialog.maintenance-modal[open] { animation: modal-in 0.22s var(--ease); }
+    dialog.action-modal::backdrop, dialog.maintenance-modal::backdrop {
+      background: rgba(15, 23, 42, 0.45);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .modal-close {
+      display: grid;
+      place-items: center;
+      flex: 0 0 36px;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: #f1f5f9;
+      font-size: 1.3rem;
+    }
+    .modal-close:hover { background: #e2e8f0; color: var(--text-main); }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      z-index: 1000;
+      max-width: calc(100% - 32px);
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+      opacity: 0;
+      transform: translate(-50%, 16px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.25s var(--ease);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+    @keyframes sheet-in { from { transform: translateY(100%); } }
+
+    @media (max-width: 600px) {
+      /* Modales en « bottom sheet » sur mobile */
+      dialog.action-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 92vh;
+        margin: auto 0 0;
+        border-radius: 20px 20px 0 0;
+      }
+      dialog.action-modal[open] { animation: sheet-in 0.28s var(--ease); }
+      dialog.action-modal .modal-form { max-height: 92vh; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+      dialog.action-modal .modal-form::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        margin: -6px auto 12px;
+        border-radius: 999px;
+        background: #cbd5e1;
+      }
+      .btn-action { min-height: 48px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      html { scroll-behavior: auto; }
+    }
   </style>
 </head>
 <body>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <header>
     <div class="brand">🚗 Suivi entretien</div>
@@ -2098,6 +2274,15 @@
       if (status) status.textContent = message;
     }
 
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
     function backupSnapshot(ts = Number(localStorage.getItem(backupTimestampKey)) ||
       (initialBackup && initialBackup.ts) || 0) {
       return {
@@ -2115,16 +2300,21 @@
     }
 
     function persistData() {
-      if (TEST_MODE) return false;
+      if (TEST_MODE) {
+        showToast('Mode test : modification non sauvegardée');
+        return false;
+      }
       const ts = Date.now();
       const data = backupSnapshot(ts);
       try {
         localStorage.setItem(backupStorageKey, JSON.stringify(data));
         localStorage.setItem(backupTimestampKey, String(ts));
         scheduleSync();
+        showToast('✓ Modifications enregistrées');
         return true;
       } catch (error) {
         setSyncStatus('Erreur : sauvegarde locale impossible. Exportez les données dès que possible.');
+        showToast('Erreur : sauvegarde locale impossible');
         console.error('[CarLogBook] Écriture de la sauvegarde locale impossible', error);
         return false;
       }
@@ -4406,6 +4596,8 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
+      const tabs = btn.parentElement;
+      tabs.scrollBy({ left: btn.getBoundingClientRect().left - tabs.getBoundingClientRect().left - (tabs.clientWidth - btn.offsetWidth) / 2, behavior: 'smooth' });
     }
 
     function normalizeSearchText(value) {
@@ -4568,6 +4760,8 @@
 
     document.getElementById('vehicleSelect').value = currentVehicleId;
     switchVehicle(currentVehicleId);
+    const appHeader = document.querySelector('header');
+    window.addEventListener('scroll', () => appHeader.classList.toggle('scrolled', window.scrollY > 4), { passive: true });
     if (TEST_MODE) setSyncStatus('Mode test actif : données de démonstration, aucune sauvegarde ni synchronisation.');
   </script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="gsiReady()"></script>
