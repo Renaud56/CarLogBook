@@ -1089,7 +1089,7 @@
         <div class="field"><label for="interventionPrice">Montant (€)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         <div class="field"><label for="interventionGarage">Garage (facultatif)</label><input id="interventionGarage" name="garage" type="text" maxlength="80"></div>
         <div class="field"><label for="interventionInvoiceNumber">N° de facture (facultatif)</label><input id="interventionInvoiceNumber" name="invoiceNumber" type="text" maxlength="60"></div>
-        <div class="field full-width"><label for="interventionUrl">Lien vers la facture (facultatif)</label><input id="interventionUrl" name="url" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div>
+        <div class="field full-width"><span class="field-label">Liens vers les factures (facultatif)</span><div class="document-links-list" id="interventionInvoiceLinksList"><div class="document-link-entry"><div class="field"><label for="interventionInvoiceUrl-1">URL de facture</label><input id="interventionInvoiceUrl-1" name="invoiceUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div></div></div><button class="btn-manage-types" type="button" onclick="addInterventionInvoiceLinkField()">+ Ajouter un lien</button></div>
       </div>
       <div class="modal-actions"><button class="btn-cancel" type="button" onclick="closeActionModal('interventionModal')">Annuler</button><button class="btn-save" type="submit">Enregistrer l'intervention</button></div>
     </form>
@@ -1468,6 +1468,7 @@
       ? initialBackup.currentVehicleId : vehiclesData.v2 ? 'v2' : Object.keys(vehiclesData)[0];
     let recordSequence = 0;
     let documentLinkFieldSequence = 1;
+    let interventionInvoiceLinkFieldSequence = 1;
     let purchaseLinkFieldSequence = 1;
     let completingDeadlineId = null;
     let editingAutomaticDeadlineId = null;
@@ -2190,7 +2191,7 @@
         const previous = older.vehicles[vehicleId] || latest;
         const interventions = mergeEntries(vehicleId, 'intervention', latest.interventions || [], previous.interventions || [])
           .map(intervention => isDeleted(vehicleId, 'invoice', intervention)
-            ? { ...intervention, docUrl: '', doc: '' } : intervention);
+            ? { ...intervention, docUrl: '', doc: '', invoiceUrls: [] } : intervention);
         const fuel = mergeEntries(vehicleId, 'fuel', latest.fuel || [], previous.fuel || []);
         const purchases = mergeEntries(vehicleId, 'purchase', latest.purchases || [], previous.purchases || []);
         const miscCosts = mergeEntries(vehicleId, 'miscCost', latest.miscCosts || [], previous.miscCosts || []);
@@ -2881,6 +2882,8 @@
         document.getElementById('interventionModalTitle').textContent = 'Ajouter une intervention';
         document.querySelector('#interventionForm button[type="submit"]').textContent = 'Enregistrer l’intervention';
         document.getElementById('interventionDeadlineField').hidden = false;
+        interventionInvoiceLinkFieldSequence = 1;
+        document.querySelectorAll('#interventionInvoiceLinksList .document-link-entry:not(:first-child)').forEach(entry => entry.remove());
         updateInterventionTypeTiles([]);
         document.getElementById('interventionTypeError').textContent = '';
         updateInterventionDeadlineSelect();
@@ -2946,6 +2949,14 @@
       entry.className = 'document-link-entry';
       entry.innerHTML = `<div class="field"><label for="purchaseUrl-${fieldId}">URL</label><input id="purchaseUrl-${fieldId}" name="purchaseUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
       document.getElementById('purchaseLinksList').appendChild(entry);
+    }
+
+    function addInterventionInvoiceLinkField() {
+      const entry = document.createElement('div');
+      const fieldId = ++interventionInvoiceLinkFieldSequence;
+      entry.className = 'document-link-entry';
+      entry.innerHTML = `<div class="field"><label for="interventionInvoiceUrl-${fieldId}">URL de facture</label><input id="interventionInvoiceUrl-${fieldId}" name="invoiceUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div><button class="document-link-remove" type="button" onclick="this.closest('.document-link-entry').remove()">Supprimer ce lien</button>`;
+      document.getElementById('interventionInvoiceLinksList').appendChild(entry);
     }
 
     function addInterventionDocument() {
@@ -3272,6 +3283,9 @@
       event.preventDefault();
       const values = formData(event.currentTarget);
       const types = new FormData(event.currentTarget).getAll('types').filter(type => typeof type === 'string');
+      const invoiceUrlInputs = [...event.currentTarget.querySelectorAll('[name="invoiceUrls[]"]')];
+      const populatedInvoiceUrlInputs = invoiceUrlInputs.filter(input => input.value.trim());
+      const invoiceUrls = populatedInvoiceUrlInputs.map(input => normalizeDocumentUrl(input.value.trim()));
       if (!types.length) {
         document.getElementById('interventionTypeError').textContent = 'Sélectionnez au moins un type d’intervention.';
         const firstTile = document.querySelector('#interventionTypeTiles input');
@@ -3279,10 +3293,10 @@
         return;
       }
       const completedDeadlineId = completingDeadlineId;
-      const safeUrl = values.url ? normalizeDocumentUrl(values.url) : '';
-      if (values.url && !safeUrl) {
-        event.currentTarget.elements.url.setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
-        event.currentTarget.elements.url.reportValidity();
+      const invalidInvoiceUrlIndex = invoiceUrls.findIndex(url => !url);
+      if (invalidInvoiceUrlIndex !== -1) {
+        populatedInvoiceUrlInputs[invalidInvoiceUrlIndex].setCustomValidity('Utilisez une URL commençant par http:// ou https://.');
+        populatedInvoiceUrlInputs[invalidInvoiceUrlIndex].reportValidity();
         return;
       }
       const data = vehiclesData[currentVehicleId];
@@ -3307,7 +3321,8 @@
           price: formatEuro(Number(values.price)),
           garage: values.garage.trim(),
           invoiceNumber: values.invoiceNumber.trim(),
-          docUrl: safeUrl
+          invoiceUrls,
+          docUrl: invoiceUrls[0] || ''
         });
         updateCurrentKilometers(data, Number(values.km));
         const previousMonth = interventionMonthLabel(previousDate);
@@ -3348,7 +3363,8 @@
       data.interventions.unshift({
         id: createRecordId(), costTracked: true, date: formatDate(values.date), type, types, name: description || types.join(' · '), garage: values.garage,
         invoiceNumber: values.invoiceNumber.trim(),
-        km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '', docUrl: safeUrl
+        km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '',
+        invoiceUrls, docUrl: invoiceUrls[0] || ''
       });
       updateCurrentKilometers(data, Number(values.km));
       addCostToCurrentMonth('maint', price, values.date, type);
@@ -3912,8 +3928,10 @@
       const tags = interventionTags(intervention);
       const description = intervention.name && intervention.name !== tags[0] && intervention.name !== tags.join(' · ')
         ? intervention.name : '—';
-      const invoice = intervention.docUrl
-        ? documentLink(intervention.docUrl, 'Ouvrir le lien de facture')
+      const invoiceUrls = Array.isArray(intervention.invoiceUrls) && intervention.invoiceUrls.length
+        ? intervention.invoiceUrls : intervention.docUrl ? [intervention.docUrl] : [];
+      const invoice = invoiceUrls.length
+        ? invoiceUrls.map((url, index) => documentLink(url, `Ouvrir le lien de facture${invoiceUrls.length > 1 ? ` ${index + 1}` : ''}`)).join('<br>')
         : escapeHtml(intervention.doc || '—');
       const linkedDocuments = data.documents.filter(item => item.interventionId === intervention.id);
       const documents = [
@@ -3986,7 +4004,16 @@
       form.elements.price.value = parseEuroAmount(intervention.price);
       form.elements.garage.value = intervention.garage || '';
       form.elements.invoiceNumber.value = intervention.invoiceNumber || '';
-      form.elements.url.value = intervention.docUrl || '';
+      const invoiceUrls = Array.isArray(intervention.invoiceUrls) && intervention.invoiceUrls.length
+        ? intervention.invoiceUrls : intervention.docUrl ? [intervention.docUrl] : [];
+      const invoiceUrlInputs = [form.querySelector('[name="invoiceUrls[]"]')];
+      invoiceUrls.slice(1).forEach(() => {
+        addInterventionInvoiceLinkField();
+        invoiceUrlInputs.push(form.querySelectorAll('[name="invoiceUrls[]"]')[invoiceUrlInputs.length]);
+      });
+      invoiceUrlInputs.forEach((input, urlIndex) => {
+        input.value = invoiceUrls[urlIndex] || '';
+      });
       updateInterventionTypeTiles(types);
     }
 
@@ -4215,6 +4242,7 @@
       if (type === 'invoice') {
         record.docUrl = '';
         record.doc = '';
+        record.invoiceUrls = [];
       } else if (type === 'intervention') {
         removeTrackedCost(data, record, 'maint', 'price');
         if (record.id) {
@@ -4307,8 +4335,12 @@
 
     function renderInterventionDocuments(data, intervention) {
       const links = [];
-      const invoiceUrl = normalizeDocumentUrl(intervention.docUrl);
-      if (invoiceUrl) links.push(documentLink(invoiceUrl, 'Lien'));
+      const invoiceUrls = Array.isArray(intervention.invoiceUrls) && intervention.invoiceUrls.length
+        ? intervention.invoiceUrls : intervention.docUrl ? [intervention.docUrl] : [];
+      invoiceUrls.forEach(url => {
+        const invoiceUrl = normalizeDocumentUrl(url);
+        if (invoiceUrl) links.push(documentLink(invoiceUrl, 'Facture'));
+      });
       data.documents.filter(doc => doc.interventionId === intervention.id).forEach(doc => {
         const url = normalizeDocumentUrl(doc.url);
         if (url) links.push(documentLink(url, 'Lien'));
