@@ -1442,7 +1442,7 @@
     </div>
   </dialog>
 
-  <script src="maintenance-schedule.js?v=2"></script>
+  <script src="maintenance-schedule.js?v=3"></script>
   <script>
     const TEST_MODE = new URLSearchParams(location.search).get('test') === '1';
     const backupStorageKey = 'carlogbook-data-v1';
@@ -1551,6 +1551,24 @@
       }
     };
 
+    testVehiclesData.v3 = {
+      km: "0 km",
+      fixedCostsByYear: {},
+      fixedCostIdsByYear: {},
+      additionalCost: 0,
+      kmYear: "—",
+      totalCost: "0 €",
+      costMonth: "0 € / mois",
+      deadlines: [],
+      plannedInterventions: [],
+      monthlyStats: [],
+      interventions: [],
+      fuel: [],
+      purchases: [],
+      miscCosts: [],
+      documents: []
+    };
+
     const testMaintenanceRecords = {
       v2: {
         'engine-oil': { date: '2026-10-06', km: 161500 },
@@ -1567,7 +1585,8 @@
 
     const defaultVehicleNames = {
       v1: 'Peugeot 308 SW II 1.6 BlueHDi 100 ch (2017)',
-      v2: 'Scénic III XMOD 1.5 dCi 115 ch (2015)'
+      v2: 'Scénic III XMOD 1.5 dCi 115 ch (2015)',
+      v3: 'Dacia Duster II 1.5 dCi 110 ch (2019)'
     };
 
     function createEmptyVehiclesData() {
@@ -1682,6 +1701,9 @@
     let maintenanceRecords = TEST_MODE ? testMaintenanceRecords : initialBackup ? initialBackup.maintenanceRecords : loadLegacyMaintenanceRecords();
     let deletedRecords = TEST_MODE ? [] : initialBackup && Array.isArray(initialBackup.deletedRecords)
       ? initialBackup.deletedRecords.slice() : [];
+    if (initialBackup && !vehiclesData.v3 && !deletedRecords.includes(JSON.stringify(['vehicle', 'v3']))) {
+      vehiclesData.v3 = createEmptyVehicleData(defaultVehicleNames.v3);
+    }
     const defaultInterventionTypes = [
       'Vidange', 'Révision', 'Pneumatiques', 'Freinage', 'Batterie', 'Contrôle technique',
       'Courroie', 'Filtre d’habitacle', 'Filtre à air', 'Filtre à gazole', 'Distribution',
@@ -2512,7 +2534,7 @@
       deletedRecords = data.deletedRecords || [];
       interventionTypes = data.interventionTypes.slice();
       miscCostTypes = Array.isArray(data.miscCostTypes) ? data.miscCostTypes.slice() : defaultMiscCostTypes.slice();
-      currentVehicleId = ['v1', 'v2'].includes(data.currentVehicleId) ? data.currentVehicleId : 'v2';
+      currentVehicleId = vehiclesData[data.currentVehicleId] ? data.currentVehicleId : Object.keys(vehiclesData)[0];
       document.getElementById('vehicleSelect').value = currentVehicleId;
       updateInterventionTypeTiles();
       updatePlannedInterventionTypeSelect();

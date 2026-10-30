@@ -182,4 +182,79 @@ const peugeot308Schedule = {
   ]
 };
 
-const maintenanceSchedules = [peugeot308Schedule, scenicSchedule];
+const dusterSchedule = {
+  vehicleId: 'v3',
+  vehicleLabel: 'Dacia Duster II 1.5 dCi 110 ch — 2019',
+  notice: 'Plan d’entretien indicatif pour le Duster II 1.5 dCi 110 ch (2019). Vérifiez la concordance avec le carnet d’entretien Dacia associé au VIN.',
+  sourceLabel: 'Intervalles usuels Dacia/Renault pour le moteur 1.5 dCi 110 ch (K9K).',
+  items: [
+    {
+      id: 'engine-oil',
+      name: 'Vidange moteur + filtre à huile',
+      type: 'Vidange',
+      details: 'Huile 5W-30 RN17 / ACEA C3 selon le carnet. Usage sévère (trajets courts, ville) : intervalle rapproché.',
+      intervalKm: 20000,
+      intervalMonths: 12
+    },
+    {
+      id: 'cabin-filter',
+      name: 'Filtre d’habitacle (pollen)',
+      type: 'Filtre d’habitacle',
+      details: 'Remplacement tous les ans ou 20 000 km.',
+      intervalKm: 20000,
+      intervalMonths: 12
+    },
+    {
+      id: 'air-filter',
+      name: 'Filtre à air',
+      type: 'Filtre à air',
+      details: 'Raccourcir l’intervalle en environnement poussiéreux.',
+      intervalKm: 40000,
+      intervalMonths: 24
+    },
+    {
+      id: 'fuel-filter',
+      name: 'Filtre à gazole',
+      type: 'Filtre à gazole',
+      details: 'Purger l’eau du filtre à chaque vidange.',
+      intervalKm: 60000,
+      intervalMonths: 48
+    },
+    {
+      id: 'timing-belt',
+      name: 'Distribution + pompe à eau',
+      type: 'Distribution',
+      details: 'Courroie de distribution. Remplacer la pompe à eau en même temps.',
+      intervalKm: 120000,
+      intervalMonths: 72
+    },
+    {
+      id: 'accessory-belt',
+      name: 'Courroie d’accessoires + galets',
+      type: 'Courroie d’accessoires',
+      details: 'À remplacer idéalement en même temps que la distribution.',
+      intervalKm: 120000,
+      intervalMonths: 72
+    },
+    {
+      id: 'brake-fluid',
+      name: 'Liquide de frein',
+      type: 'Liquide de frein',
+      details: 'Purge/remplacement du liquide tous les 2 ans.',
+      intervalMonths: 24
+    },
+    {
+      id: 'coolant',
+      name: 'Liquide de refroidissement',
+      type: 'Liquide de refroidissement',
+      details: 'Remplacement tous les 4 à 5 ans.',
+      intervalMonths: 48
+    }
+  ],
+  additionalAdvice: [
+    'FAP : en cas de trajets principalement courts, effectuer périodiquement un trajet routier prolongé pour favoriser la régénération.',
+    'Contrôler régulièrement les pneumatiques, le freinage, l’éclairage et la batterie lors de chaque révision.'
+  ]
+};
+
+const maintenanceSchedules = [peugeot308Schedule, scenicSchedule, dusterSchedule];
