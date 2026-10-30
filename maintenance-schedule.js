@@ -184,76 +184,87 @@ const peugeot308Schedule = {
 
 const dusterSchedule = {
   vehicleId: 'v3',
-  vehicleLabel: 'Dacia Duster II 1.5 dCi 110 ch — 2019',
-  notice: 'Plan d’entretien indicatif pour le Duster II 1.5 dCi 110 ch (2019). Vérifiez la concordance avec le carnet d’entretien Dacia associé au VIN.',
-  sourceLabel: 'Intervalles usuels Dacia/Renault pour le moteur 1.5 dCi 110 ch (K9K).',
+  vehicleLabel: 'Dacia Duster II Techroad Blue dCi 115 ch — 2019',
+  notice: 'Intervalles issus de la fiche d’entretien officielle Dacia fournie (Duster, garantie débutant le 23/12/2019). Vérifiez la concordance avec le carnet d’entretien.',
+  sourceLabel: 'Fiche d’entretien et de garantie Dacia fournie par le propriétaire (révisions A/B, années 1 à 12).',
   items: [
     {
       id: 'engine-oil',
       name: 'Vidange moteur + filtre à huile',
       type: 'Vidange',
-      details: 'Huile 5W-30 RN17 / ACEA C3 selon le carnet. Usage sévère (trajets courts, ville) : intervalle rapproché.',
-      intervalKm: 20000,
-      intervalMonths: 12
+      details: 'Révision B (années paires). Huile Castrol RN17 5W-30 (0W-20 RN17FE possible), 5,7 L. Additif interdit pendant la garantie.',
+      intervalKm: 30000,
+      intervalMonths: 24
     },
     {
       id: 'cabin-filter',
       name: 'Filtre d’habitacle (pollen)',
       type: 'Filtre d’habitacle',
-      details: 'Remplacement tous les ans ou 20 000 km.',
-      intervalKm: 20000,
-      intervalMonths: 12
+      details: 'Remplacé lors des révisions A (années impaires : 1, 3, 5…).',
+      intervalKm: 30000,
+      intervalMonths: 24
     },
     {
       id: 'air-filter',
       name: 'Filtre à air',
       type: 'Filtre à air',
       details: 'Raccourcir l’intervalle en environnement poussiéreux.',
-      intervalKm: 40000,
-      intervalMonths: 24
+      intervalKm: 60000,
+      intervalMonths: 48
     },
     {
       id: 'fuel-filter',
       name: 'Filtre à gazole',
       type: 'Filtre à gazole',
-      details: 'Purger l’eau du filtre à chaque vidange.',
+      details: 'Purger l’eau du filtre à carburant lors des révisions.',
       intervalKm: 60000,
       intervalMonths: 48
     },
     {
       id: 'timing-belt',
-      name: 'Distribution + pompe à eau',
+      name: 'Distribution + galets',
       type: 'Distribution',
-      details: 'Courroie de distribution. Remplacer la pompe à eau en même temps.',
-      intervalKm: 120000,
+      details: 'Courroie de distribution et galets : 150 000 km, année 6 puis 12 selon la fiche.',
+      intervalKm: 150000,
       intervalMonths: 72
     },
     {
       id: 'accessory-belt',
       name: 'Courroie d’accessoires + galets',
       type: 'Courroie d’accessoires',
-      details: 'À remplacer idéalement en même temps que la distribution.',
-      intervalKm: 120000,
+      details: '150 000 km, année 6 puis 12 selon la fiche.',
+      intervalKm: 150000,
       intervalMonths: 72
     },
     {
       id: 'brake-fluid',
       name: 'Liquide de frein',
       type: 'Liquide de frein',
-      details: 'Purge/remplacement du liquide tous les 2 ans.',
-      intervalMonths: 24
+      details: 'DOT 4+, ISO classe 6, norme Renault 03-50-006. Fiche : 120 000 km, années 3, 6, 9, 12.',
+      intervalKm: 120000,
+      intervalMonths: 36
     },
     {
       id: 'coolant',
       name: 'Liquide de refroidissement',
       type: 'Liquide de refroidissement',
-      details: 'Remplacement tous les 4 à 5 ans.',
-      intervalMonths: 48
+      details: 'Glaceol RX type D. Fiche : 150 000 km, année 5 puis 10.',
+      intervalKm: 150000,
+      intervalMonths: 60
+    },
+    {
+      id: 'rear-brakes',
+      name: 'Contrôle et dépoussiérage des garnitures de frein à tambours',
+      type: 'Freinage',
+      details: 'Contrôle à 120 000 km selon la fiche.',
+      intervalKm: 120000
     }
   ],
   additionalAdvice: [
-    'FAP : en cas de trajets principalement courts, effectuer périodiquement un trajet routier prolongé pour favoriser la régénération.',
-    'Contrôler régulièrement les pneumatiques, le freinage, l’éclairage et la batterie lors de chaque révision.'
+    'Révision A (années impaires) : filtre d’habitacle et points de contrôle. Révision B (années paires) : vidange + filtre à huile et points de contrôle. Intervalle : 30 000 km ou 1 an, au premier terme atteint.',
+    'Au-delà de 15 000 km par an, les révisions A et B doivent être faites tous les 30 000 km ou 1 an selon la fiche.',
+    'Le constructeur préconise d’adapter la fréquence de certaines pièces en usage sévère ; le véhicule peut aussi avertir qu’une révision doit être anticipée.',
+    'AdBlue (si équipé) : niveau contrôlé à chaque révision.'
   ]
 };
 
