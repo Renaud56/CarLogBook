@@ -497,6 +497,8 @@
     }
     .drive-status { background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; animation: drive-pulse 1.5s ease-in-out infinite; }
     .drive-status.connected { background: transparent; border-color: transparent; color: inherit; animation: none; padding: 0 6px; min-width: 0; font-size: 1.1rem; }
+    .drive-status-icon { position: relative; display: inline-block; width: 28px; height: 28px; color: var(--accent); font-size: 28px; line-height: 28px; }
+    .drive-status-check { position: absolute; right: -2px; bottom: -2px; font-size: 12px; line-height: 16px; }
     @keyframes drive-pulse { 50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.35); } }
     #driveConnectModal .btn-save { width: 100%; min-height: 48px; }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
@@ -2574,7 +2576,9 @@
       const driveLabel = connected ? 'Google Drive : connecté' : 'Google Drive : non connecté';
       driveStatus.title = driveLabel;
       driveStatus.setAttribute('aria-label', driveLabel);
-      driveStatus.textContent = connected ? '✅' : '⚠ Drive';
+      driveStatus.innerHTML = connected
+        ? '<span class="drive-status-icon" aria-hidden="true">☁<span class="drive-status-check">✅</span></span>'
+        : '⚠ Drive';
       if (connected) {
         const connectModal = document.getElementById('driveConnectModal');
         if (connectModal.open) connectModal.close();
