@@ -495,9 +495,10 @@
       word-break: normal;
       hyphens: none;
     }
-    .drive-status { position: relative; }
-    .drive-status::after { content: ''; position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: #dc2626; border: 1px solid #fff; }
-    .drive-status.connected::after { background: #16a34a; }
+    .drive-status { background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; animation: drive-pulse 1.5s ease-in-out infinite; }
+    .drive-status.connected { background: transparent; border-color: transparent; color: inherit; animation: none; padding: 0 6px; min-width: 0; font-size: 1.1rem; }
+    @keyframes drive-pulse { 50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.35); } }
+    #driveConnectModal .btn-save { width: 100%; min-height: 48px; }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
     #interventions tbody tr[data-intervention-id]:hover { background: #f8fafc; }
     #interventions tbody tr[data-intervention-id]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -956,7 +957,7 @@
       </div>
       <button class="btn-manage-types vehicle-manage" type="button" onclick="openVehicleManager()">Véhicules</button>
       <button id="maintenanceOpenButton" class="btn-manage-types maintenance-open" type="button" onclick="openMaintenanceSchedule()" hidden>Suivi</button>
-      <button class="btn-manage-types vehicle-manage drive-status" id="driveStatus" type="button" aria-label="Google Drive : non connecté" title="Google Drive : non connecté" onclick="document.getElementById('backupModal').showModal()">☁</button>
+      <button class="btn-manage-types vehicle-manage drive-status" id="driveStatus" type="button" aria-label="Google Drive : non connecté" title="Google Drive : non connecté" onclick="document.getElementById('backupModal').showModal()">⚠ Drive</button>
       <button class="btn-manage-types vehicle-manage" type="button" aria-label="Sauvegarde des données" title="Sauvegarde des données" onclick="document.getElementById('backupModal').showModal()">💾</button>
     </div>
   </header>
@@ -1155,6 +1156,16 @@
     </div>
 
   </div>
+
+  <dialog class="action-modal" id="driveConnectModal" aria-labelledby="driveConnectTitle">
+    <div class="modal-form">
+      <div class="modal-header"><div><h2 id="driveConnectTitle">⚠ Google Drive non connecté</h2><p>Vos données ne sont pas synchronisées. Connectez-vous pour les sauvegarder et les retrouver sur vos autres appareils.</p></div></div>
+      <div class="modal-actions" style="flex-direction:column">
+        <button class="btn-save" type="button" onclick="syncClick()">☁ Se connecter à Google Drive</button>
+        <button class="btn-cancel" type="button" onclick="closeActionModal('driveConnectModal')">Plus tard</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog class="action-modal" id="backupModal" aria-labelledby="backupTitle">
     <div class="modal-form">
@@ -2563,14 +2574,25 @@
       const driveLabel = connected ? 'Google Drive : connecté' : 'Google Drive : non connecté';
       driveStatus.title = driveLabel;
       driveStatus.setAttribute('aria-label', driveLabel);
+      driveStatus.textContent = connected ? '✅' : '⚠ Drive';
+      if (connected) {
+        const connectModal = document.getElementById('driveConnectModal');
+        if (connectModal.open) connectModal.close();
+      }
       document.getElementById('sync-btn').textContent = connected
         ? '☁ Synchroniser maintenant' : '☁ Se connecter à Google Drive';
+    }
+
+    function promptDriveConnect() {
+      const modal = document.getElementById('driveConnectModal');
+      if (!(accessToken && Date.now() < tokenExpiresAt) && !modal.open) modal.showModal();
     }
 
     function gsiReady() {
       if (TEST_MODE) return;
       if (!window.google || !google.accounts || !google.accounts.oauth2) {
         setSync(false, 'Connexion Google indisponible. Vérifiez votre connexion Internet.');
+        promptDriveConnect();
         return;
       }
       tokenClient = google.accounts.oauth2.initTokenClient({
@@ -2579,6 +2601,7 @@
         callback: response => {
           if (response.error) {
             setSync(false, 'Connexion Google refusée : touchez le bouton pour réessayer.');
+            promptDriveConnect();
             return;
           }
           accessToken = response.access_token;
@@ -2590,9 +2613,11 @@
         error_callback: () => {
           needsAuth = true;
           setSync(false, 'Reconnexion requise : touchez le bouton Google Drive.');
+          promptDriveConnect();
         }
       });
       if (localStorage.getItem(driveEnabledKey) === '1') requestDriveToken();
+      else promptDriveConnect();
     }
 
     function requestDriveToken() {
@@ -2642,6 +2667,7 @@
       if (!accessToken || Date.now() >= tokenExpiresAt) {
         needsAuth = true;
         setSync(false, 'Reconnexion requise : touchez le bouton Google Drive.');
+        promptDriveConnect();
         return;
       }
       syncBusy = true;
