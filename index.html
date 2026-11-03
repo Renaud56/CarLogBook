@@ -496,7 +496,8 @@
       hyphens: none;
     }
     .drive-status { background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; animation: drive-pulse 1.5s ease-in-out infinite; }
-    .drive-status.connected { background: transparent; border-color: transparent; color: inherit; animation: none; padding: 0 6px; min-width: 0; font-size: 1.1rem; }
+    .drive-status.connected { background: #fff; border-color: var(--border); color: var(--accent); animation: none; }
+    .drive-status.connected:hover { border-color: var(--accent); background: #eff6ff; }
     .drive-status-icon { position: relative; display: inline-block; width: 28px; height: 28px; color: var(--accent); font-size: 28px; line-height: 28px; }
     .drive-status-check { position: absolute; right: -2px; bottom: -2px; font-size: 12px; line-height: 16px; }
     @keyframes drive-pulse { 50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.35); } }
