@@ -1359,7 +1359,7 @@
       <div class="modal-header"><div><h2 id="interventionModalTitle">Ajouter une intervention</h2><p>Consignez un entretien ou une réparation.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('interventionModal')">&times;</button></div>
       <div class="modal-fields">
         <div class="field"><label for="interventionDateDisplay">Date (JJ/MM/AAAA)</label><input id="interventionDate" name="date" type="hidden"><input id="interventionDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l’intervention (jour, mois, année)" oninput="updateDateField(this)" required></div>
-        <div class="field"><label for="interventionKm">Kilométrage (km)</label><input id="interventionKm" name="km" type="number" min="0" step="1" inputmode="numeric" required></div>
+        <div class="field"><label for="interventionKm">Kilométrage (km, facultatif)</label><input id="interventionKm" name="km" type="number" min="0" step="1" inputmode="numeric"></div>
         <div class="field full-width" id="interventionDeadlineField"><label for="interventionDeadline">Échéance concernée (facultatif)</label><select id="interventionDeadline" name="deadlineId" onchange="selectInterventionDeadline(this.value)"><option value="">Aucune échéance</option></select></div>
         <div class="field full-width">
           <div class="field">
@@ -1372,7 +1372,7 @@
           <p class="form-message" id="interventionTypeError" aria-live="polite"></p>
         </div>
         <div class="field full-width"><label for="interventionDescription">Description (facultatif)</label><input id="interventionDescription" name="description" type="text" maxlength="120" placeholder="Détail ou pièce remplacée"></div>
-        <div class="field"><label for="interventionPrice">Montant (€)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+        <div class="field"><label for="interventionPrice">Montant (€, facultatif)</label><input id="interventionPrice" name="price" type="number" min="0" step="0.01" inputmode="decimal"></div>
         <div class="field"><label for="interventionGarage">Garage (facultatif)</label><input id="interventionGarage" name="garage" type="text" maxlength="80"></div>
         <div class="field"><label for="interventionInvoiceNumber">N° de facture (facultatif)</label><input id="interventionInvoiceNumber" name="invoiceNumber" type="text" maxlength="60"></div>
         <div class="field full-width"><span class="field-label">Liens vers les factures (facultatif)</span><div class="document-links-list" id="interventionInvoiceLinksList"><div class="document-link-entry"><div class="field"><label for="interventionInvoiceUrl-1">URL de facture</label><input id="interventionInvoiceUrl-1" name="invoiceUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')"></div></div></div><button class="btn-manage-types" type="button" onclick="addInterventionInvoiceLinkField()">+ Ajouter un lien</button></div>
@@ -1492,7 +1492,7 @@
       <div class="modal-header"><div><h2 id="documentModalTitle">Ajouter un document</h2><p>Seul le lien est enregistré, pas le fichier.</p></div><button class="modal-close" type="button" aria-label="Fermer" onclick="closeActionModal('documentModal')">&times;</button></div>
       <div class="modal-fields">
         <div class="field"><label for="documentDateDisplay">Date (JJ/MM/AAAA)</label><input id="documentDate" name="date" type="hidden"><input id="documentDateDisplay" class="date-entry" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date du document (jour, mois, année)" oninput="updateDateField(this)" required></div>
-        <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Contrôle technique">Contrôle technique</option><option value="Autre">Autre</option></select></div>
+        <div class="field"><label for="documentCategory">Catégorie</label><select id="documentCategory" name="category" required><option value="Contrôle technique">Contrôle technique</option><option value="Facture">Facture</option><option value="Assurance">Assurance</option><option value="Autre">Autre</option></select></div>
         <div class="field full-width"><span class="field-label">Documents et liens</span><div class="document-links-list" id="documentLinksList"><div class="document-link-entry"><div class="field"><label for="documentName-1">Nom du document</label><input id="documentName-1" name="documentNames[]" type="text" maxlength="120" required></div><div class="field"><label for="documentUrl-1">URL du document</label><input id="documentUrl-1" name="documentUrls[]" type="url" placeholder="https://..." inputmode="url" oninput="this.setCustomValidity('')" required></div></div></div><button class="btn-manage-types" id="documentAddLinkButton" type="button" onclick="addDocumentLinkField()">+ Ajouter un autre lien</button></div>
         <div class="field full-width"><label for="documentIntervention">Intervention liée (facultatif)</label><select id="documentIntervention" name="interventionId"><option value="">Aucune intervention</option></select></div>
       </div>
@@ -2836,6 +2836,7 @@
     }
 
     function formatKilometers(value) {
+      if (value === null || value === undefined || value === '') return '—';
       return `${Number(value).toLocaleString('fr-FR')} km`;
     }
 
@@ -2848,7 +2849,7 @@
         sortDate: '9999-12-31'
       };
       const nextDate = item.intervalMonths ? addMonths(record.date, item.intervalMonths) : '';
-      const nextKm = item.intervalKm ? record.km + item.intervalKm : null;
+      const nextKm = item.intervalKm && Number.isFinite(record.km) ? record.km + item.intervalKm : null;
       const projectedKmDate = nextKm === null || !annualMileage
         ? ''
         : (() => {
@@ -3191,8 +3192,8 @@
       if (!intervention) return;
       const dateParts = intervention.date.split('/');
       const date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-      const km = Number(intervention.km.replace(/\D/g, ''));
-      if (!Number.isFinite(km) || !dateParts[2]) return;
+      const km = intervention.km ? Number(intervention.km.replace(/\D/g, '')) : null;
+      if ((km !== null && !Number.isFinite(km)) || !dateParts[2]) return;
       maintenanceRecords[currentVehicleId] = maintenanceRecords[currentVehicleId] || {};
       maintenanceRecords[currentVehicleId][maintenanceChoiceItemId] = {
         date,
@@ -3621,6 +3622,8 @@
     function saveIntervention(event) {
       event.preventDefault();
       const values = formData(event.currentTarget);
+      const kilometers = values.km ? Number(values.km) : null;
+      const price = values.price ? Number(values.price) : null;
       const types = new FormData(event.currentTarget).getAll('types').filter(type => typeof type === 'string');
       const invoiceUrlInputs = [...event.currentTarget.querySelectorAll('[name="invoiceUrls[]"]')];
       const populatedInvoiceUrlInputs = invoiceUrlInputs.filter(input => input.value.trim());
@@ -3650,20 +3653,20 @@
         const previousType = intervention.type;
         if (trackCost) removeTrackedCost(data, intervention, 'maint', 'price');
         const description = values.description.trim();
-        const km = `${Number(values.km).toLocaleString('fr-FR')} km`;
+        const km = kilometers === null ? '' : formatKilometers(kilometers);
         Object.assign(intervention, {
           date: formatDate(values.date),
           type: types[0],
           types,
           name: description || types.join(' · '),
           km,
-          price: formatEuro(Number(values.price)),
+          price: price === null ? '' : formatEuro(price),
           garage: values.garage.trim(),
           invoiceNumber: values.invoiceNumber.trim(),
           invoiceUrls,
           docUrl: invoiceUrls[0] || ''
         });
-        updateCurrentKilometers(data, Number(values.km));
+        if (kilometers !== null) updateCurrentKilometers(data, kilometers);
         const previousMonth = interventionMonthLabel(previousDate);
         const updatedMonth = interventionMonthLabel(intervention.date);
         if (previousMonth && previousMonth !== updatedMonth) {
@@ -3675,7 +3678,7 @@
             oldMonthlyStats.event = null;
           }
         }
-        if (trackCost) addCostToCurrentMonth('maint', Number(values.price), values.date, types[0]);
+        if (trackCost) addCostToCurrentMonth('maint', price ?? 0, values.date, types[0]);
         const vehicleMaintenanceRecords = maintenanceRecords[currentVehicleId] || {};
         Object.entries(vehicleMaintenanceRecords).forEach(([itemId, record]) => {
           if (record.interventionId === intervention.id) {
@@ -3684,7 +3687,7 @@
               delete vehicleMaintenanceRecords[itemId];
             } else {
               record.date = values.date;
-              record.km = Number(values.km);
+              record.km = kilometers;
             }
           }
         });
@@ -3695,21 +3698,20 @@
         return;
       }
       completingDeadlineId = null;
-      const price = Number(values.price);
       const type = types[0];
       const description = values.description.trim();
       const maintenanceItemId = pendingMaintenanceItemId;
       data.interventions.unshift({
         id: createRecordId(), costTracked: true, date: formatDate(values.date), type, types, name: description || types.join(' · '), garage: values.garage,
         invoiceNumber: values.invoiceNumber.trim(),
-        km: `${Number(values.km).toLocaleString('fr-FR')} km`, price: formatEuro(price), doc: '',
+        km: kilometers === null ? '' : formatKilometers(kilometers), price: price === null ? '' : formatEuro(price), doc: '',
         invoiceUrls, docUrl: invoiceUrls[0] || ''
       });
-      updateCurrentKilometers(data, Number(values.km));
-      addCostToCurrentMonth('maint', price, values.date, type);
+      if (kilometers !== null) updateCurrentKilometers(data, kilometers);
+      addCostToCurrentMonth('maint', price ?? 0, values.date, type);
       const completedIntervention = {
         date: values.date,
-        km: Number(values.km),
+        km: kilometers,
         interventionId: data.interventions[0].id
       };
       if (maintenanceItemId) {
@@ -4273,7 +4275,7 @@
           <td class="col-date">${escapeHtml(intervention.date)}</td>
           <td>${typeMarkup}${detail ? `<span class="cell-sub">${escapeHtml(detail)}</span>` : ''}${intervention.garage ? `<span class="cell-sub">${escapeHtml(intervention.garage)}</span>` : ''}${intervention.invoiceNumber ? `<span class="cell-sub">Facture n° ${escapeHtml(intervention.invoiceNumber)}</span>` : ''}</td>
           <td class="col-num">${escapeHtml(intervention.km)}</td>
-          <td class="col-amount">${escapeHtml(intervention.price)}</td>
+          <td class="col-amount">${escapeHtml(intervention.price || '?')}</td>
           <td class="col-links">${links}</td>
         </tr>`;
       });
@@ -4303,7 +4305,7 @@
         ['Kilométrage', escapeHtml(intervention.km)],
         ['Description', escapeHtml(description)],
         ['Garage', escapeHtml(intervention.garage || '—')],
-        ['Montant', escapeHtml(intervention.price)],
+        ['Montant', escapeHtml(intervention.price || '?')],
         ['N° de facture', escapeHtml(intervention.invoiceNumber || '—')],
         ['Facture et documents', documents]
       ];
@@ -4360,7 +4362,7 @@
       setDateField(form.elements.date, `${year}-${month}-${day}`);
       form.elements.km.value = intervention.km.replace(/\D/g, '');
       form.elements.description.value = intervention.name === types.join(' · ') ? '' : intervention.name || '';
-      form.elements.price.value = parseEuroAmount(intervention.price);
+      form.elements.price.value = intervention.price ? parseEuroAmount(intervention.price) : '';
       form.elements.garage.value = intervention.garage || '';
       form.elements.invoiceNumber.value = intervention.invoiceNumber || '';
       const invoiceUrls = Array.isArray(intervention.invoiceUrls) && intervention.invoiceUrls.length
