@@ -40,9 +40,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
 
     .brand { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
@@ -495,11 +492,6 @@
       word-break: normal;
       hyphens: none;
     }
-    .drive-status { background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; animation: drive-pulse 1.5s ease-in-out infinite; }
-    .drive-status.connected { background: #fff; border-color: var(--border); color: var(--accent); animation: none; }
-    .drive-status.connected:hover { border-color: var(--accent); background: #eff6ff; }
-    .drive-status-icon { position: relative; display: inline-block; width: 28px; height: 28px; color: var(--accent); font-size: 28px; line-height: 28px; }
-    .drive-status-check { position: absolute; right: -2px; bottom: -2px; font-size: 12px; line-height: 16px; }
     @keyframes drive-pulse { 50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.35); } }
     #driveConnectModal .btn-save { width: 100%; min-height: 48px; }
     #interventions tbody tr[data-intervention-id] { cursor: pointer; }
@@ -699,15 +691,6 @@
     .card-header h2, .card-header h3, .backup-panel h2, .chart-card h3 { font-size: 1.05rem; }
 
     @media (max-width: 600px) {
-      header { padding: 12px 14px; gap: 8px; flex-wrap: wrap; }
-      .brand { font-size: 1rem; }
-      .vehicle-picker { width: 100%; gap: 6px; }
-      .vehicle-picker label { display: none; }
-      .vehicle-select-stack { flex: 1 1 0; width: 0; }
-      .vehicle-picker select { max-width: none; padding: 6px 8px; font-size: 0.8rem; }
-      .vehicle-ct-badge { font-size: 0.68rem; }
-      .vehicle-manage { min-height: 38px; padding: 0 9px; font-size: 0.8rem; }
-      .maintenance-open { padding: 8px; font-size: 0.78rem; }
       .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .backup-actions { grid-template-columns: 1fr; }
       .chart-card { padding: 16px; }
@@ -792,11 +775,100 @@
       -webkit-backdrop-filter: saturate(180%) blur(12px);
       backdrop-filter: saturate(180%) blur(12px);
       border-bottom-color: rgba(226, 232, 240, 0.7);
-      transition: box-shadow 0.2s ease;
     }
-    header.scrolled { box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); }
     .brand { font-weight: 800; letter-spacing: -0.01em; }
     .vehicle-picker select { border-radius: var(--radius-ctrl); background: #fff; }
+
+    /* En-tête : marque + outils, puis véhicule et actions */
+    header {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: "brand picker tools";
+      align-items: center;
+      gap: 10px 16px;
+    }
+    .brand { grid-area: brand; display: flex; align-items: center; gap: 10px; color: var(--text-main); font-size: 1.15rem; }
+    .brand-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%); font-size: 1.2rem; }
+    .vehicle-picker { grid-area: picker; justify-self: end; width: min(100%, 640px); display: flex; align-items: flex-start; gap: 8px; }
+    .vehicle-select-stack { flex: 1 1 auto; display: grid; gap: 6px; min-width: 0; }
+    .vehicle-picker select {
+      min-height: 46px;
+      padding: 0 12px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-sm);
+      text-overflow: ellipsis;
+    }
+    .vehicle-ct-badge { padding: 3px 10px; font-size: 0.74rem; }
+    .vehicle-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+    .header-chip, .header-icon-btn {
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 0.12s var(--ease), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .header-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 46px;
+      padding: 0 14px;
+      color: var(--text-main);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .header-chip[hidden] { display: none; }
+    .header-tools { grid-area: tools; display: flex; gap: 8px; }
+    .header-icon-btn { display: grid; place-items: center; width: 46px; height: 46px; padding: 0; font-size: 1.25rem; }
+    .header-chip:hover, .header-icon-btn:hover { border-color: #bfdbfe; background: #eff6ff; color: var(--accent); }
+    .header-chip:active, .header-icon-btn:active { transform: scale(0.96); }
+    .header-chip:focus-visible, .header-icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .header-icon-btn.drive-status { border-color: #fca5a5; background: #fef2f2; animation: drive-pulse 1.5s ease-in-out infinite; }
+    .header-icon-btn.drive-status.connected { border-color: rgba(226, 232, 240, 0.9); background: #fff; animation: none; }
+    .header-icon-btn.drive-status.connected:hover { border-color: #bfdbfe; background: #eff6ff; }
+    .drive-status-icon { position: relative; display: block; width: 26px; height: 26px; color: var(--accent); font-size: 24px; line-height: 26px; text-align: center; }
+    .drive-status-badge {
+      position: absolute;
+      right: -5px;
+      bottom: -4px;
+      display: grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .drive-status-badge.ok { background: #16a34a; }
+    .drive-status-badge.warn { background: #dc2626; }
+
+    @media (max-width: 600px) {
+      header {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: "brand tools" "picker picker";
+        padding: 10px 14px 12px;
+        gap: 10px;
+      }
+      .brand { font-size: 1.05rem; }
+      .brand-icon { width: 34px; height: 34px; font-size: 1.05rem; }
+      .vehicle-picker { justify-self: stretch; width: 100%; gap: 6px; }
+      .vehicle-picker select { min-height: 44px; padding: 0 8px; font-size: 0.9rem; }
+      .vehicle-actions { gap: 6px; }
+      .header-chip { width: 44px; min-height: 44px; padding: 0; font-size: 1.15rem; }
+      .header-chip-label { display: none; }
+      .header-icon-btn { width: 44px; height: 44px; }
+    }
 
     .kpi-card, .content-card, .chart-card, .backup-panel {
       border-radius: var(--radius-card);
@@ -951,17 +1023,21 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <header>
-    <div class="brand">🚗 Suivi entretien</div>
+    <div class="brand"><span class="brand-icon" aria-hidden="true">🚗</span>Suivi entretien</div>
+    <div class="header-tools">
+      <button class="header-icon-btn drive-status" id="driveStatus" type="button" aria-label="Google Drive : non connecté" title="Google Drive : non connecté" onclick="document.getElementById('backupModal').showModal()"><span class="drive-status-icon" aria-hidden="true">☁<span class="drive-status-badge warn">!</span></span></button>
+      <button class="header-icon-btn" type="button" aria-label="Sauvegarde des données" title="Sauvegarde des données" onclick="document.getElementById('backupModal').showModal()">💾</button>
+    </div>
     <div class="vehicle-picker">
-      <label for="vehicleSelect" style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">Véhicule :</label>
       <div class="vehicle-select-stack">
-        <select id="vehicleSelect" aria-label="Sélectionner un véhicule" onchange="switchVehicle(this.value)"></select>
+        <label class="sr-only" for="vehicleSelect">Véhicule</label>
+        <select id="vehicleSelect" onchange="switchVehicle(this.value)"></select>
         <span id="vehicleInspectionBadge" class="vehicle-ct-badge" hidden></span>
       </div>
-      <button class="btn-manage-types vehicle-manage" type="button" onclick="openVehicleManager()">Véhicules</button>
-      <button id="maintenanceOpenButton" class="btn-manage-types maintenance-open" type="button" onclick="openMaintenanceSchedule()" hidden>Suivi</button>
-      <button class="btn-manage-types vehicle-manage drive-status" id="driveStatus" type="button" aria-label="Google Drive : non connecté" title="Google Drive : non connecté" onclick="document.getElementById('backupModal').showModal()">⚠ Drive</button>
-      <button class="btn-manage-types vehicle-manage" type="button" aria-label="Sauvegarde des données" title="Sauvegarde des données" onclick="document.getElementById('backupModal').showModal()">💾</button>
+      <div class="vehicle-actions">
+        <button class="header-chip" type="button" aria-label="Gérer les véhicules" title="Gérer les véhicules" onclick="openVehicleManager()"><span aria-hidden="true">🚘</span><span class="header-chip-label">Véhicules</span></button>
+        <button id="maintenanceOpenButton" class="header-chip" type="button" aria-label="Carnet d’entretien" title="Carnet d’entretien" onclick="openMaintenanceSchedule()" hidden><span aria-hidden="true">&#x1F4D2;</span><span class="header-chip-label">Carnet</span></button>
+      </div>
     </div>
   </header>
 
@@ -2578,8 +2654,8 @@
       driveStatus.title = driveLabel;
       driveStatus.setAttribute('aria-label', driveLabel);
       driveStatus.innerHTML = connected
-        ? '<span class="drive-status-icon" aria-hidden="true">☁<span class="drive-status-check">✅</span></span>'
-        : '⚠ Drive';
+        ? '<span class="drive-status-icon" aria-hidden="true">☁<span class="drive-status-badge ok">✓</span></span>'
+        : '<span class="drive-status-icon" aria-hidden="true">☁<span class="drive-status-badge warn">!</span></span>';
       if (connected) {
         const connectModal = document.getElementById('driveConnectModal');
         if (connectModal.open) connectModal.close();
@@ -4813,8 +4889,6 @@
 
     document.getElementById('vehicleSelect').value = currentVehicleId;
     switchVehicle(currentVehicleId);
-    const appHeader = document.querySelector('header');
-    window.addEventListener('scroll', () => appHeader.classList.toggle('scrolled', window.scrollY > 4), { passive: true });
     if (TEST_MODE) setSyncStatus('Mode test actif : données de démonstration, aucune sauvegarde ni synchronisation.');
   </script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="gsiReady()"></script>
